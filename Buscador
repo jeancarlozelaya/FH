@@ -1,0 +1,32 @@
+<h2>Encuentra tu producto en Shein</h2>
+<p>Escribe lo que buscas y presiona "Enter" para ver el enlace:</p>
+
+<!-- Input para la búsqueda -->
+<input type="text" id="searchQuery" placeholder="Ejemplo: Calzoneta para hombre" required>
+<br><br>
+
+<!-- Enlace para buscar en Shein -->
+<p id="searchResult" style="display:none;">
+    <a id="dynamicLink" href="" target="_blank" style="display:inline-block; padding: 10px 20px; background-color: #ff5a5f; color: white; text-decoration: none; border-radius: 5px;">Haz clic aquí para buscar en Shein</a>
+</p>
+
+<!-- Script JavaScript para manejar la búsqueda -->
+<script>
+    document.getElementById("searchQuery").addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            const query = document.getElementById("searchQuery").value.trim();
+            if (query) {
+                // Construimos la URL de búsqueda
+                const sheinUrl = `https://us.shein.com/pdsearch/${encodeURIComponent(query)}?ici=s1EditSearch${encodeURIComponent(query)}_fbd0PageHome&search_source=1&search_type=all&source=search&src_identifier=st%3D2%60sc%3D${encodeURIComponent(query)}%60sr%3D0%60ps%3D1&src_identifier_pre_search=&src_module=search&src_tab_page_id=page_home1730078017541`;
+                
+                // Mostramos el enlace dinámico
+                const dynamicLink = document.getElementById("dynamicLink");
+                dynamicLink.href = sheinUrl;
+                dynamicLink.textContent = `Haz clic aquí para ver "${query}" en Shein`;
+                document.getElementById("searchResult").style.display = 'block';
+            } else {
+                alert("Por favor ingresa un término de búsqueda.");
+            }
+        }
+    });
+</script>
