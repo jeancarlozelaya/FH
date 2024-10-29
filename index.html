@@ -9,7 +9,7 @@
             background-image: url('https://files.jotform.com/jufs/jeancarlozelaya/form_files/Copia%20de%20V%C3%ADdeo%20Publicitario%20(Fashion%20House%20Hn).671edbeee7b906.99369493.png?md5=EZ8w-MRdDOu7IMtTmU2wDA&expires=1730219662');
             background-size: cover;
             background-position: center;
-            color: white; /* Cambia el color del texto para mejor visibilidad */
+            color: black; /* Color del texto */
             font-family: Arial, sans-serif;
             padding: 20px;
         }
@@ -21,9 +21,16 @@
             border-radius: 5px; /* Esquinas redondeadas */
             border: 1px solid #ccc; /* Borde gris claro */
             font-size: 16px; /* Tamaño de la fuente */
+            margin-bottom: 20px; /* Espacio debajo de la caja de texto */
         }
 
         #dynamicLink {
+            display: inline-block; /* Asegura que se muestre como un bloque */
+            padding: 10px 20px; /* Espaciado interno */
+            background-color: #972D54; /* Color del botón */
+            color: white; /* Color del texto del botón */
+            text-decoration: none; /* Sin subrayado */
+            border-radius: 5px; /* Esquinas redondeadas */
             pointer-events: none; /* Desactiva el botón inicialmente */
             opacity: 0.5; /* Hace que el botón aparezca deshabilitado */
         }
@@ -31,15 +38,12 @@
 </head>
 <body>
 
-<h2>Encuentra tus productos en Shein</h2>
-<p>Escribe lo que desees buscar (ropa, zapatos, accesorios, aparatos electronicos, etc.):</p>
-
 <!-- Input para la búsqueda -->
 <input id="searchQuery" required type="text" placeholder="Ejemplo: Lenceria sexy" />
 
 <!-- Enlace para buscar en Shein -->
 <p>
-    <a id="dynamicLink" style="display: inline-block; padding: 10px 20px; background-color: #ff5a5f; color: white; text-decoration: none; border-radius: 5px;" 
+    <a id="dynamicLink" 
        href="https://us.shein.com/" target="_blank" rel="noopener noreferrer">
        Buscar en Shein
     </a>
