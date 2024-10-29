@@ -1,8 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar en Shein</title>
+    <style>
+        body {
+            background-image: url('https://files.jotform.com/jufs/jeancarlozelaya/form_files/Copia%20de%20V%C3%ADdeo%20Publicitario%20(Fashion%20House%20Hn).671edbeee7b906.99369493.png?md5=EZ8w-MRdDOu7IMtTmU2wDA&expires=1730219662');
+            background-size: cover;
+            background-position: center;
+            color: white; /* Cambia el color del texto para mejor visibilidad */
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        #searchQuery {
+            width: 100%; /* Ancho completo */
+            height: 40px; /* Altura de la caja de texto */
+            padding: 10px; /* Espaciado interno */
+            border-radius: 5px; /* Esquinas redondeadas */
+            border: 1px solid #ccc; /* Borde gris claro */
+            font-size: 16px; /* Tamaño de la fuente */
+        }
+
+        #dynamicLink {
+            pointer-events: none; /* Desactiva el botón inicialmente */
+            opacity: 0.5; /* Hace que el botón aparezca deshabilitado */
+        }
+    </style>
+</head>
+<body>
+
 <h2>Encuentra tus productos en Shein</h2>
-<p>Escribe lo que desees buscar:</p>
+<p>Escribe lo que desees buscar (ropa, zapatos, accesorios, aparatos electronicos, etc.):</p>
 
 <!-- Input para la búsqueda -->
-<input id="searchQuery" required="" type="text" placeholder="Ejemplo: Lenceria sexy" />
+<input id="searchQuery" required type="text" placeholder="Ejemplo: Lenceria sexy" />
 
 <!-- Enlace para buscar en Shein -->
 <p>
@@ -22,9 +55,22 @@
         // Actualiza el href del enlace
         const dynamicLink = document.getElementById("dynamicLink");
         dynamicLink.href = sheinUrl;
-        dynamicLink.textContent = query ? `Buscar en Shein` : "Buscar en Shein";
+
+        // Habilita o deshabilita el enlace basado en la entrada
+        if (query) {
+            dynamicLink.textContent = `Buscar en Shein`;
+            dynamicLink.style.pointerEvents = 'auto'; // Habilita el botón
+            dynamicLink.style.opacity = '1'; // Cambia la opacidad a normal
+        } else {
+            dynamicLink.textContent = `Buscar en Shein`;
+            dynamicLink.style.pointerEvents = 'none'; // Desactiva el botón
+            dynamicLink.style.opacity = '0.5'; // Mantiene la apariencia deshabilitada
+        }
     }
 
     // Escucha el evento de entrada en el campo de texto
     document.getElementById("searchQuery").addEventListener('input', updateLink);
 </script>
+
+</body>
+</html>
