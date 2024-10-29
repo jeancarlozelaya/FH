@@ -1,8 +1,8 @@
 <h2>Encuentra tus productos en Shein</h2>
 <p>Escribe lo que desees buscar:</p>
 
-<!-- Input para la búsqueda -->
-<input id="searchQuery" required="" type="text" placeholder="Ejemplo: Lencería sexy" />
+<!-- Input para la bÃºsqueda -->
+<input id="searchQuery" required="" type="text" placeholder="Ejemplo: Lenceria sexy" />
 
 <!-- Enlace para buscar en Shein -->
 <p>
@@ -12,9 +12,9 @@
     </a>
 </p>
 
-<!-- Script JavaScript para manejar la búsqueda -->
+<!-- Script JavaScript para manejar la bÃºsqueda -->
 <script>
-    // Función para actualizar el enlace de Shein basado en el texto ingresado
+    // FunciÃ³n para actualizar el enlace de Shein basado en el texto ingresado
     function updateLink() {
         const query = document.getElementById("searchQuery").value.trim();
         const sheinUrl = `https://us.shein.com/pdsearch/${encodeURIComponent(query)}?ici=s1EditSearch${encodeURIComponent(query)}_fbd0PageHome&search_source=1&search_type=all&source=search&src_identifier=st%3D2%60sc%3D${encodeURIComponent(query)}%60sr%3D0%60ps%3D1&src_identifier_pre_search=&src_module=search&src_tab_page_id=page_home1730078017541`;
