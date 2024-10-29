@@ -35,26 +35,41 @@
             font-size: 16px; /* Tamaño de la fuente para los botones */
             pointer-events: none; /* Desactiva el botón inicialmente */
             opacity: 0.5; /* Hace que el botón aparezca deshabilitado */
-            margin-top: 10px; /* Espacio encima del botón */
+              border: none; /* Sin borde */
+            cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
         }
 
+        /* Estilo para el botón al que se hace clic */
+        button {
+            background: none; /* Sin fondo */
+            border: none; /* Sin borde */
+            padding: 0; /* Sin padding */
+            font-family: inherit; /* Hereda la fuente del contenedor */
+            font-size: inherit; /* Hereda el tamaño de fuente */
+            color: inherit; /* Hereda el color */
+            cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+        }
     </style>
 </head>
 <body>
 
 <!-- Input para la búsqueda -->
-<input id="searchQuery" required type="text" placeholder="Ejemplo: Lencería sexy" />
+<input id="searchQuery" required type="text" placeholder="Ejemplo: Lenceria sexy" />
 
-<!-- Enlace para buscar en Shein -->
-<p>
+<!-- Contenedor para los botones -->
+<div>
+    <!-- Enlace para buscar en Shein -->
     <a id="dynamicLink" 
        class="dynamic-button"
        href="https://us.shein.com/" target="_blank" rel="noopener noreferrer">
        Buscar en Shein
     </a>
-</p>
 
-<!-- Script JavaScript para manejar la búsqueda -->
+    <!-- Botón para limpiar el texto -->
+    <button id="clearButton" class="dynamic-button" onclick="clearInput()">Limpiar</button>
+</div>
+
+<!-- Script JavaScript para manejar la búsqueda y limpiar el texto -->
 <script>
     // Función para actualizar el enlace de Shein basado en el texto ingresado
     function updateLink() {
@@ -69,10 +84,20 @@
         if (query) {
             dynamicLink.style.pointerEvents = 'auto'; // Habilita el botón
             dynamicLink.style.opacity = '1'; // Cambia la opacidad a normal
+            document.getElementById("clearButton").style.pointerEvents = 'auto'; // Habilita el botón de limpiar
+            document.getElementById("clearButton").style.opacity = '1'; // Cambia la opacidad a normal
         } else {
             dynamicLink.style.pointerEvents = 'none'; // Desactiva el botón
             dynamicLink.style.opacity = '0.5'; // Mantiene la apariencia deshabilitada
+            document.getElementById("clearButton").style.pointerEvents = 'none'; // Desactiva el botón de limpiar
+            document.getElementById("clearButton").style.opacity = '0.5'; // Mantiene la apariencia deshabilitada
         }
+    }
+
+    // Función para limpiar el campo de texto
+    function clearInput() {
+        document.getElementById("searchQuery").value = ''; // Limpia el campo de texto
+        updateLink(); // Actualiza el estado de los botones
     }
 
     // Escucha el evento de entrada en el campo de texto
