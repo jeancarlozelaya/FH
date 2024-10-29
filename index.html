@@ -25,8 +25,14 @@
             margin-bottom: 20px;
         }
 
+        .button-container {
+            display: flex; /* Usar flexbox para los botones */
+            justify-content: center; /* Centra los botones horizontalmente */
+            gap: 10px; /* Espacio entre botones */
+            flex-wrap: wrap; /* Permite que los botones se ajusten en pantallas pequeñas */
+        }
+
         .dynamic-button {
-            display: inline-block;
             padding: 10px 20px;
             background-color: #972D54;
             color: white;
@@ -37,7 +43,6 @@
             opacity: 0.5;
             border: none;
             cursor: pointer;
-            margin: 0 10px; /* Añadido para espacio entre botones */
         }
 
         button {
@@ -55,7 +60,7 @@
 
 <input id="searchQuery" required type="text" placeholder="Ejemplo: Lenceria sexy" />
 
-<div>
+<div class="button-container">
     <a id="dynamicLink" 
        class="dynamic-button"
        href="https://us.shein.com/" target="_blank" rel="noopener noreferrer">
