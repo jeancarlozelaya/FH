@@ -46,6 +46,11 @@
             color: green; /* Color del mensaje */
             font-size: 16px; /* Tamaño del texto del mensaje */
         }
+
+        #tempInput {
+            position: absolute;
+            left: -9999px; /* Oculta el campo de texto */
+        }
     </style>
 </head>
 <body>
@@ -68,6 +73,9 @@
 
 <!-- Mensaje de confirmación -->
 <div id="message" style="display: none;"></div>
+
+<!-- Campo de texto oculto para copiar el enlace -->
+<input type="text" id="tempInput" />
 
 <!-- Script JavaScript para manejar la búsqueda y copiar el enlace -->
 <script>
@@ -98,14 +106,15 @@
     // Función para copiar el enlace al portapapeles
     function copyLink() {
         const dynamicLink = document.getElementById("dynamicLink").href;
-        navigator.clipboard.writeText(dynamicLink).then(() => {
-            // Muestra el mensaje de éxito
-            const message = document.getElementById("message");
-            message.textContent = "Enlace copiado al portapapeles!";
-            message.style.display = 'block'; // Muestra el mensaje
-        }).catch(err => {
-            console.error("Error al copiar el enlace: ", err);
-        });
+        const tempInput = document.getElementById("tempInput");
+        tempInput.value = dynamicLink; // Coloca el enlace en el campo oculto
+        tempInput.select(); // Selecciona el contenido
+        document.execCommand("copy"); // Copia al portapapeles
+
+        // Muestra el mensaje de éxito
+        const message = document.getElementById("message");
+        message.textContent = "Enlace copiado al portapapeles!";
+        message.style.display = 'block'; // Muestra el mensaje
     }
 
     // Escucha el evento de entrada en el campo de texto
