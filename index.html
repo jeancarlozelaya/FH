@@ -24,13 +24,19 @@
             margin-bottom: 20px; /* Espacio debajo de la caja de texto */
         }
 
-        #dynamicLink {
+        .button-container {
+            display: flex; /* Usar flexbox para alinear los botones */
+            gap: 10px; /* Espacio entre los botones */
+        }
+
+        .dynamic-button {
             display: inline-block; /* Asegura que se muestre como un bloque */
             padding: 10px 20px; /* Espaciado interno */
             background-color: #972D54; /* Color del botón */
             color: white; /* Color del texto del botón */
             text-decoration: none; /* Sin subrayado */
             border-radius: 5px; /* Esquinas redondeadas */
+            font-size: 16px; /* Tamaño de la fuente para los botones */
             pointer-events: none; /* Desactiva el botón inicialmente */
             opacity: 0.5; /* Hace que el botón aparezca deshabilitado */
         }
@@ -41,15 +47,20 @@
 <!-- Input para la búsqueda -->
 <input id="searchQuery" required type="text" placeholder="Ejemplo: Lenceria sexy" />
 
-<!-- Enlace para buscar en Shein -->
-<p>
+<!-- Contenedor para los botones -->
+<div class="button-container">
+    <!-- Enlace para buscar en Shein -->
     <a id="dynamicLink" 
+       class="dynamic-button"
        href="https://us.shein.com/" target="_blank" rel="noopener noreferrer">
        Buscar en Shein
     </a>
-</p>
+    
+    <!-- Botón para copiar el enlace -->
+    <button id="copyButton" class="dynamic-button" onclick="copyLink()">Copiar enlace</button>
+</div>
 
-<!-- Script JavaScript para manejar la búsqueda -->
+<!-- Script JavaScript para manejar la búsqueda y copiar el enlace -->
 <script>
     // Función para actualizar el enlace de Shein basado en el texto ingresado
     function updateLink() {
@@ -60,16 +71,28 @@
         const dynamicLink = document.getElementById("dynamicLink");
         dynamicLink.href = sheinUrl;
 
-        // Habilita o deshabilita el enlace basado en la entrada
+        // Habilita o deshabilita los enlaces basado en la entrada
         if (query) {
-            dynamicLink.textContent = `Buscar en Shein`;
-            dynamicLink.style.pointerEvents = 'auto'; // Habilita el botón
+            dynamicLink.style.pointerEvents = 'auto'; // Habilita el botón de buscar
             dynamicLink.style.opacity = '1'; // Cambia la opacidad a normal
+            document.getElementById("copyButton").style.pointerEvents = 'auto'; // Habilita el botón de copiar
+            document.getElementById("copyButton").style.opacity = '1'; // Cambia la opacidad a normal
         } else {
-            dynamicLink.textContent = `Buscar en Shein`;
-            dynamicLink.style.pointerEvents = 'none'; // Desactiva el botón
+            dynamicLink.style.pointerEvents = 'none'; // Desactiva el botón de buscar
             dynamicLink.style.opacity = '0.5'; // Mantiene la apariencia deshabilitada
+            document.getElementById("copyButton").style.pointerEvents = 'none'; // Desactiva el botón de copiar
+            document.getElementById("copyButton").style.opacity = '0.5'; // Mantiene la apariencia deshabilitada
         }
+    }
+
+    // Función para copiar el enlace al portapapeles
+    function copyLink() {
+        const dynamicLink = document.getElementById("dynamicLink").href;
+        navigator.clipboard.writeText(dynamicLink).then(() => {
+            alert("Enlace copiado al portapapeles!");
+        }).catch(err => {
+            console.error("Error al copiar el enlace: ", err);
+        });
     }
 
     // Escucha el evento de entrada en el campo de texto
