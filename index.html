@@ -40,6 +40,12 @@
             pointer-events: none; /* Desactiva el botón inicialmente */
             opacity: 0.5; /* Hace que el botón aparezca deshabilitado */
         }
+
+        #message {
+            margin-top: 20px; /* Espacio encima del mensaje */
+            color: green; /* Color del mensaje */
+            font-size: 16px; /* Tamaño del texto del mensaje */
+        }
     </style>
 </head>
 <body>
@@ -59,6 +65,9 @@
     <!-- Botón para copiar el enlace -->
     <button id="copyButton" class="dynamic-button" onclick="copyLink()">Copiar enlace</button>
 </div>
+
+<!-- Mensaje de confirmación -->
+<div id="message" style="display: none;"></div>
 
 <!-- Script JavaScript para manejar la búsqueda y copiar el enlace -->
 <script>
@@ -82,6 +91,7 @@
             dynamicLink.style.opacity = '0.5'; // Mantiene la apariencia deshabilitada
             document.getElementById("copyButton").style.pointerEvents = 'none'; // Desactiva el botón de copiar
             document.getElementById("copyButton").style.opacity = '0.5'; // Mantiene la apariencia deshabilitada
+            document.getElementById("message").style.display = 'none'; // Oculta el mensaje
         }
     }
 
@@ -89,7 +99,10 @@
     function copyLink() {
         const dynamicLink = document.getElementById("dynamicLink").href;
         navigator.clipboard.writeText(dynamicLink).then(() => {
-            alert("Enlace copiado al portapapeles!");
+            // Muestra el mensaje de éxito
+            const message = document.getElementById("message");
+            message.textContent = "Enlace copiado al portapapeles!";
+            message.style.display = 'block'; // Muestra el mensaje
         }).catch(err => {
             console.error("Error al copiar el enlace: ", err);
         });
