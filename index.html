@@ -46,12 +46,17 @@
             color: green; /* Color del mensaje */
             font-size: 16px; /* Tamaño del texto del mensaje */
         }
+
+        #tempInput {
+            position: absolute;
+            left: -9999px; /* Oculta el campo de texto */
+        }
     </style>
 </head>
 <body>
 
 <!-- Input para la búsqueda -->
-<input id="searchQuery" required type="text" placeholder="Ejemplo: Lenceria sexy" />
+<input id="searchQuery" required type="text" placeholder="Ejemplo: Lencería sexy" />
 
 <!-- Contenedor para los botones -->
 <div class="button-container">
@@ -62,14 +67,17 @@
        Buscar en Shein
     </a>
     
-    <!-- Botón para compartir el enlace -->
-    <button id="shareButton" class="dynamic-button" onclick="shareLink()">Compartir enlace</button>
+    <!-- Botón para copiar el enlace -->
+    <button id="copyButton" class="dynamic-button" onclick="copyLink()">Copiar enlace</button>
 </div>
 
 <!-- Mensaje de confirmación -->
 <div id="message" style="display: none;"></div>
 
-<!-- Script JavaScript para manejar la búsqueda y compartir el enlace -->
+<!-- Campo de texto oculto para copiar el enlace -->
+<input type="text" id="tempInput" />
+
+<!-- Script JavaScript para manejar la búsqueda y copiar el enlace -->
 <script>
     // Función para actualizar el enlace de Shein basado en el texto ingresado
     function updateLink() {
@@ -84,37 +92,29 @@
         if (query) {
             dynamicLink.style.pointerEvents = 'auto'; // Habilita el botón de buscar
             dynamicLink.style.opacity = '1'; // Cambia la opacidad a normal
-            document.getElementById("shareButton").style.pointerEvents = 'auto'; // Habilita el botón de compartir
-            document.getElementById("shareButton").style.opacity = '1'; // Cambia la opacidad a normal
+            document.getElementById("copyButton").style.pointerEvents = 'auto'; // Habilita el botón de copiar
+            document.getElementById("copyButton").style.opacity = '1'; // Cambia la opacidad a normal
         } else {
             dynamicLink.style.pointerEvents = 'none'; // Desactiva el botón de buscar
             dynamicLink.style.opacity = '0.5'; // Mantiene la apariencia deshabilitada
-            document.getElementById("shareButton").style.pointerEvents = 'none'; // Desactiva el botón de compartir
-            document.getElementById("shareButton").style.opacity = '0.5'; // Mantiene la apariencia deshabilitada
+            document.getElementById("copyButton").style.pointerEvents = 'none'; // Desactiva el botón de copiar
+            document.getElementById("copyButton").style.opacity = '0.5'; // Mantiene la apariencia deshabilitada
             document.getElementById("message").style.display = 'none'; // Oculta el mensaje
         }
     }
 
-    // Función para compartir el enlace
-    function shareLink() {
+    // Función para copiar el enlace al portapapeles
+    function copyLink() {
         const dynamicLink = document.getElementById("dynamicLink").href;
-        
-        if (navigator.share) {
-            navigator.share({
-                title: 'Compartir enlace de Shein',
-                url: dynamicLink,
-            })
-            .then(() => {
-                const message = document.getElementById("message");
-                message.textContent = "Enlace compartido!";
-                message.style.display = 'block'; // Muestra el mensaje
-            })
-            .catch(err => {
-                console.error("Error al compartir: ", err);
-            });
-        } else {
-            alert("Lo siento, la función de compartir no está disponible en tu dispositivo.");
-        }
+        const tempInput = document.getElementById("tempInput");
+        tempInput.value = dynamicLink; // Coloca el enlace en el campo oculto
+        tempInput.select(); // Selecciona el contenido
+        document.execCommand("copy"); // Copia al portapapeles
+
+        // Muestra el mensaje de éxito
+        const message = document.getElementById("message");
+        message.textContent = "Enlace copiado al portapapeles!";
+        message.style.display = 'block'; // Muestra el mensaje
     }
 
     // Escucha el evento de entrada en el campo de texto
