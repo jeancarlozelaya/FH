@@ -9,98 +9,88 @@
             background-image: url('https://files.jotform.com/jufs/jeancarlozelaya/form_files/Copia%20de%20V%C3%ADdeo%20Publicitario%20(Fashion%20House%20Hn).671edbeee7b906.99369493.png?md5=EZ8w-MRdDOu7IMtTmU2wDA&expires=1730219662');
             background-size: cover;
             background-position: center;
-            color: black; /* Color del texto */
+            color: black;
             font-family: Arial, sans-serif;
             padding: 20px;
-            text-align: center; /* Centra el contenido */
+            text-align: center;
         }
 
         #searchQuery {
-            width: 100%; /* Ancho completo */
-            height: 40px; /* Altura de la caja de texto */
-            padding: 10px; /* Espaciado interno */
-            border-radius: 5px; /* Esquinas redondeadas */
-            border: 1px solid #ccc; /* Borde gris claro */
-            font-size: 16px; /* Tamaño de la fuente */
-            margin-bottom: 20px; /* Espacio debajo de la caja de texto */
+            width: 100%;
+            height: 40px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            margin-bottom: 20px;
         }
 
         .dynamic-button {
-            display: inline-block; /* Asegura que se muestre como un bloque */
-            padding: 10px 20px; /* Espaciado interno */
-            background-color: #972D54; /* Color del botón */
-            color: white; /* Color del texto del botón */
-            text-decoration: none; /* Sin subrayado */
-            border-radius: 5px; /* Esquinas redondeadas */
-            font-size: 16px; /* Tamaño de la fuente para los botones */
-            pointer-events: none; /* Desactiva el botón inicialmente */
-            opacity: 0.5; /* Hace que el botón aparezca deshabilitado */
-              border: none; /* Sin borde */
-            cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #972D54;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            pointer-events: none;
+            opacity: 0.5;
+            border: none;
+            cursor: pointer;
+            margin: 0 10px; /* Añadido para espacio entre botones */
         }
 
-        /* Estilo para el botón al que se hace clic */
         button {
-            background: none; /* Sin fondo */
-            border: none; /* Sin borde */
-            padding: 0; /* Sin padding */
-            font-family: inherit; /* Hereda la fuente del contenedor */
-            font-size: inherit; /* Hereda el tamaño de fuente */
-            color: inherit; /* Hereda el color */
-            cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+            background: none;
+            border: none;
+            padding: 0;
+            font-family: inherit;
+            font-size: inherit;
+            color: inherit;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-<!-- Input para la búsqueda -->
 <input id="searchQuery" required type="text" placeholder="Ejemplo: Lenceria sexy" />
 
-<!-- Contenedor para los botones -->
 <div>
-    <!-- Enlace para buscar en Shein -->
     <a id="dynamicLink" 
        class="dynamic-button"
        href="https://us.shein.com/" target="_blank" rel="noopener noreferrer">
        Buscar en Shein
     </a>
 
-    <!-- Botón para limpiar el texto -->
     <button id="clearButton" class="dynamic-button" onclick="clearInput()">Limpiar</button>
 </div>
 
-<!-- Script JavaScript para manejar la búsqueda y limpiar el texto -->
 <script>
-    // Función para actualizar el enlace de Shein basado en el texto ingresado
     function updateLink() {
         const query = document.getElementById("searchQuery").value.trim();
         const sheinUrl = `https://us.shein.com/pdsearch/${encodeURIComponent(query)}?ici=s1EditSearch${encodeURIComponent(query)}_fbd0PageHome&search_source=1&search_type=all&source=search&src_identifier=st%3D2%60sc%3D${encodeURIComponent(query)}%60sr%3D0%60ps%3D1&src_identifier_pre_search=&src_module=search&src_tab_page_id=page_home1730078017541`;
         
-        // Actualiza el href del enlace
         const dynamicLink = document.getElementById("dynamicLink");
         dynamicLink.href = sheinUrl;
 
-        // Habilita o deshabilita el enlace basado en la entrada
         if (query) {
-            dynamicLink.style.pointerEvents = 'auto'; // Habilita el botón
-            dynamicLink.style.opacity = '1'; // Cambia la opacidad a normal
-            document.getElementById("clearButton").style.pointerEvents = 'auto'; // Habilita el botón de limpiar
-            document.getElementById("clearButton").style.opacity = '1'; // Cambia la opacidad a normal
+            dynamicLink.style.pointerEvents = 'auto';
+            dynamicLink.style.opacity = '1';
+            document.getElementById("clearButton").style.pointerEvents = 'auto';
+            document.getElementById("clearButton").style.opacity = '1';
         } else {
-            dynamicLink.style.pointerEvents = 'none'; // Desactiva el botón
-            dynamicLink.style.opacity = '0.5'; // Mantiene la apariencia deshabilitada
-            document.getElementById("clearButton").style.pointerEvents = 'none'; // Desactiva el botón de limpiar
-            document.getElementById("clearButton").style.opacity = '0.5'; // Mantiene la apariencia deshabilitada
+            dynamicLink.style.pointerEvents = 'none';
+            dynamicLink.style.opacity = '0.5';
+            document.getElementById("clearButton").style.pointerEvents = 'none';
+            document.getElementById("clearButton").style.opacity = '0.5';
         }
     }
 
-    // Función para limpiar el campo de texto
     function clearInput() {
-        document.getElementById("searchQuery").value = ''; // Limpia el campo de texto
-        updateLink(); // Actualiza el estado de los botones
+        document.getElementById("searchQuery").value = '';
+        updateLink();
     }
 
-    // Escucha el evento de entrada en el campo de texto
     document.getElementById("searchQuery").addEventListener('input', updateLink);
 </script>
 
