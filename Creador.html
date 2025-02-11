@@ -1,95 +1,84 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta charset="UTF-8">
-    <title>Creador v4.0</title>
-
-
-    <!-- Incluye FontAwesome para los iconos -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<meta charset="UTF-8">
+<title>Creador v4.0</title>
+<!-- Incluye FontAwesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 
-    
 <style>
 
-/* Ocultar botones deshabilitados en el menú flotante */
-.floating-menu button.with-icon:disabled {
-    display: none;
-}
+    /* Ocultar botones deshabilitados en el menú flotante */
+    .floating-menu button.with-icon:disabled {
+        display: none;
+    }
 
+    /* Contenedor del botón flotante y el menú */
+    .floating-dropdown {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 1000;
+    }
 
-/* Contenedor del botón flotante y el menú */
-.floating-dropdown {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 1000;
-}
+    /* Botón que abre el menú */
+    .dropdown-toggle.with-icon {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 12px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 50%;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s ease;
+    }
 
-/* Botón que abre el menú */
-.dropdown-toggle.with-icon {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 12px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 50%;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease;
-}
+    .dropdown-toggle.with-icon:hover {
+        background-color: #0056b3;
+    }
 
-.dropdown-toggle.with-icon:hover {
-    background-color: #0056b3;
-}
+    /* Menú de íconos flotantes */
+    .floating-menu {
+        display: none; /* Oculto por defecto */
+        position: absolute;
+        bottom: 60px; /* Posición encima del botón */
+        left: 0;
+        flex-direction: column; /* Íconos en columna */
+        gap: 10px; /* Espacio entre íconos */
+        background-color: rgba(255, 255, 255, 0.9); /* Fondo semi-transparente */
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
 
-/* Menú de íconos flotantes */
-.floating-menu {
-    display: none; /* Oculto por defecto */
-    position: absolute;
-    bottom: 60px; /* Posición encima del botón */
-    left: 0;
-    flex-direction: column; /* Íconos en columna */
-    gap: 10px; /* Espacio entre íconos */
-    background-color: rgba(255, 255, 255, 0.9); /* Fondo semi-transparente */
-    border-radius: 10px;
-    padding: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+    /* Mostrar el menú cuando está activo */
+    .floating-menu.show {
+        display: flex;
+    }
 
-/* Mostrar el menú cuando está activo */
-.floating-menu.show {
-    display: flex;
-}
+    /* Estilo para los botones del menú flotante */
+    .floating-menu button.with-icon {
+        background-color: #007bff;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-/* Estilo para los botones del menú flotante */
-.floating-menu button.with-icon {
-    background-color: #007bff;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+    .floating-menu button.with-icon:hover {
+        background-color: #0056b3;
+    }
 
-.floating-menu button.with-icon:hover {
-    background-color: #0056b3;
-}
-
-/* Estilo para los íconos dentro del menú flotante */
-.floating-menu button.with-icon i {
-    font-size: 16px;
-}
-
-
-
-
-
-
+    /* Estilo para los íconos dentro del menú flotante */
+    .floating-menu button.with-icon i {
+        font-size: 16px;
+    }
 
     /* Estilos base */
     body {
@@ -170,13 +159,6 @@
     }
 
     /* Estilos del botón flotante */
-    .floating-dropdown {
-        position: fixed;
-        bottom: 10px;
-        left: 10px;
-        z-index: 1000;
-    }
-
     .dropdown-toggle {
         background-color: #007bff;
         color: white;
@@ -345,100 +327,92 @@
         }
     }
 
+    .preview-hidden {
+        display: table-cell;
+    }
 
+    .col-hidden {
+        display: none !important;
+    }
 
-.preview-hidden {
-    display: table-cell;
-}
+    .header-hidden {
+        display: none !important;
+    }
 
-.col-hidden {
-    display: none !important;
-}
+    /* Estilo base para los botones con íconos */
+    button {
+        background-color: #007bff; /* Color de fondo azul */
+        color: white; /* Texto blanco */
+        border: none; /* Sin borde */
+        padding: 5px 10px; /* Espaciado interno */
+        font-size: 14px; /* Tamaño de fuente */
+        cursor: pointer; /* Cursor de tipo puntero */
+        border-radius: 5px; /* Bordes redondeados */
+        display: inline-flex; /* Usar Flexbox para alinear íconos y texto */
+        align-items: center; /* Centrar verticalmente */
+        justify-content: center; /* Centrar horizontalmente */
+        gap: 8px; /* Espacio entre ícono y texto */
+        transition: background-color 0.3s ease, transform 0.2s ease; /* Transiciones suaves */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    }
 
-.col-hidden {
-    display: none !important;
-}
+    /* Efecto hover para los botones */
+    button:hover {
+        background-color: #0056b3; /* Color de fondo más oscuro al pasar el mouse */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+    }
 
-.header-hidden {
-    display: none !important;
-}
+    /* Efecto active (cuando se hace clic) */
+    button:active {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    }
 
+    /* Estilo para los íconos dentro de los botones */
+    button i {
+        font-size: 16px; /* Tamaño del ícono */
+    }
 
+    /* Estilo específico para el botón de editar */
+    button .fa-pencil-alt {
+        color: #ffffff; /* Color del ícono de editar */
+    }
 
-
-/* Estilo base para los botones con íconos */
-button {
-    background-color: #007bff; /* Color de fondo azul */
-    color: white; /* Texto blanco */
-    border: none; /* Sin borde */
-    padding: 5px 10px; /* Espaciado interno */
-    font-size: 14px; /* Tamaño de fuente */
-    cursor: pointer; /* Cursor de tipo puntero */
-    border-radius: 5px; /* Bordes redondeados */
-    display: inline-flex; /* Usar Flexbox para alinear íconos y texto */
-    align-items: center; /* Centrar verticalmente */
-    justify-content: center; /* Centrar horizontalmente */
-    gap: 8px; /* Espacio entre ícono y texto */
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Transiciones suaves */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
-}
-
-/* Efecto hover para los botones */
-button:hover {
-    background-color: #0056b3; /* Color de fondo más oscuro al pasar el mouse */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
-}
-
-/* Efecto active (cuando se hace clic) */
-button:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
-}
-
-/* Estilo para los íconos dentro de los botones */
-button i {
-    font-size: 16px; /* Tamaño del ícono */
-}
-
-/* Estilo específico para el botón de editar */
-button .fa-pencil-alt {
-    color: #ffffff; /* Color del ícono de editar */
-}
-
-/* Estilo específico para el botón de guardar */
-button .fa-save {
-    color: #ffffff; /* Color del ícono de guardar */
-}
-
-
-
-
-
-
-
-
+    /* Estilo específico para el botón de guardar */
+    button .fa-save {
+        color: #ffffff; /* Color del ícono de guardar */
+    }
 
 </style>
 
+<script>
 
 
+let items = [];
+let lastDeletedItem = null;
+let messageTimeout;  // Variable global para almacenar el timeout
+let allChecked = false;
+let lastDeletedItems = [];
+let previewMode = false;
 
-    <script>
-        let items = [];
-        let lastDeletedItem = null;
 
-        window.onload = function() {
-            const savedItems = localStorage.getItem("items");
-            if (savedItems) {
-                items = JSON.parse(savedItems);
-                updateTable();
-            }
-            updateButtonStates();
-        };
+// Inicialización al cargar la página
+window.onload = function () {
+    const savedItems = localStorage.getItem("items");
+    if (savedItems) {
+        items = JSON.parse(savedItems);
+        updateTable();
+    }
+    updateButtonStates();
+};
 
-        function saveToLocalStorage() {
-            localStorage.setItem("items", JSON.stringify(items));
-        }
 
+// Guardar en localStorage
+function saveToLocalStorage() {
+    localStorage.setItem("items", JSON.stringify(items));
+}
+
+
+// Obtener datos del enlace
 function obtenerFuente() {
     let enlace = document.getElementById("enlace").value.trim();
     const porcentajeSeleccionado = parseFloat(document.getElementById("percentageSelect").value) / 100;
@@ -464,7 +438,7 @@ function obtenerFuente() {
 }
 
 
-       
+// Extraer datos del HTML    
 function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
     const imageMatch = data.match(/<div class="crop-image-container" data-before-crop-src="(.*?)"/i);
     const skuMatch = data.match(/<span class="product-intro__head-sku-text">\s*SKU:\s*(.*?)<\/span>/i);
@@ -517,116 +491,113 @@ function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
 }
 
 
+// Calcular precio en lempiras
+function calculatePriceInLempiras(priceApp, percentage) {
+	const basePrice = priceApp * 26 + 50;
+	return (basePrice + (basePrice * percentage)).toFixed(2);
+}
 
 
-
-
-
-        function calculatePriceInLempiras(priceApp, percentage) {
-            const basePrice = priceApp * 26 + 50;
-            return (basePrice + (basePrice * percentage)).toFixed(2);
-        }
-
+// Generar Tallas
 function generateSizeSelect(index, item) {
-    const sizeOptions = item.sizes.map(size => 
-        `<option value="${size}" ${size === item.selectedSize ? 'selected' : ''}>${size}</option>`
-    ).join("");
-    return `<select id="sizeSelect${index}" class="small-select" onchange="updateSelectedSize(${index})">
-                <option value="">Seleccionar Talla</option>
-                ${sizeOptions}
-            </select>`;
+	const sizeOptions = item.sizes.map(size => 
+		`<option value="${size}" ${size === item.selectedSize ? 'selected' : ''}>${size}</option>`
+	).join("");
+	return `<select id="sizeSelect${index}" class="small-select" onchange="updateSelectedSize(${index})">
+		<option value="">Seleccionar Talla</option>
+		${sizeOptions}
+	</select>`;
 }
 
+
+// Actualizar la tabla
 function updateTable() {
-    const tableBody = document.getElementById("itemTableBody");
-    tableBody.innerHTML = "";
-    items.forEach((item, index) => {
-        const row = document.createElement("tr");
+	const tableBody = document.getElementById("itemTableBody");
+	tableBody.innerHTML = "";
+	items.forEach((item, index) => {
+	const row = document.createElement("tr");
         
-        row.innerHTML = 
-            `<td><input type="checkbox" class="itemCheckbox" data-index="${index}" onchange="updateButtonStates()"></td>
-            <td><img src="${item.image}" alt="${item.title}" style="width:50px;"></td>
-            <td class="hidden-column">${item.title}</td>
-            <td>${generateSizeSelect(index, item)}</td>
-            <td class="hidden-column">${item.sku}</td>
-            <td>${item.editingPrice ? `<input type="number" id="priceAppInput${index}" value="${item.priceApp.toFixed(2)}" class="small-input editable">` : item.priceApp.toFixed(2)}</td>
-            <td>${item.priceLempiras}</td>
-            <td><input type="number" id="customPriceInput${index}" class="small-input" value="${item.precioPersonalizado}" placeholder="Precio" oninput="updateCustomPrice(${index})"></td>
-            <td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>
+	row.innerHTML = 
+		`<td><input type="checkbox" class="itemCheckbox" data-index="${index}" onchange="updateButtonStates()"></td>
+		<td><img src="${item.image}" alt="${item.title}" style="width:50px;"></td>
+		<td class="hidden-column">${item.title}</td>
+		<td>${generateSizeSelect(index, item)}</td>
+		<td class="hidden-column">${item.sku}</td>
+		<td>${item.editingPrice ? `<input type="number" id="priceAppInput${index}" value="${item.priceApp.toFixed(2)}" class="small-input editable">` : item.priceApp.toFixed(2)}</td>
+		<td>${item.priceLempiras}</td>
+		<td><input type="number" id="customPriceInput${index}" class="small-input" value="${item.precioPersonalizado}" placeholder="Precio" oninput="updateCustomPrice(${index})"></td>
+		<td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>
 
-<td>  
-    <button onclick="toggleEditPrice(${index})">
-        ${item.editingPrice ? '<i class="fas fa-save"></i>' : '<i class="fas fa-pencil-alt"></i>'}
-    </button>
-</td>`;
+		<td>  
+    			<button onclick="toggleEditPrice(${index})">
+        			${item.editingPrice ? '<i class="fas fa-save"></i>' : '<i class="fas fa-pencil-alt"></i>'}
+    			</button>
+		</td>`;
 
 
-        tableBody.appendChild(row);
-    });
-    updateButtonStates();
+		tableBody.appendChild(row);
+	});
+	updateButtonStates();
 }
+
 
 // Ocultar columnas y encabezados
 const style = document.createElement('style');
 style.innerHTML = `
-    .hidden-column { display: none; }
-    th:nth-child(3), th:nth-child(5), th:nth-child(9) { display: none; }
+	.hidden-column { display: none; }
+	th:nth-child(3), th:nth-child(5), th:nth-child(9) { display: none; }
 `;
 document.head.appendChild(style);
 
 
 
-
-        function updateSelectedSize(index) {
-            const selectedSize = document.getElementById(`sizeSelect${index}`).value;
-            items[index].selectedSize = selectedSize;
-            saveToLocalStorage();
-        }
-
-        function deleteItem(index) {
-
-document.getElementById("dropdownMenu").classList.remove("show");
+// Actualizar talla seleccionada
+function updateSelectedSize(index) {
+	const selectedSize = document.getElementById(`sizeSelect${index}`).value;
+	items[index].selectedSize = selectedSize;
+	saveToLocalStorage();
+}
 
 
-            lastDeletedItem = items[index];
-            items.splice(index, 1);
-            saveToLocalStorage();
-            updateTable();
-        }
 
-        function undoDelete() {
+function deleteItem(index) {
+	document.getElementById("dropdownMenu").classList.remove("show");
+	lastDeletedItem = items[index];
+	items.splice(index, 1);
+	saveToLocalStorage();
+	updateTable();
+}
 
-document.getElementById("dropdownMenu").classList.remove("show");
 
-
-            if (lastDeletedItems.length > 0) {
-                items = items.concat(lastDeletedItems);
+// Deshacer eliminación
+function undoDelete() {
+	document.getElementById("dropdownMenu").classList.remove("show");
+	if (lastDeletedItems.length > 0) {
+		items = items.concat(lastDeletedItems);
                 lastDeletedItems = [];
                 saveToLocalStorage();
                 updateTable();
-showMessage("Se recuperó la última eliminación con éxito.", 'processing');
-            }
-        }
-
-        function clearInput() {
-            document.getElementById("enlace").value = "";
-            document.getElementById("resultado").innerText = "";
-        }
+		showMessage("Se recuperó la última eliminación con éxito.", 'processing');
+	}
+}
 
 
+// Borrar Texto de Enlace
+function clearInput() {
+	document.getElementById("enlace").value = "";
+	document.getElementById("resultado").innerText = "";
+}
 
+
+// Copiar Filas Seleccionadas Para Exportar
 function copySelectedRows() {
-
-document.getElementById("dropdownMenu").classList.remove("show");
-
-
+    document.getElementById("dropdownMenu").classList.remove("show");
     const selectedItems = Array.from(document.querySelectorAll('.itemCheckbox:checked')).map(checkbox => {
         const index = checkbox.getAttribute('data-index');
         const item = items[index];
         const imageFormula = `=IMAGE("${item.image}")`;
         const detailFormula = `=HYPERLINK("${item.enlace}", "Ver detalle")`;
         const selectedSize = item.selectedSize || '""';
-
         const customPriceInput = document.getElementById(`customPriceInput${index}`);
         const customPrice = customPriceInput ? customPriceInput.value.trim() : '';
         const priceToCopy = customPrice !== '' ? customPrice : item.priceApp.toFixed(2);
@@ -687,6 +658,7 @@ document.getElementById("dropdownMenu").classList.remove("show");
             alert("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.");
             showManualCopyModal(textToCopy);
         }
+
         document.body.removeChild(textArea);
     }
 }
@@ -700,6 +672,7 @@ function showManualCopyModal(text) {
     modal.style.display = 'block';
 }
 
+
 // Función para copiar manualmente desde el área de texto del modal
 function copyTextAreaContent() {
     const textArea = document.getElementById('manualCopyTextArea');
@@ -708,13 +681,12 @@ function copyTextAreaContent() {
     alert("Texto copiado al portapapeles.");
 }
 
+
 // Función para cerrar el modal
 function closeManualCopyModal() {
     const modal = document.getElementById('manualCopyModal');
     modal.style.display = 'none';
 }
-
-
 
 
 // Función para decodificar entidades HTML
@@ -725,28 +697,18 @@ function decodeHtmlEntities(str) {
 }
 
 
+// Función para Actualizar el Estado de los Botones
+function updateButtonStates() {
+    const selectedItemsCount = document.querySelectorAll('.itemCheckbox:checked').length;
+    document.querySelector('button[onclick="copySelectedRows()"]').disabled = selectedItemsCount === 0;
+    document.querySelector('button[onclick="duplicateSelectedRow()"]').disabled = selectedItemsCount === 0;
+    document.querySelector('button[onclick="undoDelete()"]').disabled = lastDeletedItems.length === 0;
+    document.querySelector('button[onclick="groupSelectedRows()"]').disabled = selectedItemsCount === 0;
+    document.querySelector('button[onclick="deleteSelectedItems()"]').disabled = selectedItemsCount === 0;
+}
 
-
-
-
-
-
-        function updateButtonStates() {
-            const selectedItemsCount = document.querySelectorAll('.itemCheckbox:checked').length;
-            document.querySelector('button[onclick="copySelectedRows()"]').disabled = selectedItemsCount === 0;
-
-
-            document.querySelector('button[onclick="duplicateSelectedRow()"]').disabled = selectedItemsCount === 0;
-
-
-
-            document.querySelector('button[onclick="undoDelete()"]').disabled = lastDeletedItems.length === 0;
-            document.querySelector('button[onclick="groupSelectedRows()"]').disabled = selectedItemsCount === 0;
-            document.querySelector('button[onclick="deleteSelectedItems()"]').disabled = selectedItemsCount === 0;
-        }
-
-let messageTimeout;  // Variable global para almacenar el timeout
-
+     
+// Función para mostrar los Mensajes de Estado
 function showMessage(message, type) {
     const resultDiv = document.getElementById("resultado");
 
@@ -762,40 +724,37 @@ function showMessage(message, type) {
         }
 
         // Ocultar el mensaje después de 5 segundos
-        messageTimeout = setTimeout(function() {
+        messageTimeout = setTimeout(function () {
             resultDiv.style.display = 'none'; // Ocultar el div
         }, 3000);
     }
 }
 
 
+// Botón de Check de Encabezado para marcar y desmarcar todas las filas
+function toggleSelectAll() {
+    document.getElementById("dropdownMenu").classList.remove("show");
+
+    allChecked = !allChecked;
+    document.querySelectorAll('.itemCheckbox').forEach(checkbox => {
+        checkbox.checked = allChecked;
+    });
+
+    updateButtonStates();
+
+    const selectAllButton = document.getElementById("selectAllButton");
+    selectAllButton.innerText = allChecked ? "☐" : "☑";
+}
 
 
-
-
-
-        let allChecked = false;
-
-        function toggleSelectAll() {
-
-document.getElementById("dropdownMenu").classList.remove("show");
-
-
-            allChecked = !allChecked;
-            document.querySelectorAll('.itemCheckbox').forEach(checkbox => {
-                checkbox.checked = allChecked;
-            });
-            updateButtonStates();
-            const selectAllButton = document.getElementById("selectAllButton");
-            selectAllButton.innerText = allChecked ? "☐" : "☑";
-        }
-
+// Función para agrupar filas seleccionadas
 function groupSelectedRows() {
-
-document.getElementById("dropdownMenu").classList.remove("show");
+    document.getElementById("dropdownMenu").classList.remove("show");
 
     const selectedCheckboxes = document.querySelectorAll('.itemCheckbox:checked');
-    const selectedIndexes = Array.from(selectedCheckboxes).map(checkbox => checkbox.getAttribute('data-index')).map(Number);
+    const selectedIndexes = Array.from(selectedCheckboxes)
+        .map(checkbox => checkbox.getAttribute('data-index'))
+        .map(Number);
 
     if (selectedIndexes.length === 0) {
         showMessage("No hay filas seleccionadas para agrupar.", 'error');
@@ -817,8 +776,7 @@ document.getElementById("dropdownMenu").classList.remove("show");
 }
 
 
-
-
+// Función para editar precios de App
 function toggleEditPrice(index) {
     document.getElementById("dropdownMenu").classList.remove("show");
 
@@ -843,32 +801,29 @@ function toggleEditPrice(index) {
 }
 
 
-
-let lastDeletedItems = [];
-
-
+// Función para eliminar filas seleccionadas
 function deleteSelectedItems() {
-
-document.getElementById("dropdownMenu").classList.remove("show");
-
+    document.getElementById("dropdownMenu").classList.remove("show");
 
     lastDeletedItems = items.filter((_, index) => document.querySelector(`.itemCheckbox[data-index="${index}"]`).checked);
     items = items.filter((_, index) => !document.querySelector(`.itemCheckbox[data-index="${index}"]`).checked);
+
     saveToLocalStorage();
     updateTable();
     updateButtonStates(); // Asegúrate de agregar esto
-showMessage("Filas eliminadas con éxito.", 'processing');
+    showMessage("Filas eliminadas con éxito.", 'processing');
 }
 
-        function updateCustomPrice(index) {
-            const customPrice = document.getElementById(`customPriceInput${index}`).value;
-            items[index].precioPersonalizado = customPrice;  // Guardar el precio personalizado en el item
-            saveToLocalStorage();
-        }
+
+// Función para Guardar el precio editado
+function updateCustomPrice(index) {
+    const customPrice = document.getElementById(`customPriceInput${index}`).value;
+    items[index].precioPersonalizado = customPrice;  // Guardar el precio personalizado en el item
+    saveToLocalStorage();
+}
 
 
-let previewMode = false;
-
+// Función para la vista previa
 function togglePreview() {
     document.getElementById("dropdownMenu").classList.remove("show");
 
@@ -953,12 +908,9 @@ function togglePreview() {
 }
 
 
-
-
+// Función para exportar todas la filas a un archivo de excel
 function exportToExcel() {
-
-document.getElementById("dropdownMenu").classList.remove("show");
-
+    document.getElementById("dropdownMenu").classList.remove("show");
 
     const ws = XLSX.utils.aoa_to_sheet([]);
     const data = [];
@@ -996,8 +948,9 @@ document.getElementById("dropdownMenu").classList.remove("show");
 
     // Generar el archivo
     XLSX.writeFile(wb, 'articulos.xlsx');
-showMessage("Datos exportados con éxito.", 'processing');
+    showMessage("Datos exportados con éxito.", 'processing');
 }
+
 
 // Función para descodificar caracteres HTML
 function decodeHTML(html) {
@@ -1007,12 +960,9 @@ function decodeHTML(html) {
 }
 
 
-
-
-
+// Función para duplicar filas seleccionadas
 function duplicateSelectedRow() {
-
-document.getElementById("dropdownMenu").classList.remove("show");
+    document.getElementById("dropdownMenu").classList.remove("show");
 
     const selectedCheckbox = document.querySelector('.itemCheckbox:checked');
     if (!selectedCheckbox) {
@@ -1031,141 +981,118 @@ document.getElementById("dropdownMenu").classList.remove("show");
 
     saveToLocalStorage();
     updateTable();
-showMessage("Fila duplicada con éxito.", 'processing');
+    showMessage("Fila duplicada con éxito.", 'processing');
 }
 
 
-
-
-
+// Función del menú desplegable 
 function toggleDropdown() {
     const dropdownMenu = document.getElementById("dropdownMenu");
     dropdownMenu.classList.toggle("show");
 }
 
-        document.addEventListener("click", function (event) {
-            var dropdown = document.querySelector(".floating-dropdown");
-            var menu = document.getElementById("dropdownMenu");
-            
-            if (!dropdown.contains(event.target)) {
-                menu.classList.remove("show");
-            }
-        });
+document.addEventListener("click", function (event) {
+    var dropdown = document.querySelector(".floating-dropdown");
+    var menu = document.getElementById("dropdownMenu");
 
-        function handleMenuClick(action) {
-            action();
-            document.getElementById("dropdownMenu").classList.remove("show");
-        }
+    if (!dropdown.contains(event.target)) {
+        menu.classList.remove("show");
+    }
+});
 
 
+function handleMenuClick(action) {
+    action();
+    document.getElementById("dropdownMenu").classList.remove("show");
+}
+// Función del menú desplegable 
 
 
-    </script>
-
-
-
-
-
-
-
+</script>
 
 </head>
+
 <body>
 
-<div class="fixed-header">
-    <h2>Fashion House HN</h2>
+    <div class="fixed-header">
+        <h2>Fashion House HN</h2>
 
-    <div class="controls">
-        <!-- Casilla de texto más alta y menos ancha -->
+        <div class="controls">
+            <!-- Casilla de texto más alta y menos ancha -->
+            <input type="text" id="enlace" placeholder="Enlace del artículo" style="height: 40px; width: 200px; padding: 5px;">
 
-<input type="text" id="enlace" placeholder="Enlace del artículo" style="height: 40px; width: 200px; padding: 5px;">
+            <select id="percentageSelect">
+                <option value="20">20%</option>
+                <option value="25">25%</option>
+                <option value="35">35%</option>
+            </select>
+            <!-- Botones con iconos -->
+            <button onclick="obtenerFuente()"><i class="fas fa-plus"></i></button>
+            <button onclick="clearInput()"><i class="fas fa-eraser"></i></button>
+        </div>
 
-        <select id="percentageSelect">
-            <option value="20">20%</option>
-            <option value="25">25%</option>
-            <option value="35">35%</option>
-        </select>
-        <!-- Botones con iconos -->
-<button onclick="obtenerFuente()"><i class="fas fa-plus"></i></button>
-<button onclick="clearInput()"><i class="fas fa-eraser"></i></button>
+        <!-- Botón flotante que abre el menú -->
+        <div class="floating-dropdown">
+            <button class="dropdown-toggle with-icon" onclick="toggleDropdown()">
+                <i class="fas fa-bars"></i> <!-- Ícono de menú -->
+            </button>
 
-</div>
+            <!-- Menú de íconos flotantes -->
+            <div class="floating-menu" id="dropdownMenu">
+                <button id="duplicateButton" class="with-icon" onclick="duplicateSelectedRow()" disabled>
+                    <i class="fas fa-layer-group fa-lg"></i> <!-- Ícono grande -->
+                </button>
+                <button id="copyButton" class="with-icon" onclick="copySelectedRows()" disabled>
+                    <i class="fas fa-copy"></i> <!-- Copiar Seleccionados -->
+                </button>
+                <button id="groupButton" class="with-icon" onclick="groupSelectedRows()" disabled>
+                    <i class="fas fa-object-group"></i> <!-- Agrupar Seleccionados -->
+                </button>
+                <button id="deleteButton" class="with-icon" onclick="deleteSelectedItems()" disabled>
+                    <i class="fas fa-trash-alt"></i> <!-- Eliminar filas marcadas -->
+                </button>
+                <button id="undoButton" class="with-icon" onclick="undoDelete()" disabled>
+                    <i class="fas fa-undo"></i> <!-- Deshacer Última Eliminación -->
+                </button>
+                <button id="previewButton" class="with-icon" onclick="togglePreview()">
+                    <i class="fas fa-eye"></i> <!-- Vista Previa -->
+                </button>
+                <button class="with-icon" onclick="exportToExcel()" disabled>
+                    <i class="fas fa-file-export"></i> <!-- Exportar a Excel -->
+                </button>
+            </div>
+        </div>
 
+        <div id="resultado"></div>
 
- <!-- Botón flotante que abre el menú -->
-<div class="floating-dropdown">
-    <button class="dropdown-toggle with-icon" onclick="toggleDropdown()">
-        <i class="fas fa-bars"></i> <!-- Ícono de menú -->
-    </button>
+        <table id="itemTable">
+            <thead>
+                <tr>
+                    <th class="preview-hidden"><button onclick="toggleSelectAll()" id="selectAllButton">☑</button></th>
+                    <th>Imagen</th>
+                    <th>Título</th>
+                    <th>Talla</th>
+                    <th>SKU</th>
+                    <th class="preview-hidden">Precio App</th>
+                    <th class="preview-hidden">Precio Lempiras</th>
+                    <th>Precio</th> <!-- Nueva columna "Precio" -->
+                    <th>Enlace</th>
+                    <th class="preview-hidden">Editar Precio de App</th>
+                </tr>
+            </thead>
+            <tbody id="itemTableBody"></tbody>
+        </table>
 
-    <!-- Menú de íconos flotantes -->
-    <div class="floating-menu" id="dropdownMenu">
-<button id="duplicateButton" class="with-icon" onclick="duplicateSelectedRow()" disabled>
-    <i class="fas fa-layer-group fa-lg"></i> <!-- Ícono grande -->
-</button>
-        <button id="copyButton" class="with-icon" onclick="copySelectedRows()" disabled>
-            <i class="fas fa-copy"></i> <!-- Copiar Seleccionados -->
-        </button>
-        <button id="groupButton" class="with-icon" onclick="groupSelectedRows()" disabled>
-            <i class="fas fa-object-group"></i> <!-- Agrupar Seleccionados -->
-        </button>
-        <button id="deleteButton" class="with-icon" onclick="deleteSelectedItems()" disabled>
-            <i class="fas fa-trash-alt"></i> <!-- Eliminar filas marcadas -->
-        </button>
-        <button id="undoButton" class="with-icon" onclick="undoDelete()" disabled>
-            <i class="fas fa-undo"></i> <!-- Deshacer Última Eliminación -->
-        </button>
-        <button id="previewButton" class="with-icon" onclick="togglePreview()">
-            <i class="fas fa-eye"></i> <!-- Vista Previa -->
-        </button>
-        <button class="with-icon" onclick="exportToExcel()" disabled>
-            <i class="fas fa-file-export"></i> <!-- Exportar a Excel -->
-        </button>
+        <!-- HTML para el cuadro modal -->
+        <div id="manualCopyModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000;">
+            <p>Texto para copiar:</p>
+            <textarea id="manualCopyTextArea" style="width: 100%; height: 100px;" readonly></textarea>
+            <button onclick="copyTextAreaContent()">Copiar manualmente</button>
+            <button onclick="closeManualCopyModal()">Cerrar</button>
+        </div>
+
     </div>
-</div>
-
-
-    <div id="resultado"></div>
-
-
-<table id="itemTable">
-        <thead>
-            <tr>
-
-
-<th class="preview-hidden"><button onclick="toggleSelectAll()" id="selectAllButton">☑</button></th>
-
-
-
-                <th>Imagen</th>
-                <th>Título</th>
-                <th>Talla</th>
-                <th>SKU</th>
-
-<th class="preview-hidden">Precio App</th>
-<th class="preview-hidden">Precio Lempiras</th>
-
-
-
-                <th>Precio</th> <!-- Nueva columna "Precio" -->
-                <th>Enlace</th>
-<th class="preview-hidden">Editar Precio de App</th>
-
-
-
-            </tr>
-        </thead>
-        <tbody id="itemTableBody"></tbody>
-    </table>
-
-<!-- HTML para el cuadro modal -->
-<div id="manualCopyModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000;">
-    <p>Texto para copiar:</p>
-    <textarea id="manualCopyTextArea" style="width: 100%; height: 100px;" readonly></textarea>
-    <button onclick="copyTextAreaContent()">Copiar manualmente</button>
-    <button onclick="closeManualCopyModal()">Cerrar</button>
-</div>
-
 
 </body>
+
 </html>
