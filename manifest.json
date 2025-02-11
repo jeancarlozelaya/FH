@@ -1,0 +1,16 @@
+{
+  "name": "Fashion House HN",
+  "short_name": "Fashion House HN",
+  "description": "Accede a la página web de Fashion House HN como una app.",
+  "start_url": "/FH/",
+  "display": "standalone",
+  "background_color": "#f4f4f4",
+  "theme_color": "#007BFF",
+  "icons": [
+    {
+      "src": "Imágenes/Icono.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

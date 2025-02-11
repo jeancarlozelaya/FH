@@ -1,0 +1,1171 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta charset="UTF-8">
+    <title>Creador v4.0</title>
+
+
+    <!-- Incluye FontAwesome para los iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+    
+<style>
+
+/* Ocultar botones deshabilitados en el menú flotante */
+.floating-menu button.with-icon:disabled {
+    display: none;
+}
+
+
+/* Contenedor del botón flotante y el menú */
+.floating-dropdown {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+/* Botón que abre el menú */
+.dropdown-toggle.with-icon {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-toggle.with-icon:hover {
+    background-color: #0056b3;
+}
+
+/* Menú de íconos flotantes */
+.floating-menu {
+    display: none; /* Oculto por defecto */
+    position: absolute;
+    bottom: 60px; /* Posición encima del botón */
+    left: 0;
+    flex-direction: column; /* Íconos en columna */
+    gap: 10px; /* Espacio entre íconos */
+    background-color: rgba(255, 255, 255, 0.9); /* Fondo semi-transparente */
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Mostrar el menú cuando está activo */
+.floating-menu.show {
+    display: flex;
+}
+
+/* Estilo para los botones del menú flotante */
+.floating-menu button.with-icon {
+    background-color: #007bff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floating-menu button.with-icon:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo para los íconos dentro del menú flotante */
+.floating-menu button.with-icon i {
+    font-size: 16px;
+}
+
+
+
+
+
+
+
+    /* Estilos base */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+
+    h2 {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 3;
+        padding: 10px;
+        margin: 0;
+    }
+
+    .controls {
+        position: sticky;
+        top: 40px;
+        background-color: white;
+        z-index: 3;
+        padding: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .controls input, .controls select, .controls button {
+        flex: 1 1 auto;
+        max-width: 100%;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    th {
+        background-color: #f4f4f4;
+    }
+
+    .error {
+        color: red;
+    }
+
+    .processing {
+        color: green;
+    }
+
+    button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    .fixed-width {
+        width: 50px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+        text-align: center;
+    }
+
+    .small-input, .small-select {
+        width: 60px;
+        padding: 5px;
+        font-size: 14px;
+    }
+
+    /* Estilos del botón flotante */
+    .floating-dropdown {
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        z-index: 1000;
+    }
+
+    .dropdown-toggle {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 14px;
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 50%;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+        transition: background 0.3s;
+    }
+
+    .dropdown-toggle:hover {
+        background-color: #0056b3;
+    }
+
+    /* Estilos del menú desplegable */
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        bottom: 50px;
+        left: 0;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 8px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        min-width: 150px;
+    }
+
+    .dropdown-menu.show {
+        display: block;
+    }
+
+    .dropdown-menu button {
+        display: block;
+        width: 100%;
+        border: none;
+        text-align: left;
+        padding: 8px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background 0.3s, color 0.3s;
+        border-radius: 3px;
+        background: none;
+        color: #333;
+    }
+
+    .dropdown-menu button:hover {
+        background: #007bff;
+        color: white;
+    }
+
+    .dropdown-menu button:disabled {
+        display: none;
+    }
+
+    /* Fijar el div resultado en la parte inferior izquierda de la pantalla */
+    #resultado {
+        display: none;
+        position: fixed;
+        bottom: 10px;
+        left: 60px; /* Mueve el cuadro más a la derecha */
+        background-color: #fff;
+        z-index: 100;
+        padding: 10px;
+        border-radius: 8px;
+        width: auto;
+        border-top: 2px solid #4CAF50;
+        max-width: 300px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: 'Arial', sans-serif;
+        color: #333;
+        font-size: 12px;
+        overflow: hidden;
+    }
+
+    #resultado p {
+        margin: 0;
+        font-size: 14px;
+    }
+
+    #resultado h3 {
+        margin: 0 0 8px 0;
+        font-size: 16px;
+        color: #4CAF50;
+        font-weight: bold;
+    }
+
+    #resultado button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        margin-top: 8px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    #resultado button:hover {
+        background-color: #45a049;
+    }
+
+    /* Media queries para dispositivos móviles */
+    @media (max-width: 768px) {
+        body {
+            margin: 10px;
+        }
+
+        .controls {
+            top: 30px;
+            padding: 8px;
+        }
+
+        .dropdown-toggle {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .dropdown-menu {
+            min-width: 120px;
+            padding: 6px;
+        }
+
+        .dropdown-menu button {
+            padding: 6px;
+            font-size: 10px;
+        }
+
+        #resultado {
+            max-width: 250px;
+            padding: 8px;
+            font-size: 10px;
+        }
+
+        #resultado p {
+            font-size: 12px;
+        }
+
+        #resultado h3 {
+            font-size: 14px;
+        }
+
+        #resultado button {
+            padding: 6px 10px;
+            font-size: 10px;
+        }
+
+        table {
+            font-size: 12px;
+        }
+
+        th, td {
+            padding: 6px;
+        }
+
+        .fixed-width {
+            width: 40px;
+        }
+
+        .small-input, .small-select {
+            width: 50px;
+            padding: 4px;
+            font-size: 12px;
+        }
+    }
+
+
+
+.preview-hidden {
+    display: table-cell;
+}
+
+.col-hidden {
+    display: none !important;
+}
+
+.col-hidden {
+    display: none !important;
+}
+
+.header-hidden {
+    display: none !important;
+}
+
+
+
+
+/* Estilo base para los botones con íconos */
+button {
+    background-color: #007bff; /* Color de fondo azul */
+    color: white; /* Texto blanco */
+    border: none; /* Sin borde */
+    padding: 5px 10px; /* Espaciado interno */
+    font-size: 14px; /* Tamaño de fuente */
+    cursor: pointer; /* Cursor de tipo puntero */
+    border-radius: 5px; /* Bordes redondeados */
+    display: inline-flex; /* Usar Flexbox para alinear íconos y texto */
+    align-items: center; /* Centrar verticalmente */
+    justify-content: center; /* Centrar horizontalmente */
+    gap: 8px; /* Espacio entre ícono y texto */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Transiciones suaves */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
+}
+
+/* Efecto hover para los botones */
+button:hover {
+    background-color: #0056b3; /* Color de fondo más oscuro al pasar el mouse */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+}
+
+/* Efecto active (cuando se hace clic) */
+button:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
+}
+
+/* Estilo para los íconos dentro de los botones */
+button i {
+    font-size: 16px; /* Tamaño del ícono */
+}
+
+/* Estilo específico para el botón de editar */
+button .fa-pencil-alt {
+    color: #ffffff; /* Color del ícono de editar */
+}
+
+/* Estilo específico para el botón de guardar */
+button .fa-save {
+    color: #ffffff; /* Color del ícono de guardar */
+}
+
+
+
+
+
+
+
+
+
+</style>
+
+
+
+
+    <script>
+        let items = [];
+        let lastDeletedItem = null;
+
+        window.onload = function() {
+            const savedItems = localStorage.getItem("items");
+            if (savedItems) {
+                items = JSON.parse(savedItems);
+                updateTable();
+            }
+            updateButtonStates();
+        };
+
+        function saveToLocalStorage() {
+            localStorage.setItem("items", JSON.stringify(items));
+        }
+
+function obtenerFuente() {
+    let enlace = document.getElementById("enlace").value.trim();
+    const porcentajeSeleccionado = parseFloat(document.getElementById("percentageSelect").value) / 100;
+    if (!enlace) {
+        showMessage("Por favor, ingrese un enlace válido.", 'error');
+        return;
+    }
+    // Si el enlace no comienza con "https://us.shein.com/", modificarlo
+    const baseURL = "https://us.shein.com/";
+    if (!enlace.startsWith(baseURL)) {
+        // Reemplazar el inicio de la URL hasta el primer '/' después de "shein.com/"
+        const newEnlace = baseURL + enlace.replace(/^https?:\/\/(www\.)?(m\.)?(es\.)?shein\.com\//, "");
+        document.getElementById("enlace").value = newEnlace;      
+        // Volver a ejecutar la función con la URL corregida
+        obtenerFuente();
+        return; // Salir para evitar que se ejecute con el enlace incorrecto
+    }
+    showMessage("Procesando, por favor espere...", 'processing');
+    const url = `https://script.google.com/macros/s/AKfycbwq82FHIL2RGyh_6pl9jluP2sKltOXzqMHzeMHTPq2ITbM5GHA8uhFLupRDHVA8zhWS/exec?url=${encodeURIComponent(enlace)}`;
+    fetch(url)
+        .then(response => response.text())
+        .then(data => extractData(data, porcentajeSeleccionado, enlace))
+}
+
+
+       
+function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
+    const imageMatch = data.match(/<div class="crop-image-container" data-before-crop-src="(.*?)"/i);
+    const skuMatch = data.match(/<span class="product-intro__head-sku-text">\s*SKU:\s*(.*?)<\/span>/i);
+    const priceAppMatch = data.match(/"getPrice":{"retailPrice":{"amount":"(.*?)"/i);
+    const titleMatch = data.match(/<title>(.*?) \| SHEIN USA<\/title>/i);
+
+    // Extraer tallas desde diferentes patrones en el HTML
+    const sizePatterns = [
+                /"size":"(.*?)"/g,
+                /data-attr_value_name="(.*?)"/g,
+                /<p class="product-intro__size-radio-inner product-intro__sizes-item-text--one">(.*?)<\/p>/g
+    ];
+
+
+    if (imageMatch && skuMatch && priceAppMatch && titleMatch) {
+        let image = imageMatch[1];
+        if (!image.startsWith("http")) {
+            image = "https:" + image;
+        }
+
+        const sizes = [...new Set(sizePatterns.flatMap(pattern => [...data.matchAll(pattern)].map(match => match[1])))];
+
+        const item = {
+            image: image,
+            title: titleMatch[1],
+            sku: skuMatch[1],
+            priceApp: parseFloat(priceAppMatch[1]),
+            priceLempiras: calculatePriceInLempiras(parseFloat(priceAppMatch[1]), porcentajeSeleccionado),
+            percentage: porcentajeSeleccionado,
+            sizes: sizes,
+            selectedSize: "",
+            enlace: enlace
+        };
+
+        items.push(item);
+        saveToLocalStorage();
+        updateTable();
+        showMessage("Datos cargados con éxito.", 'processing');
+    } else {
+        // Verifica el mensaje de error y realiza un nuevo intento
+        if (retryCount < 5) { // Límite de reintentos
+            setTimeout(() => {
+                showMessage("Reintentando obtener datos...", 'processing');
+                obtenerFuente(); // Vuelve a intentar obtener la fuente
+            }, 0); // Espera 2 segundos antes de reintentar
+        } else {
+            showMessage("No se extrajo información. Se alcanzó el número máximo de reintentos.", 'error');
+        }
+    }
+}
+
+
+
+
+
+
+
+        function calculatePriceInLempiras(priceApp, percentage) {
+            const basePrice = priceApp * 26 + 50;
+            return (basePrice + (basePrice * percentage)).toFixed(2);
+        }
+
+function generateSizeSelect(index, item) {
+    const sizeOptions = item.sizes.map(size => 
+        `<option value="${size}" ${size === item.selectedSize ? 'selected' : ''}>${size}</option>`
+    ).join("");
+    return `<select id="sizeSelect${index}" class="small-select" onchange="updateSelectedSize(${index})">
+                <option value="">Seleccionar Talla</option>
+                ${sizeOptions}
+            </select>`;
+}
+
+function updateTable() {
+    const tableBody = document.getElementById("itemTableBody");
+    tableBody.innerHTML = "";
+    items.forEach((item, index) => {
+        const row = document.createElement("tr");
+        
+        row.innerHTML = 
+            `<td><input type="checkbox" class="itemCheckbox" data-index="${index}" onchange="updateButtonStates()"></td>
+            <td><img src="${item.image}" alt="${item.title}" style="width:50px;"></td>
+            <td class="hidden-column">${item.title}</td>
+            <td>${generateSizeSelect(index, item)}</td>
+            <td class="hidden-column">${item.sku}</td>
+            <td>${item.editingPrice ? `<input type="number" id="priceAppInput${index}" value="${item.priceApp.toFixed(2)}" class="small-input editable">` : item.priceApp.toFixed(2)}</td>
+            <td>${item.priceLempiras}</td>
+            <td><input type="number" id="customPriceInput${index}" class="small-input" value="${item.precioPersonalizado}" placeholder="Precio" oninput="updateCustomPrice(${index})"></td>
+            <td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>
+
+<td>  
+    <button onclick="toggleEditPrice(${index})">
+        ${item.editingPrice ? '<i class="fas fa-save"></i>' : '<i class="fas fa-pencil-alt"></i>'}
+    </button>
+</td>`;
+
+
+        tableBody.appendChild(row);
+    });
+    updateButtonStates();
+}
+
+// Ocultar columnas y encabezados
+const style = document.createElement('style');
+style.innerHTML = `
+    .hidden-column { display: none; }
+    th:nth-child(3), th:nth-child(5), th:nth-child(9) { display: none; }
+`;
+document.head.appendChild(style);
+
+
+
+
+        function updateSelectedSize(index) {
+            const selectedSize = document.getElementById(`sizeSelect${index}`).value;
+            items[index].selectedSize = selectedSize;
+            saveToLocalStorage();
+        }
+
+        function deleteItem(index) {
+
+document.getElementById("dropdownMenu").classList.remove("show");
+
+
+            lastDeletedItem = items[index];
+            items.splice(index, 1);
+            saveToLocalStorage();
+            updateTable();
+        }
+
+        function undoDelete() {
+
+document.getElementById("dropdownMenu").classList.remove("show");
+
+
+            if (lastDeletedItems.length > 0) {
+                items = items.concat(lastDeletedItems);
+                lastDeletedItems = [];
+                saveToLocalStorage();
+                updateTable();
+showMessage("Se recuperó la última eliminación con éxito.", 'processing');
+            }
+        }
+
+        function clearInput() {
+            document.getElementById("enlace").value = "";
+            document.getElementById("resultado").innerText = "";
+        }
+
+
+
+function copySelectedRows() {
+
+document.getElementById("dropdownMenu").classList.remove("show");
+
+
+    const selectedItems = Array.from(document.querySelectorAll('.itemCheckbox:checked')).map(checkbox => {
+        const index = checkbox.getAttribute('data-index');
+        const item = items[index];
+        const imageFormula = `=IMAGE("${item.image}")`;
+        const detailFormula = `=HYPERLINK("${item.enlace}", "Ver detalle")`;
+        const selectedSize = item.selectedSize || '""';
+
+        const customPriceInput = document.getElementById(`customPriceInput${index}`);
+        const customPrice = customPriceInput ? customPriceInput.value.trim() : '';
+        const priceToCopy = customPrice !== '' ? customPrice : item.priceApp.toFixed(2);
+        const decodedTitle = decodeHtmlEntities(item.title);
+
+        // Asegura que el porcentaje esté definido y utiliza items[index].percentage
+        const porcentaje = item.percentage !== undefined ? item.percentage : 0;
+
+        // Fórmula `priceLempiras` que usa la celda a la izquierda y el porcentaje correcto
+        const priceLempirasFormula = `=(INDIRECT("RC[-1]", 0) * 26 + 50) * (1 + ${porcentaje})`;
+
+        return [
+            imageFormula,
+            decodedTitle,
+            `${selectedSize}`,
+            item.sku,
+            item.priceApp.toFixed(2),
+            priceLempirasFormula, // Fórmula relativa para el precio en lempiras
+            detailFormula,
+            '',
+            customPrice,
+        ].join('\t');
+    });
+
+    if (selectedItems.length === 0) {
+        alert("Por favor, seleccione al menos un artículo para copiar.");
+        return;
+    }
+
+    const textToCopy = selectedItems.join('\n');
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            alert("Datos copiados al portapapeles.");
+        }).catch(err => {
+            console.error('Error al copiar: ', err);
+            alert("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.");
+            showManualCopyModal(textToCopy);
+        });
+    } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.select();
+
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                alert("Datos copiados al portapapeles.");
+            } else {
+                alert("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.");
+                showManualCopyModal(textToCopy);
+            }
+        } catch (err) {
+            console.error('Error al copiar (fallback): ', err);
+            alert("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.");
+            showManualCopyModal(textToCopy);
+        }
+        document.body.removeChild(textArea);
+    }
+}
+
+
+// Función para mostrar el modal con el texto a copiar manualmente
+function showManualCopyModal(text) {
+    const modal = document.getElementById('manualCopyModal');
+    const textArea = document.getElementById('manualCopyTextArea');
+    textArea.value = text;
+    modal.style.display = 'block';
+}
+
+// Función para copiar manualmente desde el área de texto del modal
+function copyTextAreaContent() {
+    const textArea = document.getElementById('manualCopyTextArea');
+    textArea.select();
+    document.execCommand('copy');
+    alert("Texto copiado al portapapeles.");
+}
+
+// Función para cerrar el modal
+function closeManualCopyModal() {
+    const modal = document.getElementById('manualCopyModal');
+    modal.style.display = 'none';
+}
+
+
+
+
+// Función para decodificar entidades HTML
+function decodeHtmlEntities(str) {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = str;
+    return textarea.value;
+}
+
+
+
+
+
+
+
+
+        function updateButtonStates() {
+            const selectedItemsCount = document.querySelectorAll('.itemCheckbox:checked').length;
+            document.querySelector('button[onclick="copySelectedRows()"]').disabled = selectedItemsCount === 0;
+
+
+            document.querySelector('button[onclick="duplicateSelectedRow()"]').disabled = selectedItemsCount === 0;
+
+
+
+            document.querySelector('button[onclick="undoDelete()"]').disabled = lastDeletedItems.length === 0;
+            document.querySelector('button[onclick="groupSelectedRows()"]').disabled = selectedItemsCount === 0;
+            document.querySelector('button[onclick="deleteSelectedItems()"]').disabled = selectedItemsCount === 0;
+        }
+
+let messageTimeout;  // Variable global para almacenar el timeout
+
+function showMessage(message, type) {
+    const resultDiv = document.getElementById("resultado");
+
+    // Mostrar el mensaje en el div
+    resultDiv.innerHTML = `<span class="${type}">${message}</span>`;
+    resultDiv.style.display = 'block'; // Asegurarse de que el div esté visible
+
+    // Si el mensaje es "Procesando, por favor espere...", no ocultarlo
+    if (message !== "Procesando, por favor espere...") {
+        // Si ya existe un timeout, limpiarlo
+        if (messageTimeout) {
+            clearTimeout(messageTimeout);
+        }
+
+        // Ocultar el mensaje después de 5 segundos
+        messageTimeout = setTimeout(function() {
+            resultDiv.style.display = 'none'; // Ocultar el div
+        }, 3000);
+    }
+}
+
+
+
+
+
+
+
+        let allChecked = false;
+
+        function toggleSelectAll() {
+
+document.getElementById("dropdownMenu").classList.remove("show");
+
+
+            allChecked = !allChecked;
+            document.querySelectorAll('.itemCheckbox').forEach(checkbox => {
+                checkbox.checked = allChecked;
+            });
+            updateButtonStates();
+            const selectAllButton = document.getElementById("selectAllButton");
+            selectAllButton.innerText = allChecked ? "☐" : "☑";
+        }
+
+function groupSelectedRows() {
+
+document.getElementById("dropdownMenu").classList.remove("show");
+
+    const selectedCheckboxes = document.querySelectorAll('.itemCheckbox:checked');
+    const selectedIndexes = Array.from(selectedCheckboxes).map(checkbox => checkbox.getAttribute('data-index')).map(Number);
+
+    if (selectedIndexes.length === 0) {
+        showMessage("No hay filas seleccionadas para agrupar.", 'error');
+        return;
+    }
+
+    // Obtener los artículos seleccionados
+    const selectedItems = selectedIndexes.map(index => items[index]);
+
+    // Filtrar los artículos no seleccionados
+    items = items.filter((_, index) => !selectedIndexes.includes(index));
+
+    // Añadir los artículos seleccionados al principio de la lista
+    items = [...selectedItems, ...items];
+
+    saveToLocalStorage();
+    updateTable();
+    showMessage("Artículos agrupados con éxito.", 'processing');
+}
+
+
+
+
+function toggleEditPrice(index) {
+    document.getElementById("dropdownMenu").classList.remove("show");
+
+    if (items[index].editingPrice) {
+        // Guardar el precio editado
+        const newPrice = parseFloat(document.getElementById(`priceAppInput${index}`).value);
+
+        // Verificar si el nuevo precio es diferente al precio actual
+        if (newPrice !== items[index].priceApp) {
+            items[index].priceApp = newPrice;
+            items[index].priceLempiras = calculatePriceInLempiras(newPrice, items[index].percentage);
+
+            // Mostrar el mensaje solo si hubo un cambio
+            showMessage("Precio de App actualizado con éxito.", 'processing');
+        }
+    }
+
+    // Cambiar el estado de edición
+    items[index].editingPrice = !items[index].editingPrice;
+    saveToLocalStorage();
+    updateTable();
+}
+
+
+
+let lastDeletedItems = [];
+
+
+function deleteSelectedItems() {
+
+document.getElementById("dropdownMenu").classList.remove("show");
+
+
+    lastDeletedItems = items.filter((_, index) => document.querySelector(`.itemCheckbox[data-index="${index}"]`).checked);
+    items = items.filter((_, index) => !document.querySelector(`.itemCheckbox[data-index="${index}"]`).checked);
+    saveToLocalStorage();
+    updateTable();
+    updateButtonStates(); // Asegúrate de agregar esto
+showMessage("Filas eliminadas con éxito.", 'processing');
+}
+
+        function updateCustomPrice(index) {
+            const customPrice = document.getElementById(`customPriceInput${index}`).value;
+            items[index].precioPersonalizado = customPrice;  // Guardar el precio personalizado en el item
+            saveToLocalStorage();
+        }
+
+
+let previewMode = false;
+
+function togglePreview() {
+    document.getElementById("dropdownMenu").classList.remove("show");
+
+    const tableBody = document.getElementById("itemTableBody"); // Seleccionamos el cuerpo de la tabla
+    const dropdownToggle = document.querySelector(".dropdown-toggle.with-icon"); // Botón de menú desplegable
+    const body = document.body; // Usamos el body para agregar la clase 'preview-mode'
+    const tableHeaders = document.querySelectorAll("#itemTable thead th"); // Seleccionamos los encabezados
+
+    // Columnas que se van a ocultar: "Precio App" (5), "Precio Lempiras" (6), "Editar Precio de App" (9)
+    const columnsToHide = [0, 5, 6, 9];
+
+    // Elementos adicionales a ocultar
+    const title = document.querySelector("h2"); // Título "Lista de Artículos"
+    const enlaceInput = document.getElementById("enlace"); // Input de enlace
+    const percentageSelect = document.getElementById("percentageSelect"); // Select de porcentaje
+    const addButton = document.querySelector("button[onclick='obtenerFuente()']"); // Botón "Agregar"
+    const clearButton = document.querySelector("button[onclick='clearInput()']"); // Botón "Limpiar"
+
+    if (!previewMode) {
+        // Activar el modo de vista previa
+        body.classList.add("preview-mode");
+
+        // Ocultar las columnas
+        Array.from(tableBody.rows).forEach(row => {
+            columnsToHide.forEach(index => {
+                if (row.cells[index]) {
+                    row.cells[index].classList.add("col-hidden"); // Ocultar las celdas
+                }
+            });
+        });
+
+        // Ocultar los encabezados
+        tableHeaders.forEach((header, index) => {
+            if (columnsToHide.includes(index)) {
+                header.classList.add("header-hidden"); // Ocultar los encabezados
+            }
+        });
+
+        // Ocultar elementos adicionales
+        if (title) title.style.display = 'none';
+        if (enlaceInput) enlaceInput.style.display = 'none';
+        if (percentageSelect) percentageSelect.style.display = 'none';
+        if (addButton) addButton.style.display = 'none';
+        if (clearButton) clearButton.style.display = 'none';
+
+        // Transformar el botón de menú desplegable en el botón de "Ocultar Vista Previa"
+        dropdownToggle.innerHTML = '<i class="fas fa-eye-slash"></i>'; // Ícono de ojo cerrado
+        dropdownToggle.onclick = togglePreview; // Cambiar la función onclick
+    } else {
+        // Desactivar el modo de vista previa
+        body.classList.remove("preview-mode");
+
+        // Mostrar las columnas
+        Array.from(tableBody.rows).forEach(row => {
+            columnsToHide.forEach(index => {
+                if (row.cells[index]) {
+                    row.cells[index].classList.remove("col-hidden"); // Mostrar las celdas
+                }
+            });
+        });
+
+        // Mostrar los encabezados
+        tableHeaders.forEach((header, index) => {
+            if (columnsToHide.includes(index)) {
+                header.classList.remove("header-hidden"); // Mostrar los encabezados
+            }
+        });
+
+        // Mostrar elementos adicionales
+        if (title) title.style.display = '';
+        if (enlaceInput) enlaceInput.style.display = '';
+        if (percentageSelect) percentageSelect.style.display = '';
+        if (addButton) addButton.style.display = '';
+        if (clearButton) clearButton.style.display = '';
+
+        // Restaurar el botón de menú desplegable
+        dropdownToggle.innerHTML = '<i class="fas fa-bars"></i>'; // Ícono de menú
+        dropdownToggle.onclick = toggleDropdown; // Restaurar la función onclick
+    }
+
+    previewMode = !previewMode; // Cambiar el estado de la vista previa
+}
+
+
+
+
+function exportToExcel() {
+
+document.getElementById("dropdownMenu").classList.remove("show");
+
+
+    const ws = XLSX.utils.aoa_to_sheet([]);
+    const data = [];
+
+    items.forEach((item, index) => {
+        const customPriceInput = document.getElementById(`customPriceInput${index}`);
+        const customPrice = customPriceInput ? customPriceInput.value.trim() : '';
+
+        // Solo incluir el precio personalizado si no está vacío
+        const priceToExport = customPrice !== '' ? customPrice : ''; // Dejar vacío si no hay precio personalizado
+
+        // Asegura que el porcentaje esté definido
+        const porcentaje = item.percentage !== undefined ? item.percentage : 0;
+
+        // Fórmula `priceLempiras` que usa la celda a la izquierda y el porcentaje correcto
+        const priceLempirasFormula = `=(INDIRECT("RC[-1]", 0) * 26 + 50) * (1 + ${porcentaje})`;
+
+        const row = [
+            `=IMAGE("${item.image}")`,   // Fórmula para imagen
+            decodeHTML(item.title),      // Función para descodificar HTML
+            item.selectedSize ? item.selectedSize : '""',
+            item.sku,
+            item.priceApp.toFixed(2),
+            priceLempirasFormula,        // Fórmula para el precio en lempiras
+            `=HYPERLINK("${item.enlace}", "Ver detalle")`, // Fórmula para enlace
+            '',
+            priceToExport                // Precio personalizado o vacío
+        ];
+        data.push(row);
+    });
+
+    XLSX.utils.sheet_add_aoa(ws, data, { origin: 'A1' });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Artículos');
+
+    // Generar el archivo
+    XLSX.writeFile(wb, 'articulos.xlsx');
+showMessage("Datos exportados con éxito.", 'processing');
+}
+
+// Función para descodificar caracteres HTML
+function decodeHTML(html) {
+    const txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
+}
+
+
+
+
+
+function duplicateSelectedRow() {
+
+document.getElementById("dropdownMenu").classList.remove("show");
+
+    const selectedCheckbox = document.querySelector('.itemCheckbox:checked');
+    if (!selectedCheckbox) {
+        showMessage("Por favor, seleccione una fila para duplicar.", 'error');
+        return;
+    }
+
+    const index = parseInt(selectedCheckbox.getAttribute('data-index'));
+    const itemToDuplicate = items[index];
+
+    // Crea una copia del item
+    const newItem = { ...itemToDuplicate };
+
+    // Inserta la copia justo debajo de la original
+    items.splice(index + 1, 0, newItem); 
+
+    saveToLocalStorage();
+    updateTable();
+showMessage("Fila duplicada con éxito.", 'processing');
+}
+
+
+
+
+
+function toggleDropdown() {
+    const dropdownMenu = document.getElementById("dropdownMenu");
+    dropdownMenu.classList.toggle("show");
+}
+
+        document.addEventListener("click", function (event) {
+            var dropdown = document.querySelector(".floating-dropdown");
+            var menu = document.getElementById("dropdownMenu");
+            
+            if (!dropdown.contains(event.target)) {
+                menu.classList.remove("show");
+            }
+        });
+
+        function handleMenuClick(action) {
+            action();
+            document.getElementById("dropdownMenu").classList.remove("show");
+        }
+
+
+
+
+    </script>
+
+
+
+
+
+
+
+
+</head>
+<body>
+
+<div class="fixed-header">
+    <h2>Fashion House HN</h2>
+
+    <div class="controls">
+        <!-- Casilla de texto más alta y menos ancha -->
+
+<input type="text" id="enlace" placeholder="Enlace del artículo" style="height: 40px; width: 200px; padding: 5px;">
+
+        <select id="percentageSelect">
+            <option value="20">20%</option>
+            <option value="25">25%</option>
+            <option value="35">35%</option>
+        </select>
+        <!-- Botones con iconos -->
+<button onclick="obtenerFuente()"><i class="fas fa-plus"></i></button>
+<button onclick="clearInput()"><i class="fas fa-eraser"></i></button>
+
+</div>
+
+
+ <!-- Botón flotante que abre el menú -->
+<div class="floating-dropdown">
+    <button class="dropdown-toggle with-icon" onclick="toggleDropdown()">
+        <i class="fas fa-bars"></i> <!-- Ícono de menú -->
+    </button>
+
+    <!-- Menú de íconos flotantes -->
+    <div class="floating-menu" id="dropdownMenu">
+<button id="duplicateButton" class="with-icon" onclick="duplicateSelectedRow()" disabled>
+    <i class="fas fa-layer-group fa-lg"></i> <!-- Ícono grande -->
+</button>
+        <button id="copyButton" class="with-icon" onclick="copySelectedRows()" disabled>
+            <i class="fas fa-copy"></i> <!-- Copiar Seleccionados -->
+        </button>
+        <button id="groupButton" class="with-icon" onclick="groupSelectedRows()" disabled>
+            <i class="fas fa-object-group"></i> <!-- Agrupar Seleccionados -->
+        </button>
+        <button id="deleteButton" class="with-icon" onclick="deleteSelectedItems()" disabled>
+            <i class="fas fa-trash-alt"></i> <!-- Eliminar filas marcadas -->
+        </button>
+        <button id="undoButton" class="with-icon" onclick="undoDelete()" disabled>
+            <i class="fas fa-undo"></i> <!-- Deshacer Última Eliminación -->
+        </button>
+        <button id="previewButton" class="with-icon" onclick="togglePreview()">
+            <i class="fas fa-eye"></i> <!-- Vista Previa -->
+        </button>
+        <button class="with-icon" onclick="exportToExcel()" disabled>
+            <i class="fas fa-file-export"></i> <!-- Exportar a Excel -->
+        </button>
+    </div>
+</div>
+
+
+    <div id="resultado"></div>
+
+
+<table id="itemTable">
+        <thead>
+            <tr>
+
+
+<th class="preview-hidden"><button onclick="toggleSelectAll()" id="selectAllButton">☑</button></th>
+
+
+
+                <th>Imagen</th>
+                <th>Título</th>
+                <th>Talla</th>
+                <th>SKU</th>
+
+<th class="preview-hidden">Precio App</th>
+<th class="preview-hidden">Precio Lempiras</th>
+
+
+
+                <th>Precio</th> <!-- Nueva columna "Precio" -->
+                <th>Enlace</th>
+<th class="preview-hidden">Editar Precio de App</th>
+
+
+
+            </tr>
+        </thead>
+        <tbody id="itemTableBody"></tbody>
+    </table>
+
+<!-- HTML para el cuadro modal -->
+<div id="manualCopyModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000;">
+    <p>Texto para copiar:</p>
+    <textarea id="manualCopyTextArea" style="width: 100%; height: 100px;" readonly></textarea>
+    <button onclick="copyTextAreaContent()">Copiar manualmente</button>
+    <button onclick="closeManualCopyModal()">Cerrar</button>
+</div>
+
+
+</body>
+</html>
