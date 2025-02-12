@@ -31,6 +31,12 @@ td input[type="checkbox"] {
 
 
 
+
+
+
+
+
+
 /* Estilo para el selector de colores */
 .color-picker {
     display: none;
@@ -593,15 +599,17 @@ function updateTable() {
             <td class="hidden-column">${item.title}</td>
             <td>${generateSizeSelect(index, item)}</td>
             <td class="hidden-column">${item.sku}</td>
-            <td>${item.editingPrice ? `<input type="number" id="priceAppInput${index}" value="${item.priceApp.toFixed(2)}" class="small-input editable">` : item.priceApp.toFixed(2)}</td>
-            <td>${item.priceLempiras}</td>
+            <td class="preview-hidden">
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <button onclick="toggleEditPrice(${index})">
+                        ${item.editingPrice ? '<i class="fas fa-save"></i>' : '<i class="fas fa-pencil-alt"></i>'}
+                    </button>
+                    ${item.editingPrice ? `<input type="number" id="priceAppInput${index}" value="${item.priceApp.toFixed(2)}" class="small-input editable">` : item.priceApp.toFixed(2)}
+                </div>
+            </td>
+            <td class="preview-hidden">${item.priceLempiras}</td>
             <td><input type="number" id="customPriceInput${index}" class="small-input" value="${item.precioPersonalizado}" placeholder="Precio" oninput="updateCustomPrice(${index})"></td>
-            <td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>
-            <td>  
-                <button onclick="toggleEditPrice(${index})">
-                    ${item.editingPrice ? '<i class="fas fa-save"></i>' : '<i class="fas fa-pencil-alt"></i>'}
-                </button>
-            </td>`;
+            <td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>`;
         if (item.color) {
             row.style.backgroundColor = item.color;
         }
@@ -609,7 +617,6 @@ function updateTable() {
     });
     updateButtonStates();
 }
-
 
 // Ocultar columnas y encabezados
 const style = document.createElement('style');
@@ -1230,7 +1237,6 @@ function groupByColor() {
             <th class="preview-hidden">Precio Lempiras</th>
             <th>Precio</th>
             <th>Enlace</th>
-            <th class="preview-hidden">Editar Precio de App</th>
         </tr>
     </thead>
     <tbody id="itemTableBody"></tbody>
