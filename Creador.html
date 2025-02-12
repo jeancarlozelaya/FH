@@ -754,7 +754,7 @@ function updateButtonStates() {
     document.querySelector('button[onclick="undoDelete()"]').disabled = lastDeletedItems.length === 0;
     document.querySelector('button[onclick="groupSelectedRows()"]').disabled = selectedItemsCount === 0;
     document.querySelector('button[onclick="deleteSelectedItems()"]').disabled = selectedItemsCount === 0;
-    document.querySelector('button[onclick="groupByColor()"]').disabled = selectedItemsCount === 0; // Nuevo botón
+    // Elimina la línea que deshabilita el botón de agrupar por colores
 }
 
      
@@ -1114,26 +1114,15 @@ window.onload = function () {
 
 
 // Función para agrupar filas por colores
+// Función para agrupar todas las filas por colores
 function groupByColor() {
     document.getElementById("dropdownMenu").classList.remove("show");
-
-    // Obtener las filas seleccionadas
-    const selectedCheckboxes = document.querySelectorAll('.itemCheckbox:checked');
-    const selectedIndexes = Array.from(selectedCheckboxes)
-        .map(checkbox => checkbox.getAttribute('data-index'))
-        .map(Number);
-
-    if (selectedIndexes.length === 0) {
-        showMessage("No hay filas seleccionadas para agrupar por colores.", 'error');
-        return;
-    }
 
     // Crear un objeto para agrupar los ítems por color
     const groupedItems = {};
 
-    // Recorrer los ítems seleccionados y agruparlos por color
-    selectedIndexes.forEach(index => {
-        const item = items[index];
+    // Recorrer todos los ítems y agruparlos por color
+    items.forEach(item => {
         const color = item.color || '#ffffff'; // Si no hay color, usar blanco por defecto
 
         if (!groupedItems[color]) {
@@ -1148,14 +1137,13 @@ function groupByColor() {
         newItems.push(...groupedItems[color]);
     });
 
-    // Añadir los ítems no seleccionados al final
-    items = newItems.concat(items.filter((_, index) => !selectedIndexes.includes(index)));
+    // Actualizar la lista de ítems
+    items = newItems;
 
     saveToLocalStorage();
     updateTable();
-    showMessage("Filas agrupadas por colores con éxito.", 'processing');
+    showMessage("Todas las filas agrupadas por colores con éxito.", 'processing');
 }
-
 
 
 
@@ -1191,7 +1179,7 @@ function groupByColor() {
 
             <!-- Menú de íconos flotantes -->
             <div class="floating-menu" id="dropdownMenu">
-                <button id="groupByColorButton" class="with-icon" onclick="groupByColor()" disabled>
+                <button id="groupByColorButton" class="with-icon" onclick="groupByColor()">
                     <i class="fas fa-sort-amount-down"></i> <!-- Ícono para agrupar por colores -->
                 </button>
                 <button id="colorButton" class="with-icon" onclick="openColorPicker(event)" disabled>
