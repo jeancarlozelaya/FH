@@ -748,6 +748,7 @@ function decodeHtmlEntities(str) {
 // Función para Actualizar el Estado de los Botones
 function updateButtonStates() {
     const selectedItemsCount = document.querySelectorAll('.itemCheckbox:checked').length;
+    document.querySelector('button[onclick="openColorPicker(event)"]').disabled = selectedItemsCount === 0;
     document.querySelector('button[onclick="copySelectedRows()"]').disabled = selectedItemsCount === 0;
     document.querySelector('button[onclick="duplicateSelectedRow()"]').disabled = selectedItemsCount === 0;
     document.querySelector('button[onclick="undoDelete()"]').disabled = lastDeletedItems.length === 0;
@@ -1193,7 +1194,7 @@ function groupByColor() {
                 <button id="groupByColorButton" class="with-icon" onclick="groupByColor()" disabled>
                     <i class="fas fa-sort-amount-down"></i> <!-- Ícono para agrupar por colores -->
                 </button>
-                <button id="colorButton" class="with-icon" onclick="openColorPicker(event)">
+                <button id="colorButton" class="with-icon" onclick="openColorPicker(event)" disabled>
                     <i class="fas fa-palette"></i> <!-- Ícono de paleta de colores -->
                </button>
                 <button id="duplicateButton" class="with-icon" onclick="duplicateSelectedRow()" disabled>
