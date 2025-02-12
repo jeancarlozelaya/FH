@@ -10,6 +10,71 @@
 
 <style>
 
+.hidden-cell {
+    display: none;
+}
+
+/* Estilo para el botón de filtro */
+#openColorPicker2 {
+    position: fixed;
+    bottom: 20px; /* Distancia desde la parte inferior */
+    left: 20px; /* Distancia desde la izquierda */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+}
+
+#openColorPicker2:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo para la segunda paleta de colores */
+#colorPicker2 {
+    display: none;
+    position: fixed;
+    bottom: 70px; /* Ajusta según sea necesario para que no se superponga con el botón */
+    left: 20px;
+    background-color: white;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    flex-wrap: wrap;
+    gap: 5px;
+    width: 120px;
+    z-index: 1001; /* Asegura que esté por encima del botón */
+}
+
+#colorPicker2.show {
+    display: flex;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* Estilo para el checkbox dentro de la celda de la imagen */
 td div {
     position: relative;
@@ -1023,9 +1088,23 @@ function togglePreview() {
     const addButton = document.querySelector("button[onclick='obtenerFuente()']"); // Botón "Agregar"
     const clearButton = document.querySelector("button[onclick='clearInput()']"); // Botón "Limpiar"
 
+    const openColorPicker2Button = document.getElementById("openColorPicker2");
+
+
     if (!previewMode) {
         // Activar el modo de vista previa
         body.classList.add("preview-mode");
+
+        // Activar el modo de vista previa
+        openColorPicker2Button.style.display = 'inline-block'; // Mostrar el botón
+
+        // Guardar el estado original solo la primera vez
+        if (!isPreviewModeInitialized) {
+            const rows = document.querySelectorAll("#itemTableBody tr");
+            originalRowStates = Array.from(rows).map(row => row.style.display);
+            isPreviewModeInitialized = true;
+        }
+
 
         // Ocultar las columnas
         Array.from(tableBody.rows).forEach(row => {
@@ -1056,6 +1135,23 @@ function togglePreview() {
     } else {
         // Desactivar el modo de vista previa
         body.classList.remove("preview-mode");
+
+        // Desactivar el modo de vista previa
+        openColorPicker2Button.style.display = 'none'; // Ocultar el botón
+
+        // Restaurar el estado original de las filas
+        const rows = document.querySelectorAll("#itemTableBody tr");
+        rows.forEach((row, index) => {
+            row.style.display = originalRowStates[index] || ''; // Restaurar el estado original
+        });
+
+        // Ocultar la fila de total
+        const totalRow = document.getElementById("totalRow");
+        if (totalRow) {
+            totalRow.remove();
+        }
+
+        isPreviewModeInitialized = false; // Reiniciar la bandera
 
         // Mostrar las columnas
         Array.from(tableBody.rows).forEach(row => {
@@ -1264,6 +1360,119 @@ function groupByColor() {
 }
 
 
+
+
+
+
+
+// Función para abrir la segunda paleta de colores
+        function openColorPicker2(event) {
+            event.stopPropagation();
+            const colorPicker2 = document.getElementById("colorPicker2");
+            colorPicker2.classList.toggle("show");
+        }
+
+// Función para filtrar las filas por color
+function filterRowsByColor(color) {
+    const rows = document.querySelectorAll("#itemTableBody tr");
+    const filteredRows = []; // Almacenar las filas filtradas
+
+    rows.forEach((row, index) => {
+        const itemColor = items[index].color || '#ffffff'; // Usar el color almacenado en los datos
+        if (itemColor.toLowerCase() === color.toLowerCase()) {
+            row.style.display = ''; // Mostrar la fila si coincide el color
+            filteredRows.push(row); // Agregar la fila a la lista de filtradas
+
+    // Calcular y mostrar el total solo con las filas visibles
+    const total = calculateTotalPrice(filteredRows);
+    showTotalRow(total);
+
+    closeColorPicker2(); // Cerrar la paleta después de seleccionar un color
+
+        } else {
+            row.style.display = 'none'; // Ocultar la fila si no coincide
+
+    // Calcular y mostrar el total solo con las filas visibles
+    const total = calculateTotalPrice(filteredRows);
+    showTotalRow(total);
+
+    closeColorPicker2(); // Cerrar la paleta después de seleccionar un color
+
+        }
+    });
+}
+
+// Función para cerrar la segunda paleta de colores
+        function closeColorPicker2() {
+            const colorPicker2 = document.getElementById("colorPicker2");
+            colorPicker2.classList.remove("show");
+        }
+
+// Cerrar la paleta al hacer clic fuera de ella
+document.addEventListener("click", function (event) {
+    const colorPicker2 = document.getElementById("colorPicker2");
+    const openColorPicker2Button = document.getElementById("openColorPicker2");
+    if (!colorPicker2.contains(event.target) && !openColorPicker2Button.contains(event.target)) {
+        closeColorPicker2(); // Cierra la paleta si se hace clic fuera
+    }
+});
+
+
+
+        let originalRowStates = []; // Almacenar el estado original de las filas
+        let isPreviewModeInitialized = false; // Bandera para saber si ya se guardó el estado original
+
+
+
+
+function calculateTotalPrice(filteredRows) {
+    let total = 0;
+    filteredRows.forEach(row => {
+        const priceCell = row.querySelector("td:nth-child(7)"); // Columna "Precio"
+        if (priceCell) {
+            const input = priceCell.querySelector("input"); // Buscar el input dentro del td
+            if (input) {
+                let priceText = input.value.trim(); // Obtener el valor del input y eliminar espacios
+                priceText = priceText.replace(/\s+/g, ""); // Eliminar espacios dentro del número
+                const price = parseFloat(priceText) || 0; // Convertir a número
+                total += price;
+            }
+        }
+    });
+    return total.toFixed(2); // Redondear a 2 decimales
+}
+
+
+
+function showTotalRow(total) {
+    const tableBody = document.getElementById("itemTableBody");
+    let totalRow = document.getElementById("totalRow");
+
+    // Si la fila de total ya existe, la eliminamos
+    if (totalRow) {
+        totalRow.remove();
+    }
+
+    // Crear la fila de total
+    totalRow = document.createElement("tr");
+    totalRow.id = "totalRow";
+    totalRow.innerHTML = `
+        <td></td> <!-- Columna del checkbox (oculta) -->
+        <td class="hidden-cell"></td> <!-- Columna del título (oculta) -->
+        <td style="text-align: right; font-weight: bold;">Total:</td> <!-- Columna "Talla" -->
+        <td class="hidden-cell"></td> <!-- Columna del SKU -->
+        <td class="hidden-cell"></td> <!-- Columna del Precio App -->
+        <td class="hidden-cell"></td> <!-- Columna del Precio Lempiras -->
+        <td style="font-weight: bold;">${total}</td> <!-- Columna "Precio" -->
+        <td class="hidden-cell"></td> <!-- Columna del enlace -->
+    `;
+
+    // Agregar la fila al final de la tabla
+    tableBody.appendChild(totalRow);
+}
+
+
+
 </script>
 
 </head>
@@ -1368,6 +1577,27 @@ function groupByColor() {
     <div class="color-option" style="background-color: #C2185B;" onclick="applyColorToSelectedRows('#C2185B')"></div> <!-- Rosa fuerte -->
     <div class="color-option" style="background-color: #795548;" onclick="applyColorToSelectedRows('#795548')"></div> <!-- Café -->
     <div class="color-option" style="background-color: #616161;" onclick="applyColorToSelectedRows('#616161')"></div> <!-- Gris oscuro -->
+</div>
+
+<!-- Botón para abrir la segunda paleta de colores -->
+<button id="openColorPicker2" class="with-icon" onclick="openColorPicker2(event)" style="display: none; position: fixed; bottom: 20px; left: 70px;">
+    <i class="fas fa-filter"></i> <!-- Ícono de filtro -->
+</button>
+
+<!-- Segunda paleta de colores -->
+<div class="color-picker" id="colorPicker2">
+    <div class="color-option" style="background-color: #ffffff;" onclick="filterRowsByColor('#ffffff')"></div>
+    <div class="color-option" style="background-color: #D32F2F;" onclick="filterRowsByColor('#D32F2F')"></div>
+    <div class="color-option" style="background-color: #F57C00;" onclick="filterRowsByColor('#F57C00')"></div>
+    <div class="color-option" style="background-color: #FBC02D;" onclick="filterRowsByColor('#FBC02D')"></div>
+    <div class="color-option" style="background-color: #388E3C;" onclick="filterRowsByColor('#388E3C')"></div>
+    <div class="color-option" style="background-color: #00897B;" onclick="filterRowsByColor('#00897B')"></div>
+    <div class="color-option" style="background-color: #1976D2;" onclick="filterRowsByColor('#1976D2')"></div>
+    <div class="color-option" style="background-color: #512DA8;" onclick="filterRowsByColor('#512DA8')"></div>
+    <div class="color-option" style="background-color: #7B1FA2;" onclick="filterRowsByColor('#7B1FA2')"></div>
+    <div class="color-option" style="background-color: #C2185B;" onclick="filterRowsByColor('#C2185B')"></div>
+    <div class="color-option" style="background-color: #795548;" onclick="filterRowsByColor('#795548')"></div>
+    <div class="color-option" style="background-color: #616161;" onclick="filterRowsByColor('#616161')"></div>
 </div>
 
 
