@@ -10,6 +10,51 @@
 
 <style>
 
+/* Estilo para el selector de colores */
+.color-picker {
+    display: none;
+    position: fixed;
+    bottom: 20px; /* Posición encima del botón de color */
+    left: 90px; /* Mover a la derecha del botón principal */
+    background-color: white; /* Fondo sólido */
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    flex-wrap: wrap;
+    gap: 5px;
+    width: 120px; /* Ajustar el ancho */
+    z-index: 1001; /* Asegurar que esté por encima de otros elementos */
+
+
+
+
+
+}
+
+.color-picker.show {
+    display: flex;
+}
+
+.color-option {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #ccc;
+    transition: transform 0.2s ease;
+}
+
+.color-option:hover {
+    transform: scale(1.2); /* Efecto de escala al pasar el mouse */
+    border-color: #007bff;
+}
+
+
+
+
+
+
+
     /* Ocultar botones deshabilitados en el menú flotante */
     .floating-menu button.with-icon:disabled {
         display: none;
@@ -512,32 +557,31 @@ function generateSizeSelect(index, item) {
 
 // Actualizar la tabla
 function updateTable() {
-	const tableBody = document.getElementById("itemTableBody");
-	tableBody.innerHTML = "";
-	items.forEach((item, index) => {
-	const row = document.createElement("tr");
-        
-	row.innerHTML = 
-		`<td><input type="checkbox" class="itemCheckbox" data-index="${index}" onchange="updateButtonStates()"></td>
-		<td><img src="${item.image}" alt="${item.title}" style="width:50px;"></td>
-		<td class="hidden-column">${item.title}</td>
-		<td>${generateSizeSelect(index, item)}</td>
-		<td class="hidden-column">${item.sku}</td>
-		<td>${item.editingPrice ? `<input type="number" id="priceAppInput${index}" value="${item.priceApp.toFixed(2)}" class="small-input editable">` : item.priceApp.toFixed(2)}</td>
-		<td>${item.priceLempiras}</td>
-		<td><input type="number" id="customPriceInput${index}" class="small-input" value="${item.precioPersonalizado}" placeholder="Precio" oninput="updateCustomPrice(${index})"></td>
-		<td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>
-
-		<td>  
-    			<button onclick="toggleEditPrice(${index})">
-        			${item.editingPrice ? '<i class="fas fa-save"></i>' : '<i class="fas fa-pencil-alt"></i>'}
-    			</button>
-		</td>`;
-
-
-		tableBody.appendChild(row);
-	});
-	updateButtonStates();
+    const tableBody = document.getElementById("itemTableBody");
+    tableBody.innerHTML = "";
+    items.forEach((item, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = 
+            `<td><input type="checkbox" class="itemCheckbox" data-index="${index}" onchange="updateButtonStates()"></td>
+            <td><img src="${item.image}" alt="${item.title}" style="width:50px;"></td>
+            <td class="hidden-column">${item.title}</td>
+            <td>${generateSizeSelect(index, item)}</td>
+            <td class="hidden-column">${item.sku}</td>
+            <td>${item.editingPrice ? `<input type="number" id="priceAppInput${index}" value="${item.priceApp.toFixed(2)}" class="small-input editable">` : item.priceApp.toFixed(2)}</td>
+            <td>${item.priceLempiras}</td>
+            <td><input type="number" id="customPriceInput${index}" class="small-input" value="${item.precioPersonalizado}" placeholder="Precio" oninput="updateCustomPrice(${index})"></td>
+            <td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>
+            <td>  
+                <button onclick="toggleEditPrice(${index})">
+                    ${item.editingPrice ? '<i class="fas fa-save"></i>' : '<i class="fas fa-pencil-alt"></i>'}
+                </button>
+            </td>`;
+        if (item.color) {
+            row.style.backgroundColor = item.color;
+        }
+        tableBody.appendChild(row);
+    });
+    updateButtonStates();
 }
 
 
@@ -1008,11 +1052,65 @@ function handleMenuClick(action) {
 // Función del menú desplegable 
 
 
+
+// Función para abrir el selector de colores
+function openColorPicker(event) {
+    event.stopPropagation(); // Evitar que el clic se propague y cierre el menú
+    const colorPicker = document.getElementById("colorPicker");
+    colorPicker.classList.toggle("show");
+}
+
+// Función para aplicar el color seleccionado a las filas
+function applyColorToSelectedRows(color) {
+    const selectedCheckboxes = document.querySelectorAll('.itemCheckbox:checked');
+    selectedCheckboxes.forEach(checkbox => {
+        const index = checkbox.getAttribute('data-index');
+        const row = document.querySelector(`#itemTableBody tr:nth-child(${parseInt(index) + 1})`);
+        if (row) {
+            row.style.backgroundColor = color;
+            items[index].color = color; // Guardar el color en el item
+        }
+    });
+    saveToLocalStorage();
+    closeColorPicker(); // Cerrar el menú después de seleccionar un color
+}
+
+// Función para cerrar el selector de colores
+function closeColorPicker() {
+    const colorPicker = document.getElementById("colorPicker");
+    colorPicker.classList.remove("show");
+}
+
+// Cerrar el menú de colores al hacer clic fuera de él
+document.addEventListener("click", function (event) {
+    const colorPicker = document.getElementById("colorPicker");
+    const colorButton = document.getElementById("colorButton");
+    if (!colorPicker.contains(event.target) && !colorButton.contains(event.target)) {
+        closeColorPicker();
+    }
+});
+
+
+
+
+// Cargar colores al iniciar la página
+window.onload = function () {
+    const savedItems = localStorage.getItem("items");
+    if (savedItems) {
+        items = JSON.parse(savedItems);
+        updateTable();
+        loadColors();
+    }
+    updateButtonStates();
+};
+
+
 </script>
 
 </head>
 
 <body>
+
 
     <div class="fixed-header">
         <h2>‎ </h2>
@@ -1060,6 +1158,13 @@ function handleMenuClick(action) {
                 <button class="with-icon" onclick="exportToExcel()" disabled>
                     <i class="fas fa-file-export"></i> <!-- Exportar a Excel -->
                 </button>
+
+<button id="colorButton" class="with-icon" onclick="openColorPicker(event)">
+    <i class="fas fa-palette"></i> <!-- Ícono de paleta de colores -->
+</button>
+
+
+
             </div>
         </div>
 
@@ -1092,6 +1197,23 @@ function handleMenuClick(action) {
         </div>
 
     </div>
+
+
+<div class="color-picker" id="colorPicker">
+    <div class="color-option" style="background-color: #ffffff;" onclick="applyColorToSelectedRows('#ffffff')"></div> <!-- Blanco -->
+    <div class="color-option" style="background-color: #D32F2F;" onclick="applyColorToSelectedRows('#D32F2F')"></div> <!-- Rojo oscuro -->
+    <div class="color-option" style="background-color: #F57C00;" onclick="applyColorToSelectedRows('#F57C00')"></div> <!-- Naranja -->
+    <div class="color-option" style="background-color: #FBC02D;" onclick="applyColorToSelectedRows('#FBC02D')"></div> <!-- Amarillo fuerte -->
+    <div class="color-option" style="background-color: #388E3C;" onclick="applyColorToSelectedRows('#388E3C')"></div> <!-- Verde intenso -->
+    <div class="color-option" style="background-color: #00897B;" onclick="applyColorToSelectedRows('#00897B')"></div> <!-- Verde azulado -->
+    <div class="color-option" style="background-color: #1976D2;" onclick="applyColorToSelectedRows('#1976D2')"></div> <!-- Azul medio -->
+    <div class="color-option" style="background-color: #512DA8;" onclick="applyColorToSelectedRows('#512DA8')"></div> <!-- Morado fuerte -->
+    <div class="color-option" style="background-color: #7B1FA2;" onclick="applyColorToSelectedRows('#7B1FA2')"></div> <!-- Violeta oscuro -->
+    <div class="color-option" style="background-color: #C2185B;" onclick="applyColorToSelectedRows('#C2185B')"></div> <!-- Rosa fuerte -->
+    <div class="color-option" style="background-color: #795548;" onclick="applyColorToSelectedRows('#795548')"></div> <!-- Café -->
+    <div class="color-option" style="background-color: #616161;" onclick="applyColorToSelectedRows('#616161')"></div> <!-- Gris oscuro -->
+</div>
+
 
 </body>
 
