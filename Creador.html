@@ -29,6 +29,11 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s ease;
     z-index: 1000; /* Asegura que esté por encima de otros elementos */
+    width: 40px; /* Mismo ancho que el botón de menú desplegable */
+    height: 40px; /* Misma altura que el botón de menú desplegable */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #openColorPicker2:hover {
@@ -54,10 +59,6 @@
 #colorPicker2.show {
     display: flex;
 }
-
-
-
-
 
 
 
@@ -1131,6 +1132,19 @@ function togglePreview() {
 
         // Transformar el botón de menú desplegable en el botón de "Ocultar Vista Previa"
         dropdownToggle.innerHTML = '<i class="fas fa-eye-slash"></i>'; // Ícono de ojo cerrado
+
+// Transformar el botón de menú desplegable en el botón de "Ocultar Vista Previa"
+dropdownToggle.innerHTML = '<i class="fas fa-eye-slash"></i>'; // Ícono de ojo cerrado
+
+// Mantener las clases y estilos originales del botón
+dropdownToggle.classList.add("with-icon"); // Asegurar que tenga la clase "with-icon"
+dropdownToggle.style.width = "40px"; // Mantener el ancho original
+dropdownToggle.style.height = "40px"; // Mantener la altura original
+dropdownToggle.style.padding = "12px"; // Mantener el padding original
+dropdownToggle.style.fontSize = "16px"; // Mantener el tamaño de fuente original
+
+
+
         dropdownToggle.onclick = togglePreview; // Cambiar la función onclick
     } else {
         // Desactivar el modo de vista previa
