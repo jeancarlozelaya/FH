@@ -7,6 +7,7 @@
 <!-- Incluye FontAwesome para los iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
 
@@ -1090,6 +1091,8 @@ function togglePreview() {
     const clearButton = document.querySelector("button[onclick='clearInput()']"); // Botón "Limpiar"
 
     const openColorPicker2Button = document.getElementById("openColorPicker2");
+    const downloadTableImageButton = document.getElementById("downloadTableImage");
+
 
 
     if (!previewMode) {
@@ -1098,6 +1101,8 @@ function togglePreview() {
 
         // Activar el modo de vista previa
         openColorPicker2Button.style.display = 'inline-block'; // Mostrar el botón
+        downloadTableImageButton.style.display = 'inline-block'; // Mostrar el botón de descarga
+
 
         // Guardar el estado original solo la primera vez
         if (!isPreviewModeInitialized) {
@@ -1152,6 +1157,8 @@ dropdownToggle.style.fontSize = "16px"; // Mantener el tamaño de fuente origina
 
         // Desactivar el modo de vista previa
         openColorPicker2Button.style.display = 'none'; // Ocultar el botón
+        downloadTableImageButton.style.display = 'none'; // Ocultar el botón de descarga
+
 
         // Restaurar el estado original de las filas
         const rows = document.querySelectorAll("#itemTableBody tr");
@@ -1487,6 +1494,36 @@ function showTotalRow(total) {
 
 
 
+function downloadTableImage() {
+    const table = document.getElementById("itemTable"); // Seleccionar la tabla
+
+    // Opciones para html2canvas (ajusta según sea necesario)
+    const options = {
+        scale: 2, // Aumenta la calidad de la imagen
+        useCORS: true, // Permite cargar imágenes externas (si las hay)
+        logging: true, // Muestra logs en la consola (útil para depuración)
+    };
+
+    // Capturar la tabla como imagen
+    html2canvas(table, options).then(canvas => {
+        // Convertir el canvas a una imagen PNG
+        const image = canvas.toDataURL("image/png");
+
+        // Crear un enlace temporal para descargar la imagen
+        const link = document.createElement("a");
+        link.href = image;
+        link.download = "Detalle.png"; // Nombre del archivo
+        document.body.appendChild(link); // Agregar el enlace al DOM
+        link.click(); // Simular clic en el enlace para descargar
+        document.body.removeChild(link); // Eliminar el enlace del DOM
+    }).catch(error => {
+        console.error("Error al capturar la tabla:", error);
+        alert("Hubo un error al generar la imagen. Inténtalo de nuevo.");
+    });
+}
+
+
+
 </script>
 
 </head>
@@ -1613,6 +1650,10 @@ function showTotalRow(total) {
     <div class="color-option" style="background-color: #795548;" onclick="filterRowsByColor('#795548')"></div>
     <div class="color-option" style="background-color: #616161;" onclick="filterRowsByColor('#616161')"></div>
 </div>
+
+<button id="downloadTableImage" class="with-icon" onclick="downloadTableImage()" style="display: none; position: fixed; bottom: 20px; left: 120px;">
+    <i class="fas fa-download"></i> <!-- Ícono de descarga -->
+</button>
 
 
 </body>
