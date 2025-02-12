@@ -450,6 +450,7 @@ window.onload = function () {
     if (savedItems) {
         items = JSON.parse(savedItems);
         updateTable();
+        loadColors();
     }
     updateButtonStates();
 };
@@ -1066,6 +1067,7 @@ function openColorPicker(event) {
     colorPicker.classList.toggle("show");
 }
 
+
 // Función para aplicar el color seleccionado a las filas
 function applyColorToSelectedRows(color) {
     const selectedCheckboxes = document.querySelectorAll('.itemCheckbox:checked');
@@ -1081,11 +1083,13 @@ function applyColorToSelectedRows(color) {
     closeColorPicker(); // Cerrar el menú después de seleccionar un color
 }
 
+
 // Función para cerrar el selector de colores
 function closeColorPicker() {
     const colorPicker = document.getElementById("colorPicker");
     colorPicker.classList.remove("show");
 }
+
 
 // Cerrar el menú de colores al hacer clic fuera de él
 document.addEventListener("click", function (event) {
@@ -1095,22 +1099,6 @@ document.addEventListener("click", function (event) {
         closeColorPicker();
     }
 });
-
-
-
-
-// Cargar colores al iniciar la página
-window.onload = function () {
-    const savedItems = localStorage.getItem("items");
-    if (savedItems) {
-        items = JSON.parse(savedItems);
-        updateTable();
-        loadColors();
-    }
-    updateButtonStates();
-};
-
-
 
 
 // Función para agrupar filas por colores
@@ -1144,7 +1132,6 @@ function groupByColor() {
     updateTable();
     showMessage("Todas las filas agrupadas por colores con éxito.", 'processing');
 }
-
 
 
 </script>
