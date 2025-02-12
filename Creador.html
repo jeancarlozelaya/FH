@@ -10,6 +10,23 @@
 
 <style>
 
+/* Estilo para el checkbox dentro de la celda de la imagen */
+td div {
+    position: relative;
+    display: inline-block;
+}
+
+td input[type="checkbox"] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1; /* Asegura que el checkbox esté por encima de la imagen */
+}
+
+
+
+
+
 
 
 
@@ -567,8 +584,12 @@ function updateTable() {
     items.forEach((item, index) => {
         const row = document.createElement("tr");
         row.innerHTML = 
-            `<td><input type="checkbox" class="itemCheckbox" data-index="${index}" onchange="updateButtonStates()"></td>
-            <td><img src="${item.image}" alt="${item.title}" style="width:50px;"></td>
+            `<td>
+                <div style="position: relative; display: inline-block;">
+                    <img src="${item.image}" alt="${item.title}" style="width:50px;">
+                    <input type="checkbox" class="itemCheckbox" data-index="${index}" onchange="updateButtonStates()" style="position: absolute; top: 0; right: 0;">
+                </div>
+            </td>
             <td class="hidden-column">${item.title}</td>
             <td>${generateSizeSelect(index, item)}</td>
             <td class="hidden-column">${item.sku}</td>
@@ -594,7 +615,7 @@ function updateTable() {
 const style = document.createElement('style');
 style.innerHTML = `
 	.hidden-column { display: none; }
-	th:nth-child(3), th:nth-child(5), th:nth-child(9) { display: none; }
+	th:nth-child(2), th:nth-child(4), th:nth-child(8) { display: none; }
 `;
 document.head.appendChild(style);
 
@@ -884,7 +905,7 @@ function togglePreview() {
     const tableHeaders = document.querySelectorAll("#itemTable thead th"); // Seleccionamos los encabezados
 
     // Columnas que se van a ocultar: "Precio App" (5), "Precio Lempiras" (6), "Editar Precio de App" (9)
-    const columnsToHide = [0, 5, 6, 9];
+    const columnsToHide = [4, 5, 8];
 
     // Elementos adicionales a ocultar
     const title = document.querySelector("h2"); // Título "Lista de Artículos"
@@ -1198,23 +1219,22 @@ function groupByColor() {
 
         <div id="resultado"></div>
 
-        <table id="itemTable">
-            <thead>
-                <tr>
-                    <th class="preview-hidden"><button onclick="toggleSelectAll()" id="selectAllButton">☑</button></th>
-                    <th>Imagen</th>
-                    <th>Título</th>
-                    <th>Talla</th>
-                    <th>SKU</th>
-                    <th class="preview-hidden">Precio App</th>
-                    <th class="preview-hidden">Precio Lempiras</th>
-                    <th>Precio</th> <!-- Nueva columna "Precio" -->
-                    <th>Enlace</th>
-                    <th class="preview-hidden">Editar Precio de App</th>
-                </tr>
-            </thead>
-            <tbody id="itemTableBody"></tbody>
-        </table>
+<table id="itemTable">
+    <thead>
+        <tr>
+            <th>Imagen</th>
+            <th>Título</th>
+            <th>Talla</th>
+            <th>SKU</th>
+            <th class="preview-hidden">Precio App</th>
+            <th class="preview-hidden">Precio Lempiras</th>
+            <th>Precio</th>
+            <th>Enlace</th>
+            <th class="preview-hidden">Editar Precio de App</th>
+        </tr>
+    </thead>
+    <tbody id="itemTableBody"></tbody>
+</table>
 
         <!-- HTML para el cuadro modal -->
         <div id="manualCopyModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000;">
