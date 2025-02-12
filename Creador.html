@@ -184,22 +184,124 @@ td input[type="checkbox"] {
         max-width: 100%;
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
 
+
+
+/* Estilos base para la tabla */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    table-layout: auto; /* Permite que las columnas se ajusten al contenido */
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+}
+
+th {
+    background-color: #f4f4f4;
+}
+
+/* Ajustar el ancho de las columnas */
+th:nth-child(1), td:nth-child(1) { /* Columna del checkbox */
+    width: 40px; /* Más estrecha */
+}
+
+th:nth-child(2), td:nth-child(2) { /* Columna del título */
+    width: 150px; /* Ancho reducido */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+    overflow: hidden; /* Oculta el texto que no cabe */
+    text-overflow: ellipsis; /* Muestra "..." si el texto es demasiado largo */
+}
+
+th:nth-child(3), td:nth-child(3) { /* Columna de la talla */
+    width: 120px; /* Ancho reducido */
+}
+
+th:nth-child(4), td:nth-child(4) { /* Columna del SKU */
+    width: 80px; /* Más estrecha */
+}
+
+th:nth-child(5), td:nth-child(5) { /* Columna del precio App */
+    width: 80px; /* Más estrecha */
+}
+
+th:nth-child(6), td:nth-child(6) { /* Columna del precio en Lempiras */
+    width: 80px; /* Más estrecha */
+}
+
+th:nth-child(7), td:nth-child(7) { /* Columna del precio personalizado */
+    width: 80px; /* Más estrecha */
+}
+
+th:nth-child(8), td:nth-child(8) { /* Columna del enlace */
+    width: 80px; /* Más estrecha */
+}
+
+/* Asegurar que el select dentro de la columna de talla ocupe todo el ancho */
+td:nth-child(3) select {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 14px; /* Tamaño de fuente más pequeño */
+}
+
+/* Estilos para pantallas pequeñas (móviles) */
+@media (max-width: 767px) {
     th, td {
-        border: 1px solid #ccc;
-        padding: 8px;
-        text-align: center;
-        vertical-align: middle;
+        padding: 6px; /* Menos padding para ahorrar espacio */
+        font-size: 12px; /* Tamaño de fuente más pequeño */
     }
 
-    th {
-        background-color: #f4f4f4;
+    th:nth-child(1), td:nth-child(1) { /* Columna del checkbox */
+        width: 30px;
     }
+
+    th:nth-child(2), td:nth-child(2) { /* Columna del título */
+        width: 100px; /* Más estrecha en móviles */
+    }
+
+    th:nth-child(3), td:nth-child(3) { /* Columna de la talla */
+        width: 80px; /* Más estrecha en móviles */
+    }
+
+    th:nth-child(4), td:nth-child(4) { /* Columna del SKU */
+        width: 60px;
+    }
+
+    th:nth-child(5), td:nth-child(5) { /* Columna del precio App */
+        width: 60px;
+    }
+
+    th:nth-child(6), td:nth-child(6) { /* Columna del precio en Lempiras */
+        width: 60px;
+    }
+
+    th:nth-child(7), td:nth-child(7) { /* Columna del precio personalizado */
+        width: 60px;
+    }
+
+    th:nth-child(8), td:nth-child(8) { /* Columna del enlace */
+        width: 60px;
+    }
+
+    /* Ajustar el tamaño de los inputs y selects en móviles */
+    input[type="text"],
+    input[type="number"],
+    select {
+        font-size: 12px; /* Tamaño de fuente más pequeño */
+        padding: 4px; /* Menos padding */
+    }
+}
+
+
+
+
+
 
     .error {
         color: red;
@@ -1229,7 +1331,7 @@ function groupByColor() {
 <table id="itemTable">
     <thead>
         <tr>
-            <th>Imagen</th>
+            <th class="preview-hidden"><button onclick="toggleSelectAll()" id="selectAllButton">☑</button></th>
             <th>Título</th>
             <th>Talla</th>
             <th>SKU</th>
