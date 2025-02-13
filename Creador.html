@@ -284,115 +284,119 @@ td input[type="checkbox"] {
 
 
 
-/* Estilos base para la tabla */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    table-layout: auto; /* Permite que las columnas se ajusten al contenido */
-}
-
-th, td {
-    border: 1px solid #ccc;
-    padding: 8px;
-    text-align: center;
-    vertical-align: middle;
-    font-size: 14px; /* Tamaño de fuente más pequeño */
-}
-
-th {
-    background-color: #f4f4f4;
-}
-
-/* Ajustar el ancho de las columnas */
-th:nth-child(1), td:nth-child(1) { /* Columna del checkbox */
-    width: 40px; /* Más estrecha */
-}
-
-th:nth-child(2), td:nth-child(2) { /* Columna del título */
-    width: 150px; /* Ancho reducido */
-    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
-    overflow: hidden; /* Oculta el texto que no cabe */
-    text-overflow: ellipsis; /* Muestra "..." si el texto es demasiado largo */
-}
-
-th:nth-child(3), td:nth-child(3) { /* Columna de la talla */
-    width: 120px; /* Ancho reducido */
-}
-
-th:nth-child(4), td:nth-child(4) { /* Columna del SKU */
-    width: 80px; /* Más estrecha */
-}
-
-th:nth-child(5), td:nth-child(5) { /* Columna del precio App */
-    width: 80px; /* Más estrecha */
-}
-
-th:nth-child(6), td:nth-child(6) { /* Columna del precio en Lempiras */
-    width: 80px; /* Más estrecha */
-}
-
-th:nth-child(7), td:nth-child(7) { /* Columna del precio personalizado */
-    width: 80px; /* Más estrecha */
-}
-
-th:nth-child(8), td:nth-child(8) { /* Columna del enlace */
-    width: 80px; /* Más estrecha */
-}
-
-/* Asegurar que el select dentro de la columna de talla ocupe todo el ancho */
-td:nth-child(3) select {
-    width: 100%;
-    box-sizing: border-box;
-    font-size: 14px; /* Tamaño de fuente más pequeño */
-}
-
-/* Estilos para pantallas pequeñas (móviles) */
-@media (max-width: 767px) {
-    th, td {
-        padding: 6px; /* Menos padding para ahorrar espacio */
-        font-size: 12px; /* Tamaño de fuente más pequeño */
+    /* Estilos base para la tabla */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        table-layout: auto; /* Permite que las columnas se ajusten al contenido */
     }
 
+    th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 14px; /* Tamaño de fuente más pequeño */
+    }
+
+    th {
+        background-color: #f4f4f4;
+        position: sticky;
+        top: 0; /* Asegura que los encabezados se queden fijos en la parte superior */
+        z-index: 2; /* Asegura que los encabezados estén por encima del contenido de la tabla */
+    }
+
+    /* Ajustar el ancho de las columnas */
     th:nth-child(1), td:nth-child(1) { /* Columna del checkbox */
-        width: 30px;
+        width: 40px; /* Más estrecha */
     }
 
     th:nth-child(2), td:nth-child(2) { /* Columna del título */
-        width: 100px; /* Más estrecha en móviles */
+        width: 150px; /* Ancho reducido */
+        white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+        overflow: hidden; /* Oculta el texto que no cabe */
+        text-overflow: ellipsis; /* Muestra "..." si el texto es demasiado largo */
     }
 
     th:nth-child(3), td:nth-child(3) { /* Columna de la talla */
-        width: 80px; /* Más estrecha en móviles */
+        width: 120px; /* Ancho reducido */
     }
 
     th:nth-child(4), td:nth-child(4) { /* Columna del SKU */
-        width: 60px;
+        width: 80px; /* Más estrecha */
     }
 
     th:nth-child(5), td:nth-child(5) { /* Columna del precio App */
-        width: 60px;
+        width: 80px; /* Más estrecha */
     }
 
     th:nth-child(6), td:nth-child(6) { /* Columna del precio en Lempiras */
-        width: 60px;
+        width: 80px; /* Más estrecha */
     }
 
     th:nth-child(7), td:nth-child(7) { /* Columna del precio personalizado */
-        width: 60px;
+        width: 80px; /* Más estrecha */
     }
 
     th:nth-child(8), td:nth-child(8) { /* Columna del enlace */
-        width: 60px;
+        width: 80px; /* Más estrecha */
     }
 
-    /* Ajustar el tamaño de los inputs y selects en móviles */
-    input[type="text"],
-    input[type="number"],
-    select {
-        font-size: 12px; /* Tamaño de fuente más pequeño */
-        padding: 4px; /* Menos padding */
+    /* Asegurar que el select dentro de la columna de talla ocupe todo el ancho */
+    td:nth-child(3) select {
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 14px; /* Tamaño de fuente más pequeño */
     }
+
+    /* Estilos para pantallas pequeñas (móviles) */
+    @media (max-width: 767px) {
+        th, td {
+            padding: 6px; /* Menos padding para ahorrar espacio */
+            font-size: 12px; /* Tamaño de fuente más pequeño */
+        }
+
+        th:nth-child(1), td:nth-child(1) { /* Columna del checkbox */
+            width: 30px;
+        }
+
+        th:nth-child(2), td:nth-child(2) { /* Columna del título */
+            width: 100px; /* Más estrecha en móviles */
+        }
+
+        th:nth-child(3), td:nth-child(3) { /* Columna de la talla */
+            width: 80px; /* Más estrecha en móviles */
+        }
+
+        th:nth-child(4), td:nth-child(4) { /* Columna del SKU */
+            width: 60px;
+        }
+
+        th:nth-child(5), td:nth-child(5) { /* Columna del precio App */
+            width: 60px;
+        }
+
+        th:nth-child(6), td:nth-child(6) { /* Columna del precio en Lempiras */
+            width: 60px;
+        }
+
+        th:nth-child(7), td:nth-child(7) { /* Columna del precio personalizado */
+            width: 60px;
+        }
+
+        th:nth-child(8), td:nth-child(8) { /* Columna del enlace */
+            width: 60px;
+        }
+
+        /* Ajustar el tamaño de los inputs y selects en móviles */
+        input[type="text"],
+        input[type="number"],
+        select {
+            font-size: 12px; /* Tamaño de fuente más pequeño */
+            padding: 4px; /* Menos padding */
+        }
+
 td:nth-child(7) input {
     height: 17px; /* Altura total (15px + 8px de padding superior e inferior) */
     padding: 8px;
@@ -402,7 +406,33 @@ td:nth-child(7) input {
 }
 
 
-}
+    }
+
+    /* Contenedor de la tabla con desplazamiento vertical */
+    .table-container {
+        height: calc(100vh - 150px); /* Altura dinámica basada en la pantalla */
+        overflow-y: auto;
+        border: 1px solid #ccc; /* Opcional: añade un borde para mejor visibilidad */
+    }
+
+    /* Estilos para el encabezado y controles */
+    .fixed-header {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 3;
+        padding: 10px;
+    }
+
+    .controls {
+        margin-bottom: 10px;
+    }
+
+
+
+
+
+
 
 
 
@@ -1458,31 +1488,38 @@ function showTotalRow(total) {
 
 function downloadTableImage() {
     const table = document.getElementById("itemTable"); // Seleccionar la tabla
+    const tableContainer = document.querySelector(".table-container"); // Contenedor de la tabla
 
-    // Opciones optimizadas para html2canvas
-    const options = {
-        scale: window.devicePixelRatio * 2, // Mejora la calidad de la imagen
-        useCORS: true, // Permite imágenes externas sin error de CORS
-        backgroundColor: "#ffffff", // Asegura fondo blanco y evita el color negro en la última fila
-        logging: false // Desactiva logs para mejorar rendimiento
-    };
+    // 1. Desplazar la tabla al inicio
+    tableContainer.scrollTop = 0;
 
-    // Capturar la tabla como imagen
-    html2canvas(table, options).then(canvas => {
-        // Convertir el canvas a una imagen PNG con máxima calidad
-        const image = canvas.toDataURL("image/png", 1.0);
+    // 2. Esperar un momento para que el encabezado se coloque correctamente
+    setTimeout(() => {
+        // Opciones optimizadas para html2canvas
+        const options = {
+            scale: window.devicePixelRatio * 2, // Mejora la calidad de la imagen
+            useCORS: true, // Permite imágenes externas sin error de CORS
+            backgroundColor: "#ffffff", // Fondo blanco
+            logging: false // Desactiva logs para mejorar rendimiento
+        };
 
-        // Crear un enlace temporal para descargar la imagen
-        const link = document.createElement("a");
-        link.href = image;
-        link.download = "Detalle.png"; // Nombre del archivo
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }).catch(error => {
-        console.error("Error al capturar la tabla:", error);
-        alert("Hubo un error al generar la imagen. Inténtalo de nuevo.");
-    });
+        // Capturar la tabla como imagen
+        html2canvas(table, options).then(canvas => {
+            // Convertir el canvas a una imagen PNG con máxima calidad
+            const image = canvas.toDataURL("image/png", 1.0);
+
+            // Crear un enlace temporal para descargar la imagen
+            const link = document.createElement("a");
+            link.href = image;
+            link.download = "Detalle.png"; // Nombre del archivo
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }).catch(error => {
+            console.error("Error al capturar la tabla:", error);
+            alert("Hubo un error al generar la imagen. Inténtalo de nuevo.");
+        });
+    }, 100); // Pequeño retraso para asegurar que el encabezado esté en su lugar
 }
 
 
@@ -1549,21 +1586,23 @@ function downloadTableImage() {
 
         <div id="resultado"></div>
 
-<table id="itemTable">
-    <thead>
-        <tr>
-            <th class="preview-hidden"><button onclick="toggleSelectAll()" id="selectAllButton">☑</button></th>
-            <th>Título</th>
-            <th>Talla</th>
-            <th>SKU</th>
-            <th class="preview-hidden">Precio App</th>
-            <th class="preview-hidden">Precio Lempiras</th>
-            <th>Precio</th>
-            <th>Enlace</th>
-        </tr>
-    </thead>
-    <tbody id="itemTableBody"></tbody>
-</table>
+<div class="table-container">
+    <table id="itemTable">
+        <thead>
+            <tr>
+                <th class="preview-hidden"><button onclick="toggleSelectAll()" id="selectAllButton">☑</button></th>
+                <th>Título</th>
+                <th>Talla</th>
+                <th>SKU</th>
+                <th class="preview-hidden">Precio App</th>
+                <th class="preview-hidden">Precio Lempiras</th>
+                <th>Precio</th>
+                <th>Enlace</th>
+            </tr>
+        </thead>
+        <tbody id="itemTableBody"></tbody>
+    </table>
+</div>
 
         <!-- HTML para el cuadro modal -->
         <div id="manualCopyModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000;">
