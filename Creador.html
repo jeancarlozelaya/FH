@@ -496,52 +496,34 @@ td:nth-child(7) input {
         display: none;
     }
 
-    /* Fijar el div resultado en la parte inferior izquierda de la pantalla */
-    #resultado {
-        display: none;
-        position: fixed;
-        bottom: 10px;
-        left: 60px; /* Mueve el cuadro más a la derecha */
-        background-color: #fff;
-        z-index: 100;
-        padding: 10px;
-        border-radius: 8px;
-        width: auto;
-        border-top: 2px solid #4CAF50;
-        max-width: 300px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        font-family: 'Arial', sans-serif;
-        color: #333;
-        font-size: 12px;
-        overflow: hidden;
-    }
+/* Estilos para el contenedor de mensajes */
+#resultado {
+    position: fixed;
+    top: 0px;
+    right: 20px;
+    z-index: 1000;
+    display: none;
+    background-color: rgba(0, 0, 0, 0.8); /* Fondo oscuro semi-transparente */
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 14px;
+}
 
-    #resultado p {
-        margin: 0;
-        font-size: 14px;
-    }
+/* Estilos para el ícono de carga */
+.fa-spinner {
+    font-size: 18px;
+    animation: spin 1s linear infinite; /* Animación de giro */
+}
 
-    #resultado h3 {
-        margin: 0 0 8px 0;
-        font-size: 16px;
-        color: #4CAF50;
-        font-weight: bold;
-    }
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 
-    #resultado button {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        margin-top: 8px;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
 
-    #resultado button:hover {
-        background-color: #45a049;
-    }
+
+
 
     /* Media queries para dispositivos móviles */
     @media (max-width: 768px) {
@@ -757,7 +739,7 @@ function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
         items.push(item);
         saveToLocalStorage();
         updateTable();
-        showMessage("Datos cargados con éxito.", 'processing');
+        showMessage("Datos cargados con éxito.", 'success');
     } else {
         // Verifica el mensaje de error y realiza un nuevo intento
         if (retryCount < 5) { // Límite de reintentos
@@ -862,7 +844,7 @@ function undoDelete() {
                 lastDeletedItems = [];
                 saveToLocalStorage();
                 updateTable();
-		showMessage("Se recuperó la última eliminación con éxito.", 'processing');
+		showMessage("Se recuperó la última eliminación con éxito.", 'success');
 	}
 }
 
@@ -998,22 +980,37 @@ function updateButtonStates() {
 function showMessage(message, type) {
     const resultDiv = document.getElementById("resultado");
 
-    // Mostrar el mensaje en el div
-    resultDiv.innerHTML = `<span class="${type}">${message}</span>`;
-    resultDiv.style.display = 'block'; // Asegurarse de que el div esté visible
+    // Limpiar el contenido anterior
+    resultDiv.innerHTML = "";
 
-    // Si el mensaje es "Procesando, por favor espere...", no ocultarlo
-    if (message !== "Procesando, por favor espere...") {
-        // Si ya existe un timeout, limpiarlo
+    // Crear un nuevo elemento para el mensaje
+    const messageElement = document.createElement("div");
+    messageElement.className = `message ${type}`; // Agregar clases para el estilo y el tipo de mensaje
+
+    // Mostrar un ícono de carga si el tipo es "processing"
+    if (type === "processing") {
+        messageElement.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`; // Ícono giratorio
+    } else {
+        messageElement.textContent = message; // Mensaje de texto normal
+    }
+
+    // Agregar el mensaje al contenedor
+    resultDiv.appendChild(messageElement);
+
+    // Mostrar el mensaje
+    resultDiv.style.display = 'block';
+
+    // Ocultar el mensaje después de 3 segundos (excepto para "processing")
+    if (type !== "processing") {
         if (messageTimeout) {
             clearTimeout(messageTimeout);
-        }
 
-        // Ocultar el mensaje después de 5 segundos
-        messageTimeout = setTimeout(function () {
+        }
+        messageTimeout = setTimeout(() => {
             resultDiv.style.display = 'none'; // Ocultar el div
-        }, 3000);
+        }, 2000);
     }
+
 }
 
 
@@ -1047,7 +1044,7 @@ function toggleEditPrice(index) {
             items[index].priceLempiras = calculatePriceInLempiras(newPrice, items[index].percentage);
 
             // Mostrar el mensaje solo si hubo un cambio
-            showMessage("Precio de App actualizado con éxito.", 'processing');
+            showMessage("Precio de App actualizado con éxito.", 'success');
         }
     }
 
@@ -1068,7 +1065,7 @@ function deleteSelectedItems() {
     saveToLocalStorage();
     updateTable();
     updateButtonStates(); // Asegúrate de agregar esto
-    showMessage("Filas eliminadas con éxito.", 'processing');
+    showMessage("Filas eliminadas con éxito.", 'success');
 }
 
 
@@ -1244,7 +1241,7 @@ function duplicateSelectedRow() {
 
     saveToLocalStorage();
     updateTable();
-    showMessage("Fila duplicada con éxito.", 'processing');
+    showMessage("Fila duplicada con éxito.", 'success');
 }
 
 
@@ -1342,7 +1339,7 @@ function groupByColor() {
 
     saveToLocalStorage();
     updateTable();
-    showMessage("Todas las filas agrupadas por colores con éxito.", 'processing');
+    showMessage("Todas las filas agrupadas por colores con éxito.", 'success');
 }
 
 
