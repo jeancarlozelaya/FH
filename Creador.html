@@ -6,11 +6,9 @@
 <title>Creador v4.0</title>
 <!-- Incluye FontAwesome para los iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
-
 
 
 /* Estilo para el botón de descarga */
@@ -38,12 +36,6 @@
 #downloadTableImage:hover {
     background-color: #0056b3;
 }
-
-
-
-
-
-
 
 
 
@@ -997,7 +989,6 @@ function updateButtonStates() {
     document.querySelector('button[onclick="copySelectedRows()"]').disabled = selectedItemsCount === 0;
     document.querySelector('button[onclick="duplicateSelectedRow()"]').disabled = selectedItemsCount === 0;
     document.querySelector('button[onclick="undoDelete()"]').disabled = lastDeletedItems.length === 0;
-    document.querySelector('button[onclick="groupSelectedRows()"]').disabled = selectedItemsCount === 0;
     document.querySelector('button[onclick="deleteSelectedItems()"]').disabled = selectedItemsCount === 0;
     // Elimina la línea que deshabilita el botón de agrupar por colores
 }
@@ -1039,35 +1030,6 @@ function toggleSelectAll() {
 
     const selectAllButton = document.getElementById("selectAllButton");
     selectAllButton.innerText = allChecked ? "☐" : "☑";
-}
-
-
-// Función para agrupar filas seleccionadas
-function groupSelectedRows() {
-    document.getElementById("dropdownMenu").classList.remove("show");
-
-    const selectedCheckboxes = document.querySelectorAll('.itemCheckbox:checked');
-    const selectedIndexes = Array.from(selectedCheckboxes)
-        .map(checkbox => checkbox.getAttribute('data-index'))
-        .map(Number);
-
-    if (selectedIndexes.length === 0) {
-        showMessage("No hay filas seleccionadas para agrupar.", 'error');
-        return;
-    }
-
-    // Obtener los artículos seleccionados
-    const selectedItems = selectedIndexes.map(index => items[index]);
-
-    // Filtrar los artículos no seleccionados
-    items = items.filter((_, index) => !selectedIndexes.includes(index));
-
-    // Añadir los artículos seleccionados al principio de la lista
-    items = [...selectedItems, ...items];
-
-    saveToLocalStorage();
-    updateTable();
-    showMessage("Artículos agrupados con éxito.", 'processing');
 }
 
 
@@ -1250,50 +1212,6 @@ dropdownToggle.style.fontSize = "16px"; // Mantener el tamaño de fuente origina
     }
 
     previewMode = !previewMode; // Cambiar el estado de la vista previa
-}
-
-
-// Función para exportar todas la filas a un archivo de excel
-function exportToExcel() {
-    document.getElementById("dropdownMenu").classList.remove("show");
-
-    const ws = XLSX.utils.aoa_to_sheet([]);
-    const data = [];
-
-    items.forEach((item, index) => {
-        const customPriceInput = document.getElementById(`customPriceInput${index}`);
-        const customPrice = customPriceInput ? customPriceInput.value.trim() : '';
-
-        // Solo incluir el precio personalizado si no está vacío
-        const priceToExport = customPrice !== '' ? customPrice : ''; // Dejar vacío si no hay precio personalizado
-
-        // Asegura que el porcentaje esté definido
-        const porcentaje = item.percentage !== undefined ? item.percentage : 0;
-
-        // Fórmula `priceLempiras` que usa la celda a la izquierda y el porcentaje correcto
-        const priceLempirasFormula = `=(INDIRECT("RC[-1]", 0) * 26 + 50) * (1 + ${porcentaje})`;
-
-        const row = [
-            `=IMAGE("${item.image}")`,   // Fórmula para imagen
-            decodeHTML(item.title),      // Función para descodificar HTML
-            item.selectedSize ? item.selectedSize : '""',
-            item.sku,
-            item.priceApp.toFixed(2),
-            priceLempirasFormula,        // Fórmula para el precio en lempiras
-            `=HYPERLINK("${item.enlace}", "Ver detalle")`, // Fórmula para enlace
-            '',
-            priceToExport                // Precio personalizado o vacío
-        ];
-        data.push(row);
-    });
-
-    XLSX.utils.sheet_add_aoa(ws, data, { origin: 'A1' });
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Artículos');
-
-    // Generar el archivo
-    XLSX.writeFile(wb, 'articulos.xlsx');
-    showMessage("Datos exportados con éxito.", 'processing');
 }
 
 
@@ -1618,9 +1536,7 @@ function downloadTableImage() {
                 <button id="copyButton" class="with-icon" onclick="copySelectedRows()" disabled>
                     <i class="fas fa-copy"></i> <!-- Copiar Seleccionados -->
                 </button>
-                <button id="groupButton" class="with-icon" onclick="groupSelectedRows()" disabled>
-                    <i class="fas fa-object-group"></i> <!-- Agrupar Seleccionados -->
-                </button>
+
                 <button id="deleteButton" class="with-icon" onclick="deleteSelectedItems()" disabled>
                     <i class="fas fa-trash-alt"></i> <!-- Eliminar filas marcadas -->
                 </button>
@@ -1630,9 +1546,7 @@ function downloadTableImage() {
                 <button id="previewButton" class="with-icon" onclick="togglePreview()">
                     <i class="fas fa-eye"></i> <!-- Vista Previa -->
                 </button>
-                <button class="with-icon" onclick="exportToExcel()" disabled>
-                    <i class="fas fa-file-export"></i> <!-- Exportar a Excel -->
-                </button>
+
             </div>
         </div>
 
