@@ -11,6 +11,17 @@
 
 <style>
 
+
+@media (max-width: 767px) {
+    th:nth-child(5), td:nth-child(5), /* Precio App */
+    th:nth-child(6), td:nth-child(6), /* Precio Lempiras */
+    th:nth-child(7), td:nth-child(7) { /* Precio Personalizado */
+        height: 80px; /* Ajustar el ancho de las columnas de precio */
+    }
+}
+
+
+
 /* Estilo para el botón de descarga */
 #downloadTableImage {
     position: fixed;
@@ -401,7 +412,26 @@ td:nth-child(3) select {
     }
 }
 
+@media (max-width: 767px) {
+    /* Ajustar la altura de la caja de texto en la columna 7 */
+td:nth-child(7) input {
+    padding: 8px;
+    font-size: 14px;
+    text-align: center; /* Centrar el texto horizontalmente */
+    line-height: 15px; /* Centrar el texto verticalmente */
+}
 
+
+    /* Aumentar la altura de las filas */
+    tr {
+        height: 50px; /* Ajustar la altura de las filas */
+    }
+
+    /* Centrar el contenido verticalmente en las celdas */
+    td {
+        vertical-align: middle; /* Centrar el contenido verticalmente */
+    }
+}
 
 
 
@@ -1533,30 +1563,33 @@ function showTotalRow(total) {
 function downloadTableImage() {
     const table = document.getElementById("itemTable"); // Seleccionar la tabla
 
-    // Opciones para html2canvas (ajusta según sea necesario)
+    // Opciones optimizadas para html2canvas
     const options = {
-        scale: 2, // Aumenta la calidad de la imagen
-        useCORS: true, // Permite cargar imágenes externas (si las hay)
-        logging: true, // Muestra logs en la consola (útil para depuración)
+        scale: window.devicePixelRatio * 2, // Mejora la calidad de la imagen
+        useCORS: true, // Permite imágenes externas sin error de CORS
+        backgroundColor: "#ffffff", // Asegura fondo blanco y evita el color negro en la última fila
+        logging: false // Desactiva logs para mejorar rendimiento
     };
 
     // Capturar la tabla como imagen
     html2canvas(table, options).then(canvas => {
-        // Convertir el canvas a una imagen PNG
-        const image = canvas.toDataURL("image/png");
+        // Convertir el canvas a una imagen PNG con máxima calidad
+        const image = canvas.toDataURL("image/png", 1.0);
 
         // Crear un enlace temporal para descargar la imagen
         const link = document.createElement("a");
         link.href = image;
         link.download = "Detalle.png"; // Nombre del archivo
-        document.body.appendChild(link); // Agregar el enlace al DOM
-        link.click(); // Simular clic en el enlace para descargar
-        document.body.removeChild(link); // Eliminar el enlace del DOM
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }).catch(error => {
         console.error("Error al capturar la tabla:", error);
         alert("Hubo un error al generar la imagen. Inténtalo de nuevo.");
     });
 }
+
+
 
 
 
