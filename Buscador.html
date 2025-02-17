@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Busca en Shein</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]::placeholder {
+            color: #999;
+        }
+
+        a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #ff5a5f;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        a:hover {
+            background-color: #e04a4f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Encuentra tu producto en Shein</h2>
+        <p>Escribe lo que buscas y mira el enlace actualizado:</p>
+
+        <!-- Input para la búsqueda -->
+        <input id="searchQuery" type="text" placeholder="Ejemplo: Calzoneta para hombre" />
+
+        <!-- Enlace para buscar en Shein -->
+        <p>
+            <a id="dynamicLink" href="https://us.shein.com/" target="_blank" rel="noopener noreferrer">
+                Haz clic aquí para buscar en Shein
+            </a>
+        </p>
+    </div>
+
+    <!-- Script JavaScript para manejar la búsqueda -->
+    <script>
+        // Función para actualizar el enlace de Shein basado en el texto ingresado
+        function updateLink() {
+            const query = document.getElementById("searchQuery").value.trim();
+            const sheinUrl = `https://us.shein.com/pdsearch/${encodeURIComponent(query)}?ici=s1EditSearch${encodeURIComponent(query)}_fbd0PageHome&search_source=1&search_type=all&source=search&src_identifier=st%3D2%60sc%3D${encodeURIComponent(query)}%60sr%3D0%60ps%3D1&src_identifier_pre_search=&src_module=search&src_tab_page_id=page_home1730078017541`;
+            
+            // Actualiza el href del enlace
+            const dynamicLink = document.getElementById("dynamicLink");
+            dynamicLink.href = sheinUrl;
+            dynamicLink.textContent = query ? `Haz clic aquí para buscar "${query}" en Shein` : "Haz clic aquí para buscar en Shein";
+        }
+
+        // Escucha el evento de entrada en el campo de texto
+        document.getElementById("searchQuery").addEventListener('input', updateLink);
+    </script>
+</body>
+</html>
