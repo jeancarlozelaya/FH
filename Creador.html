@@ -1629,23 +1629,18 @@ function showTotalRow(totals) {
     
     if (currentMode === "normal") {
         totalRow.innerHTML = `
-            <td></td> <!-- Columna del checkbox (oculta) -->
-            <td class="hidden-cell"></td> <!-- Columna del título (oculta) -->
-            <td style="text-align: right; font-weight: bold;">Total:</td> <!-- Columna "Talla" -->
+        <td colspan="2" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total:</td> <!-- Combinación de las tres celdas -->
             <td class="hidden-cell"></td> <!-- Columna del SKU -->
             <td class="hidden-cell"></td> <!-- Columna "Precio App" -->
             <td class="hidden-cell"></td> <!-- Columna "Descuento" -->
-            <td style="font-weight: bold;">${totals.totalPrice.toFixed(2)}</td> <!-- Columna "Precio" -->
+            <td style="font-weight: bold; background-color: #f4f4f4;">${totals.totalPrice.toFixed(2)}</td> <!-- Columna "Precio" -->
             <td class="hidden-cell"></td> <!-- Columna del enlace -->
         `;
     } else if (currentMode === "emprendedor") {
         totalRow.innerHTML = `
-            <td></td> <!-- Columna del checkbox (oculta) -->
-            <td class="hidden-cell"></td> <!-- Columna del título (oculta) -->
-            <td style="text-align: right; font-weight: bold;">Total:</td> <!-- Columna "Talla" -->
+            <td colspan="3" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total:</td> <!-- Combinación de las tres celdas -->
             <td class="hidden-cell"></td> <!-- Columna del SKU -->
-            <td style="font-weight: bold;">${totals.totalPriceApp.toFixed(2)}</td> <!-- Columna "Precio App" -->
-            <td style="font-weight: bold;">${totals.totalDiscount.toFixed(2)}</td> <!-- Columna "Descuento" -->
+            <td style="font-weight: bold; background-color: #f4f4f4;">${totals.totalDiscount.toFixed(2)}</td> <!-- Columna "Descuento" -->
             <td class="hidden-cell"></td> <!-- Columna "Precio" -->
             <td class="hidden-cell"></td> <!-- Columna del enlace -->
         `;
@@ -1656,13 +1651,9 @@ function showTotalRow(totals) {
     isvRow.id = "isvRow";
     if (currentMode === "emprendedor") {
         isvRow.innerHTML = `
-            <td></td> <!-- Columna del checkbox (oculta) -->
-            <td class="hidden-cell"></td> <!-- Columna del título (oculta) -->
-            <td style="text-align: right; font-weight: bold;">ISV (7% Descuento):</td> <!-- Columna "Talla" -->
-            <td class="hidden-cell"></td> <!-- Columna del SKU -->
+            <td colspan="3" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">ISV (7% Descuento):</td> <!-- Combinación de las tres celdas -->
             <td class="hidden-cell"></td> <!-- Columna "Precio App" (deja en blanco) -->
-            <td style="font-weight: bold;"></td> <!-- Columna "Blanco" (ahora está aquí) -->
-            <td style="font-weight: bold;">${(totals.totalDiscount * 1.07).toFixed(2)}</td> <!-- Columna "Descuento" con 7% incluido -->
+            <td style="font-weight: bold; background-color: #f4f4f4;">${(totals.totalDiscount * 1.07).toFixed(2)}</td> <!-- Columna "Descuento" con 7% incluido -->
             <td class="hidden-cell"></td> <!-- Columna "Precio" -->
             <td class="hidden-cell"></td> <!-- Columna del enlace -->
         `;
@@ -1674,13 +1665,9 @@ function showTotalRow(totals) {
     if (currentMode === "emprendedor") {
         const isvValue = totals.totalDiscount * 1.07; // Obtener el valor de ISV (con 7%)
         totalLempirasRow.innerHTML = `
-            <td></td> <!-- Columna del checkbox (oculta) -->
-            <td class="hidden-cell"></td> <!-- Columna del título (oculta) -->
-            <td style="text-align: right; font-weight: bold;">Total en Lempiras:</td> <!-- Columna "Talla" -->
-            <td class="hidden-cell"></td> <!-- Columna del SKU -->
+            <td colspan="3" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total en Lempiras:</td> <!-- Combinación de las tres celdas -->
             <td class="hidden-cell"></td> <!-- Columna "Precio App" (deja en blanco) -->
-            <td style="font-weight: bold;"></td> <!-- Columna "Blanco" (ahora está aquí) -->
-            <td style="font-weight: bold;">${(isvValue * 26).toFixed(2)}</td> <!-- Columna "Descuento" multiplicado por 26 -->
+            <td style="font-weight: bold; background-color: #f4f4f4;">${(isvValue * 26).toFixed(2)}</td> <!-- Columna "Descuento" multiplicado por 26 -->
             <td class="hidden-cell"></td> <!-- Columna "Precio" -->
             <td class="hidden-cell"></td> <!-- Columna del enlace -->
         `;
