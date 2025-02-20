@@ -10,6 +10,67 @@
 
 <style>
 
+/* Estilos para el botón flotante superior */
+.floating-dropdown-top {
+    position: fixed;
+    top: 20px; /* Distancia desde la parte superior */
+    left: 20px; /* Distancia desde la izquierda */
+    z-index: 1000;
+}
+
+/* Estilos para el menú flotante superior */
+.floating-menu-top {
+    display: none; /* Oculto por defecto */
+    position: absolute;
+    top: 60px; /* Posición debajo del botón */
+    left: 0;
+    flex-direction: column; /* Íconos en columna */
+    gap: 10px; /* Espacio entre íconos */
+    background-color: rgba(255, 255, 255, 0.9); /* Fondo semi-transparente */
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Mostrar el menú cuando está activo */
+.floating-menu-top.show {
+    display: flex;
+}
+
+/* Estilo para los botones del menú flotante superior */
+.floating-menu-top button.with-icon {
+    background-color: #007bff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floating-menu-top button.with-icon:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo para los íconos dentro del menú flotante superior */
+.floating-menu-top button.with-icon i {
+    font-size: 16px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* Estilo para el botón de descarga */
 #downloadTableImage {
@@ -343,6 +404,13 @@ td input[type="checkbox"] {
         width: 80px; /* Más estrecha */
     }
 
+
+th:nth-child(9), td:nth-child(9) { /* Columna del Dto */
+    width: 80px; /* Más estrecha */
+}
+
+
+
     /* Asegurar que el select dentro de la columna de talla ocupe todo el ancho */
     td:nth-child(3) select {
         width: 100%;
@@ -389,6 +457,10 @@ td input[type="checkbox"] {
             width: 60px;
         }
 
+        th:nth-child(9), td:nth-child(9) { /* Columna del Descuento */
+            width: 60px;
+        }
+
         /* Ajustar el tamaño de los inputs y selects en móviles */
         input[type="text"],
         input[type="number"],
@@ -404,6 +476,7 @@ td:nth-child(7) input {
     text-align: center; /* Centrar el texto horizontalmente */
     line-height: 15px; /* Centrar el texto verticalmente */
 }
+
 
 
     }
@@ -673,6 +746,12 @@ td:nth-child(7) input {
         color: #ffffff; /* Color del ícono de guardar */
     }
 
+
+
+
+
+
+
 </style>
 
 <script>
@@ -684,6 +763,7 @@ let messageTimeout;  // Variable global para almacenar el timeout
 let allChecked = false;
 let lastDeletedItems = [];
 let previewMode = false;
+let currentMode = 'normal'; // Variable global para almacenar el modo actual
 
 
 // Inicialización al cargar la página
@@ -694,6 +774,7 @@ window.onload = function () {
         updateTable();
         loadColors();
     }
+    setMode('normal', false); // Cargar en modo normal por defecto sin mostrar el mensaje
     updateButtonStates();
 };
 
@@ -735,6 +816,10 @@ function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
     const imageMatch = data.match(/<div class="crop-image-container" data-before-crop-src="(.*?)"/i);
     const skuMatch = data.match(/<span class="product-intro__head-sku-text">\s*SKU:\s*(.*?)<\/span>/i);
     const priceAppMatch = data.match(/"getPrice":{"retailPrice":{"amount":"(.*?)"/i);
+
+    const priceAppDto = data.match(/<p class="product-intro__ssr-priceMain"[^>]*?>\$(.*?)<\/p>/i);
+
+
     const titleMatch = data.match(/<title>(.*?) \| SHEIN USA<\/title>/i);
 
     // Extraer tallas desde diferentes patrones en el HTML
@@ -762,12 +847,18 @@ function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
             percentage: porcentajeSeleccionado,
             sizes: sizes,
             selectedSize: "",
-            enlace: enlace
+            enlace: enlace,
+            priceAppDto: parseFloat(priceAppDto[1]),
+            editingDto: false // Estado de edición para "Dto"
+
         };
 
         items.push(item);
         saveToLocalStorage();
         updateTable();
+
+        setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
+
         showMessage("Datos cargados con éxito.", 'success');
     } else {
         // Verifica el mensaje de error y realiza un nuevo intento
@@ -828,7 +919,16 @@ function updateTable() {
             </td>
             <td class="preview-hidden">${item.priceLempiras}</td>
             <td><input type="number" id="customPriceInput${index}" class="small-input" value="${item.precioPersonalizado}" placeholder="Precio" oninput="updateCustomPrice(${index})"></td>
-            <td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>`;
+            <td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>
+            <td class="hidden-column"> <!-- Columna "Dto" oculta por defecto -->
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <button onclick="toggleEditDto(${index})">
+                        ${item.editingDto ? '<i class="fas fa-save"></i>' : '<i class="fas fa-pencil-alt"></i>'}
+                    </button>
+                    ${item.editingDto ? `<input type="number" id="priceAppDtoInput${index}" value="${item.priceAppDto}" class="small-input editable">` : item.priceAppDto}
+                </div>
+            </td>`;
+
         if (item.color) {
             row.style.backgroundColor = item.color;
         }
@@ -836,6 +936,25 @@ function updateTable() {
     });
     updateButtonStates();
 }
+
+
+function toggleEditDto(index) {
+    // Cambiar el estado de edición
+    items[index].editingDto = !items[index].editingDto;
+
+    if (!items[index].editingDto) {
+        // Guardar el nuevo valor si se está saliendo del modo de edición
+        const newDto = parseFloat(document.getElementById(`priceAppDtoInput${index}`).value);
+        items[index].priceAppDto = newDto;
+        saveToLocalStorage();
+        showMessage("Descuento actualizado con éxito.", 'success');
+    }
+
+    // Actualizar la tabla para reflejar los cambios
+    updateTable();
+    setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
+}
+
 
 // Ocultar columnas y encabezados
 const style = document.createElement('style');
@@ -873,6 +992,7 @@ function undoDelete() {
                 lastDeletedItems = [];
                 saveToLocalStorage();
                 updateTable();
+                setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
 		showMessage("Se recuperó la última eliminación con éxito.", 'success');
 	}
 }
@@ -1081,6 +1201,7 @@ function toggleEditPrice(index) {
     items[index].editingPrice = !items[index].editingPrice;
     saveToLocalStorage();
     updateTable();
+    setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
 }
 
 
@@ -1093,6 +1214,7 @@ function deleteSelectedItems() {
 
     saveToLocalStorage();
     updateTable();
+    setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
     updateButtonStates(); // Asegúrate de agregar esto
     showMessage("Filas eliminadas con éxito.", 'success');
 }
@@ -1110,48 +1232,42 @@ function updateCustomPrice(index) {
 function togglePreview() {
     document.getElementById("dropdownMenu").classList.remove("show");
 
-    const tableBody = document.getElementById("itemTableBody"); // Seleccionamos el cuerpo de la tabla
-    const dropdownToggle = document.querySelector(".dropdown-toggle.with-icon"); // Botón de menú desplegable
-    const body = document.body; // Usamos el body para agregar la clase 'preview-mode'
-    const tableHeaders = document.querySelectorAll("#itemTable thead th"); // Seleccionamos los encabezados
+    const tableBody = document.getElementById("itemTableBody");
+    const dropdownToggle = document.querySelector(".dropdown-toggle.with-icon");
+    const body = document.body;
+    const tableHeaders = document.querySelectorAll("#itemTable thead th");
 
-    // Columnas que se van a ocultar: "Precio App" (5), "Precio Lempiras" (6), "Editar Precio de App" (9)
-    const columnsToHide = [4, 5, 8];
+    // Columnas que se van a ocultar/mostrar según el modo
+    const columnsToHideNormal = [4, 5, 8]; // Columnas para el modo normal
+    const columnsToHideEmprendedor = [5, 6]; // Columnas para el modo emprendedor
 
     // Elementos adicionales a ocultar
-    const title = document.querySelector("h2"); // Título "Lista de Artículos"
-    const enlaceInput = document.getElementById("enlace"); // Input de enlace
-    const percentageSelect = document.getElementById("percentageSelect"); // Select de porcentaje
-    const addButton = document.querySelector("button[onclick='obtenerFuente()']"); // Botón "Agregar"
-    const clearButton = document.querySelector("button[onclick='clearInput()']"); // Botón "Limpiar"
-
+    const title = document.querySelector("h2");
+    const enlaceInput = document.getElementById("enlace");
+    const percentageSelect = document.getElementById("percentageSelect");
+    const addButton = document.querySelector("button[onclick='obtenerFuente()']");
+    const clearButton = document.querySelector("button[onclick='clearInput()']");
     const openColorPicker2Button = document.getElementById("openColorPicker2");
     const downloadTableImageButton = document.getElementById("downloadTableImage");
 
+    // Botón flotante superior
+    const floatingDropdownTop = document.querySelector(".floating-dropdown-top");
 
+    // Fila del total
+    const totalRow = document.getElementById("totalRow");
 
     if (!previewMode) {
         // Activar el modo de vista previa
         body.classList.add("preview-mode");
 
-        // Activar el modo de vista previa
-        openColorPicker2Button.style.display = 'inline-block'; // Mostrar el botón
-        downloadTableImageButton.style.display = 'inline-block'; // Mostrar el botón de descarga
-
-
-        // Guardar el estado original solo la primera vez
-        if (!isPreviewModeInitialized) {
-            const rows = document.querySelectorAll("#itemTableBody tr");
-            originalRowStates = Array.from(rows).map(row => row.style.display);
-            isPreviewModeInitialized = true;
-        }
-
+        // Mostrar u ocultar columnas según el modo
+        const columnsToHide = currentMode === "normal" ? columnsToHideNormal : columnsToHideEmprendedor;
 
         // Ocultar las columnas
         Array.from(tableBody.rows).forEach(row => {
             columnsToHide.forEach(index => {
                 if (row.cells[index]) {
-                    row.cells[index].classList.add("col-hidden"); // Ocultar las celdas
+                    row.cells[index].classList.add("col-hidden");
                 }
             });
         });
@@ -1159,7 +1275,7 @@ function togglePreview() {
         // Ocultar los encabezados
         tableHeaders.forEach((header, index) => {
             if (columnsToHide.includes(index)) {
-                header.classList.add("header-hidden"); // Ocultar los encabezados
+                header.classList.add("header-hidden");
             }
         });
 
@@ -1170,59 +1286,48 @@ function togglePreview() {
         if (addButton) addButton.style.display = 'none';
         if (clearButton) clearButton.style.display = 'none';
 
-        // Transformar el botón de menú desplegable en el botón de "Ocultar Vista Previa"
-        dropdownToggle.innerHTML = '<i class="fas fa-eye-slash"></i>'; // Ícono de ojo cerrado
+        // Ocultar el botón flotante superior
+        if (floatingDropdownTop) {
+            floatingDropdownTop.style.display = 'none';
+        }
 
-// Transformar el botón de menú desplegable en el botón de "Ocultar Vista Previa"
-dropdownToggle.innerHTML = '<i class="fas fa-eye-slash"></i>'; // Ícono de ojo cerrado
+        // Ocultar la fila del total
+        if (totalRow) {
+            totalRow.style.display = 'none';
+            isvRow.style.display = 'none';
+            totalLempirasRow.style.display = 'none';
+        }
 
-// Mantener las clases y estilos originales del botón
-dropdownToggle.classList.add("with-icon"); // Asegurar que tenga la clase "with-icon"
-dropdownToggle.style.width = "40px"; // Mantener el ancho original
-dropdownToggle.style.height = "40px"; // Mantener la altura original
-dropdownToggle.style.padding = "12px"; // Mantener el padding original
-dropdownToggle.style.fontSize = "16px"; // Mantener el tamaño de fuente original
+        // Mostrar botones de vista previa
+        openColorPicker2Button.style.display = 'inline-block';
+        downloadTableImageButton.style.display = 'inline-block';
 
-
-
-        dropdownToggle.onclick = togglePreview; // Cambiar la función onclick
+        // Cambiar el ícono del botón de vista previa
+        dropdownToggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
+        dropdownToggle.onclick = togglePreview;
     } else {
         // Desactivar el modo de vista previa
         body.classList.remove("preview-mode");
 
-        // Desactivar el modo de vista previa
-        openColorPicker2Button.style.display = 'none'; // Ocultar el botón
-        downloadTableImageButton.style.display = 'none'; // Ocultar el botón de descarga
-
-
-        // Restaurar el estado original de las filas
-        const rows = document.querySelectorAll("#itemTableBody tr");
-        rows.forEach((row, index) => {
-            row.style.display = originalRowStates[index] || ''; // Restaurar el estado original
-        });
-
-        // Ocultar la fila de total
-        const totalRow = document.getElementById("totalRow");
-        if (totalRow) {
-            totalRow.remove();
-        }
-
-        isPreviewModeInitialized = false; // Reiniciar la bandera
-
-        // Mostrar las columnas
+        // Mostrar todas las columnas
         Array.from(tableBody.rows).forEach(row => {
-            columnsToHide.forEach(index => {
+            columnsToHideNormal.concat(columnsToHideEmprendedor).forEach(index => {
                 if (row.cells[index]) {
-                    row.cells[index].classList.remove("col-hidden"); // Mostrar las celdas
+                    row.cells[index].classList.remove("col-hidden");
                 }
             });
         });
 
         // Mostrar los encabezados
         tableHeaders.forEach((header, index) => {
-            if (columnsToHide.includes(index)) {
-                header.classList.remove("header-hidden"); // Mostrar los encabezados
+            if (columnsToHideNormal.concat(columnsToHideEmprendedor).includes(index)) {
+                header.classList.remove("header-hidden");
             }
+        });
+
+        // Mostrar todas las filas de la tabla
+        Array.from(tableBody.rows).forEach(row => {
+            row.style.display = ''; // Asegurarse de mostrar todas las filas
         });
 
         // Mostrar elementos adicionales
@@ -1232,13 +1337,32 @@ dropdownToggle.style.fontSize = "16px"; // Mantener el tamaño de fuente origina
         if (addButton) addButton.style.display = '';
         if (clearButton) clearButton.style.display = '';
 
-        // Restaurar el botón de menú desplegable
-        dropdownToggle.innerHTML = '<i class="fas fa-bars"></i>'; // Ícono de menú
-        dropdownToggle.onclick = toggleDropdown; // Restaurar la función onclick
+        // Mostrar el botón flotante superior
+        if (floatingDropdownTop) {
+            floatingDropdownTop.style.display = 'block';
+        }
+
+        // Asegurarse de que la fila del total siga oculta
+        if (totalRow) {
+            totalRow.style.display = 'none';
+            isvRow.style.display = 'none';
+            totalLempirasRow.style.display = 'none';
+        }
+
+
+
+        // Ocultar botones de vista previa
+        openColorPicker2Button.style.display = 'none';
+        downloadTableImageButton.style.display = 'none';
+
+        // Restaurar el ícono del botón de vista previa
+        dropdownToggle.innerHTML = '<i class="fas fa-bars"></i>';
+        dropdownToggle.onclick = toggleDropdown;
     }
 
     previewMode = !previewMode; // Cambiar el estado de la vista previa
 }
+
 
 
 // Función para descodificar caracteres HTML
@@ -1270,6 +1394,7 @@ function duplicateSelectedRow() {
 
     saveToLocalStorage();
     updateTable();
+    setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
     showMessage("Fila duplicada con éxito.", 'success');
 }
 
@@ -1368,6 +1493,7 @@ function groupByColor() {
 
     saveToLocalStorage();
     updateTable();
+    setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
     showMessage("Todas las filas agrupadas por colores con éxito.", 'success');
 }
 
@@ -1438,50 +1564,141 @@ document.addEventListener("click", function (event) {
 
 
 function calculateTotalPrice(filteredRows) {
-    let total = 0;
+    let totalPriceApp = 0;
+    let totalDiscount = 0;
+    let totalPrice = 0;
+
     filteredRows.forEach(row => {
-        const priceCell = row.querySelector("td:nth-child(7)"); // Columna "Precio"
-        if (priceCell) {
-            const input = priceCell.querySelector("input"); // Buscar el input dentro del td
-            if (input) {
-                let priceText = input.value.trim(); // Obtener el valor del input y eliminar espacios
-                priceText = priceText.replace(/\s+/g, ""); // Eliminar espacios dentro del número
-                const price = parseFloat(priceText) || 0; // Convertir a número
-                total += price;
+        // Verificar el modo actual
+        if (currentMode === "normal") {
+            const priceCell = row.querySelector("td:nth-child(7)"); // Columna "Precio"
+            if (priceCell) {
+                const input = priceCell.querySelector("input");
+                if (input) {
+                    let priceText = input.value.trim().replace(/\s+/g, "");
+                    const price = parseFloat(priceText) || 0;
+                    totalPrice += price;
+                }
+            }
+        } else if (currentMode === "emprendedor") {
+            const priceAppCell = row.querySelector("td:nth-child(5)"); // Columna "Precio App"
+            const discountCell = row.querySelector("td:nth-child(9)"); // Columna "Descuento"
+
+            if (priceAppCell) {
+                let priceText = priceAppCell.textContent.trim().replace(/[^0-9.-]+/g, "");
+                const price = parseFloat(priceText) || 0;
+                totalPriceApp += price;
+            }
+
+            if (discountCell) {
+                let discountText = discountCell.textContent.trim().replace(/[^0-9.-]+/g, "");
+                const discount = parseFloat(discountText) || 0;
+                totalDiscount += discount;
             }
         }
     });
-    return total.toFixed(2); // Redondear a 2 decimales
+
+    return { totalPrice, totalPriceApp, totalDiscount };
 }
 
-
-
-function showTotalRow(total) {
+function showTotalRow(totals) {
     const tableBody = document.getElementById("itemTableBody");
     let totalRow = document.getElementById("totalRow");
+    let isvRow = document.getElementById("isvRow");
+    let totalLempirasRow = document.getElementById("totalLempirasRow");
+
 
     // Si la fila de total ya existe, la eliminamos
     if (totalRow) {
         totalRow.remove();
     }
 
+    // Si la fila ISV ya existe, la eliminamos
+    if (isvRow) {
+        isvRow.remove();
+    }
+
+    // Si la fila Total en Lempiras ya existe, la eliminamos
+    if (totalLempirasRow) {
+        totalLempirasRow.remove();
+    }
+
     // Crear la fila de total
     totalRow = document.createElement("tr");
     totalRow.id = "totalRow";
-    totalRow.innerHTML = `
-        <td></td> <!-- Columna del checkbox (oculta) -->
-        <td class="hidden-cell"></td> <!-- Columna del título (oculta) -->
-        <td style="text-align: right; font-weight: bold;">Total:</td> <!-- Columna "Talla" -->
-        <td class="hidden-cell"></td> <!-- Columna del SKU -->
-        <td class="hidden-cell"></td> <!-- Columna del Precio App -->
-        <td class="hidden-cell"></td> <!-- Columna del Precio Lempiras -->
-        <td style="font-weight: bold;">${total}</td> <!-- Columna "Precio" -->
-        <td class="hidden-cell"></td> <!-- Columna del enlace -->
-    `;
+    
+    if (currentMode === "normal") {
+        totalRow.innerHTML = `
+            <td></td> <!-- Columna del checkbox (oculta) -->
+            <td class="hidden-cell"></td> <!-- Columna del título (oculta) -->
+            <td style="text-align: right; font-weight: bold;">Total:</td> <!-- Columna "Talla" -->
+            <td class="hidden-cell"></td> <!-- Columna del SKU -->
+            <td class="hidden-cell"></td> <!-- Columna "Precio App" -->
+            <td class="hidden-cell"></td> <!-- Columna "Descuento" -->
+            <td style="font-weight: bold;">${totals.totalPrice.toFixed(2)}</td> <!-- Columna "Precio" -->
+            <td class="hidden-cell"></td> <!-- Columna del enlace -->
+        `;
+    } else if (currentMode === "emprendedor") {
+        totalRow.innerHTML = `
+            <td></td> <!-- Columna del checkbox (oculta) -->
+            <td class="hidden-cell"></td> <!-- Columna del título (oculta) -->
+            <td style="text-align: right; font-weight: bold;">Total:</td> <!-- Columna "Talla" -->
+            <td class="hidden-cell"></td> <!-- Columna del SKU -->
+            <td style="font-weight: bold;">${totals.totalPriceApp.toFixed(2)}</td> <!-- Columna "Precio App" -->
+            <td style="font-weight: bold;">${totals.totalDiscount.toFixed(2)}</td> <!-- Columna "Descuento" -->
+            <td class="hidden-cell"></td> <!-- Columna "Precio" -->
+            <td class="hidden-cell"></td> <!-- Columna del enlace -->
+        `;
+    }
 
-    // Agregar la fila al final de la tabla
+    // Crear la fila de ISV
+    isvRow = document.createElement("tr");
+    isvRow.id = "isvRow";
+    if (currentMode === "emprendedor") {
+        isvRow.innerHTML = `
+            <td></td> <!-- Columna del checkbox (oculta) -->
+            <td class="hidden-cell"></td> <!-- Columna del título (oculta) -->
+            <td style="text-align: right; font-weight: bold;">ISV (7% Descuento):</td> <!-- Columna "Talla" -->
+            <td class="hidden-cell"></td> <!-- Columna del SKU -->
+            <td class="hidden-cell"></td> <!-- Columna "Precio App" (deja en blanco) -->
+            <td style="font-weight: bold;"></td> <!-- Columna "Blanco" (ahora está aquí) -->
+            <td style="font-weight: bold;">${(totals.totalDiscount * 1.07).toFixed(2)}</td> <!-- Columna "Descuento" con 7% incluido -->
+            <td class="hidden-cell"></td> <!-- Columna "Precio" -->
+            <td class="hidden-cell"></td> <!-- Columna del enlace -->
+        `;
+    }
+
+    // Crear la fila de Total en Lempiras
+    totalLempirasRow = document.createElement("tr");
+    totalLempirasRow.id = "totalLempirasRow";
+    if (currentMode === "emprendedor") {
+        const isvValue = totals.totalDiscount * 1.07; // Obtener el valor de ISV (con 7%)
+        totalLempirasRow.innerHTML = `
+            <td></td> <!-- Columna del checkbox (oculta) -->
+            <td class="hidden-cell"></td> <!-- Columna del título (oculta) -->
+            <td style="text-align: right; font-weight: bold;">Total en Lempiras:</td> <!-- Columna "Talla" -->
+            <td class="hidden-cell"></td> <!-- Columna del SKU -->
+            <td class="hidden-cell"></td> <!-- Columna "Precio App" (deja en blanco) -->
+            <td style="font-weight: bold;"></td> <!-- Columna "Blanco" (ahora está aquí) -->
+            <td style="font-weight: bold;">${(isvValue * 26).toFixed(2)}</td> <!-- Columna "Descuento" multiplicado por 26 -->
+            <td class="hidden-cell"></td> <!-- Columna "Precio" -->
+            <td class="hidden-cell"></td> <!-- Columna del enlace -->
+        `;
+    }
+
+
+
+    // Agregar la fila ISV al final de la fila total
     tableBody.appendChild(totalRow);
+    tableBody.appendChild(isvRow);
+    tableBody.appendChild(totalLempirasRow);
+
 }
+
+
+
+
+
 
 
 
@@ -1523,6 +1740,69 @@ function downloadTableImage() {
 
 
 
+
+
+// Función para alternar entre modos
+function setMode(mode, showMessageFlag = true) {
+
+
+    currentMode = mode; // Actualizar el modo actual
+    const columnsToShowNormal = [0, 2, 4, 5, 6]; // Columnas para el modo normal
+    const columnsToShowEmprendedor = [0, 2, 4, 8]; // Columnas para el modo emprendedor (Dto es la columna 8)
+
+    // Ocultar todas las columnas primero
+    const allColumns = document.querySelectorAll("#itemTable th, #itemTable td");
+    allColumns.forEach((col, index) => {
+        col.style.display = "none"; // Ocultar todas las columnas
+    });
+
+    // Mostrar las columnas según el modo seleccionado
+    const columnsToShow = mode === "normal" ? columnsToShowNormal : columnsToShowEmprendedor;
+    columnsToShow.forEach(colIndex => {
+        const headers = document.querySelectorAll(`#itemTable th:nth-child(${colIndex + 1})`);
+        const cells = document.querySelectorAll(`#itemTable td:nth-child(${colIndex + 1})`);
+        headers.forEach(header => {
+            header.style.display = ""; // Mostrar encabezados
+            if (colIndex === 8) {
+                header.classList.remove("hidden-column"); // Eliminar la clase hidden-column para la columna "Dto"
+            }
+        });
+        cells.forEach(cell => {
+            cell.style.display = ""; // Mostrar celdas
+            if (colIndex === 8) {
+                cell.classList.remove("hidden-column"); // Eliminar la clase hidden-column para la columna "Dto"
+            }
+        });
+    });
+
+
+
+    // Mostrar el mensaje solo si showMessageFlag es true
+    if (showMessageFlag) {
+        showMessage(`Modo ${mode} activado.`, 'success');
+
+toggleDropdownTop();
+
+    }
+
+
+}
+
+
+// Función para alternar el menú flotante superior
+function toggleDropdownTop() {
+    const dropdownMenu = document.getElementById("dropdownMenuTop");
+    dropdownMenu.classList.toggle("show");
+}
+
+// Cerrar el menú al hacer clic fuera de él
+document.addEventListener("click", function (event) {
+    const dropdown = document.querySelector(".floating-dropdown-top");
+    const menu = document.getElementById("dropdownMenuTop");
+    if (!dropdown.contains(event.target)) {
+        menu.classList.remove("show");
+    }
+});
 
 
 </script>
@@ -1597,6 +1877,7 @@ function downloadTableImage() {
                 <th class="preview-hidden">Precio Lempiras</th>
                 <th>Precio</th>
                 <th>Enlace</th>
+                <th class="hidden-column">Descuento</th>
             </tr>
         </thead>
         <tbody id="itemTableBody"></tbody>
@@ -1653,6 +1934,25 @@ function downloadTableImage() {
 <button id="downloadTableImage" class="with-icon" onclick="downloadTableImage()" style="display: none; position: fixed; bottom: 20px; left: 120px;">
     <i class="fas fa-download"></i> <!-- Ícono de descarga -->
 </button>
+
+
+<!-- Botón flotante superior izquierdo -->
+<div class="floating-dropdown-top">
+    <button class="dropdown-toggle with-icon" onclick="toggleDropdownTop()">
+        <i class="fas fa-bars"></i> <!-- Ícono de menú -->
+    </button>
+
+    <!-- Menú de íconos flotantes -->
+    <div class="floating-menu-top" id="dropdownMenuTop">
+        <button class="with-icon" onclick="setMode('normal')">
+            <i class="fas fa-home"></i>
+        </button>
+        <button class="with-icon" onclick="setMode('emprendedor')">
+            <i class="fas fa-user"></i>
+        </button>
+    </div>
+</div>
+
 
 
 </body>
