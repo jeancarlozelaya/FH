@@ -1629,7 +1629,7 @@ function showTotalRow(totals) {
     
     if (currentMode === "normal") {
         totalRow.innerHTML = `
-        <td colspan="2" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total:</td> <!-- Combinación de las tres celdas -->
+        <td colspan="2" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total en Lempiras:</td> <!-- Combinación de las tres celdas -->
             <td class="hidden-cell"></td> <!-- Columna del SKU -->
             <td class="hidden-cell"></td> <!-- Columna "Precio App" -->
             <td class="hidden-cell"></td> <!-- Columna "Descuento" -->
@@ -1638,7 +1638,7 @@ function showTotalRow(totals) {
         `;
     } else if (currentMode === "emprendedor") {
         totalRow.innerHTML = `
-            <td colspan="3" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total:</td> <!-- Combinación de las tres celdas -->
+            <td colspan="3" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total ($):</td> <!-- Combinación de las tres celdas -->
             <td class="hidden-cell"></td> <!-- Columna del SKU -->
             <td style="font-weight: bold; background-color: #f4f4f4;">${totals.totalDiscount.toFixed(2)}</td> <!-- Columna "Descuento" -->
             <td class="hidden-cell"></td> <!-- Columna "Precio" -->
@@ -1651,7 +1651,7 @@ function showTotalRow(totals) {
     isvRow.id = "isvRow";
     if (currentMode === "emprendedor") {
         isvRow.innerHTML = `
-            <td colspan="3" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">ISV (7% Descuento):</td> <!-- Combinación de las tres celdas -->
+            <td colspan="3" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">7% ISV Incluido ($):</td> <!-- Combinación de las tres celdas -->
             <td class="hidden-cell"></td> <!-- Columna "Precio App" (deja en blanco) -->
             <td style="font-weight: bold; background-color: #f4f4f4;">${(totals.totalDiscount * 1.07).toFixed(2)}</td> <!-- Columna "Descuento" con 7% incluido -->
             <td class="hidden-cell"></td> <!-- Columna "Precio" -->
