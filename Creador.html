@@ -1023,7 +1023,10 @@ function copySelectedRows() {
         const porcentaje = item.percentage !== undefined ? item.percentage : 0;
 
         // Fórmula `priceLempiras` que usa la celda a la izquierda y el porcentaje correcto
-        const priceLempirasFormula = `=(INDIRECT("RC[-1]", 0) * 26 + 50) * (1 + ${porcentaje})`;
+        const priceLempirasFormula = `=(INDIRECT("RC[-2]", 0) * 26 + 50) * (1 + ${porcentaje})`;
+
+        // Incluir el valor de la columna "Descuento"
+        const descuento = item.priceAppDto || 0; // Asegúrate de que el descuento esté definido
 
         return [
             imageFormula,
@@ -1031,10 +1034,11 @@ function copySelectedRows() {
             `${selectedSize}`,
             item.sku,
             item.priceApp.toFixed(2),
+            descuento, // Agregar el valor de la columna "Descuento"
             priceLempirasFormula, // Fórmula relativa para el precio en lempiras
             detailFormula,
             '',
-            customPrice,
+            customPrice
         ].join('\t');
     });
 
