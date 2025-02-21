@@ -819,7 +819,6 @@ function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
 
     const priceAppDto = data.match(/<p class="product-intro__ssr-priceMain"[^>]*?>\$(.*?)<\/p>/i);
 
-
     const titleMatch = data.match(/<title>(.*?) \| SHEIN USA<\/title>/i);
 
     // Extraer tallas desde diferentes patrones en el HTML
@@ -1051,7 +1050,9 @@ function copySelectedRows() {
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(textToCopy).then(() => {
-            alert("Datos copiados al portapapeles.");
+
+            showMessage("Datos copiados al portapapeles.", 'success');
+
         }).catch(err => {
             console.error('Error al copiar: ', err);
             alert("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.");
@@ -1068,14 +1069,16 @@ function copySelectedRows() {
         try {
             const successful = document.execCommand('copy');
             if (successful) {
-                alert("Datos copiados al portapapeles.");
+            showMessage("Datos copiados al portapapeles.", 'success');
+
+
             } else {
-                alert("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.");
+                showMessage("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.", 'error');
                 showManualCopyModal(textToCopy);
             }
         } catch (err) {
             console.error('Error al copiar (fallback): ', err);
-            alert("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.");
+            showMessage("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.", 'error');
             showManualCopyModal(textToCopy);
         }
 
