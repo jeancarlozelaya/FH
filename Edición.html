@@ -29,7 +29,6 @@
         document.getElementById('imageUpload').addEventListener('change', function(event) {
             const files = event.target.files;
             const tbody = document.querySelector('#imageTable tbody');
-            tbody.innerHTML = '';
             
             for (let file of files) {
                 const reader = new FileReader();
@@ -46,9 +45,10 @@
                             </select>
                         </td>
                         <td class="precioLempiras">0</td>
-                        <td><input type="text" class="precio"></td>
+                        <td><input type="text" class="precio" oninput="saveTableData()"></td>
                     `;
                     tbody.appendChild(row);
+                    saveTableData();
                 };
                 reader.readAsDataURL(file);
             }
@@ -60,6 +60,45 @@
             const isv = parseFloat(row.querySelector('.isv').value) || 0;
             const precioLempiras = ((precioApp * 26) + 50) * (1 + isv);
             row.querySelector('.precioLempiras').textContent = precioLempiras.toFixed(2);
+            saveTableData();
+        }
+        
+        function saveTableData() {
+            const tableData = [];
+            document.querySelectorAll('#imageTable tbody tr').forEach(row => {
+                const img = row.querySelector('img').src;
+                const precioApp = row.querySelector('.precioApp').value;
+                const isv = row.querySelector('.isv').value;
+                const precioLempiras = row.querySelector('.precioLempiras').textContent;
+                const precio = row.querySelector('.precio').value;
+                
+                tableData.push({ img, precioApp, isv, precioLempiras, precio });
+            });
+            localStorage.setItem('tableData', JSON.stringify(tableData));
+        }
+        
+        function loadTableData() {
+            const tbody = document.querySelector('#imageTable tbody');
+            tbody.innerHTML = '';
+            const tableData = JSON.parse(localStorage.getItem('tableData')) || [];
+            
+            tableData.forEach(data => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><img src="${data.img}"></td>
+                    <td><input type="number" class="precioApp" value="${data.precioApp}" oninput="updatePrice(this)"></td>
+                    <td>
+                        <select class="isv" onchange="updatePrice(this)">
+                            <option value="0.2" ${data.isv == 0.2 ? 'selected' : ''}>20%</option>
+                            <option value="0.25" ${data.isv == 0.25 ? 'selected' : ''}>25%</option>
+                            <option value="0.35" ${data.isv == 0.35 ? 'selected' : ''}>35%</option>
+                        </select>
+                    </td>
+                    <td class="precioLempiras">${data.precioLempiras}</td>
+                    <td><input type="text" class="precio" value="${data.precio}" oninput="saveTableData()"></td>
+                `;
+                tbody.appendChild(row);
+            });
         }
         
         function downloadImages() {
@@ -74,32 +113,31 @@
                     image.src = img.src;
                     
                     image.onload = function() {
-                        const cropTop = 500; // Ajusta este valor para cortar más de la parte superior
-                        const cropBottom = 150; // Ajusta este valor para cortar más de la parte inferior
-                        
+                        const cropTop = 500;
+                        const cropBottom = 150;
                         const croppedHeight = image.height - cropTop - cropBottom;
                         canvas.width = image.width;
                         canvas.height = croppedHeight;
                         
-                        // Dibujar la imagen recortada sin los bordes negros
                         ctx.drawImage(image, 0, cropTop, image.width, croppedHeight, 0, 0, canvas.width, canvas.height);
                         
-                        // Agregar el precio con fondo sombreado
                         ctx.font = 'bold 50px Arial';
                         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                        ctx.fillRect(0, canvas.height - 420, canvas.width, 70); // Ajusta el fondo del precio
+                        ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
                         ctx.fillStyle = 'white';
                         ctx.textAlign = 'center';
-                        ctx.fillText(precio, canvas.width / 2, canvas.height - 370); // Ajusta la posición del texto
+                        ctx.fillText(precio, canvas.width / 2, canvas.height - 370);
                         
                         const link = document.createElement('a');
-                        link.download = img.dataset.filename || 'editado.png';
+                        link.download = 'editado.png';
                         link.href = canvas.toDataURL();
                         link.click();
                     };
                 }
             });
         }
+        
+        window.addEventListener('load', loadTableData);
     </script>
 </body>
 </html>
