@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Imágenes</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: center; }
+        img { max-width: 100px; max-height: 100px; }
+    </style>
+</head>
+<body>
+    <input type="file" id="imageUpload" multiple accept="image/*">
+    <table id="imageTable">
+        <thead>
+            <tr>
+                <th>Foto</th>
+                <th>Precio App</th>
+                <th>ISV</th>
+                <th>Precio Lempiras</th>
+                <th>Precio</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <button onclick="downloadImages()">Descargar Imágenes</button>
+    <script>
+        document.getElementById('imageUpload').addEventListener('change', function(event) {
+            const files = event.target.files;
+            const tbody = document.querySelector('#imageTable tbody');
+            tbody.innerHTML = '';
+            
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><img src="${e.target.result}" data-filename="${file.name}"></td>
+                        <td><input type="number" class="precioApp" oninput="updatePrice(this)"></td>
+                        <td>
+                            <select class="isv" onchange="updatePrice(this)">
+                                <option value="0.2">20%</option>
+                                <option value="0.25">25%</option>
+                                <option value="0.35">35%</option>
+                            </select>
+                        </td>
+                        <td class="precioLempiras">0</td>
+                        <td><input type="text" class="precio"></td>
+                    `;
+                    tbody.appendChild(row);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        function updatePrice(element) {
+            const row = element.closest('tr');
+            const precioApp = parseFloat(row.querySelector('.precioApp').value) || 0;
+            const isv = parseFloat(row.querySelector('.isv').value) || 0;
+            const precioLempiras = ((precioApp * 26) + 50) * (1 + isv);
+            row.querySelector('.precioLempiras').textContent = precioLempiras.toFixed(2);
+        }
+        
+        function downloadImages() {
+            document.querySelectorAll('#imageTable tbody tr').forEach(row => {
+                const img = row.querySelector('img');
+                const precio = row.querySelector('.precio').value;
+                
+                if (img && precio) {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const image = new Image();
+                    image.src = img.src;
+                    
+                    image.onload = function() {
+                        const cropTop = 500; // Ajusta este valor para cortar más de la parte superior
+                        const cropBottom = 150; // Ajusta este valor para cortar más de la parte inferior
+                        
+                        const croppedHeight = image.height - cropTop - cropBottom;
+                        canvas.width = image.width;
+                        canvas.height = croppedHeight;
+                        
+                        // Dibujar la imagen recortada sin los bordes negros
+                        ctx.drawImage(image, 0, cropTop, image.width, croppedHeight, 0, 0, canvas.width, canvas.height);
+                        
+                        // Agregar el precio con fondo sombreado
+                        ctx.font = 'bold 50px Arial';
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                        ctx.fillRect(0, canvas.height - 420, canvas.width, 70); // Ajusta el fondo del precio
+                        ctx.fillStyle = 'white';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(precio, canvas.width / 2, canvas.height - 370); // Ajusta la posición del texto
+                        
+                        const link = document.createElement('a');
+                        link.download = img.dataset.filename || 'editado.png';
+                        link.href = canvas.toDataURL();
+                        link.click();
+                    };
+                }
+            });
+        }
+    </script>
+</body>
+</html>
