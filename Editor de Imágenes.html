@@ -372,7 +372,7 @@
             const talla = document.getElementById('tallaTextarea').value;
             if (currentRow) {
                 currentRow.querySelector('.talla').value = talla;
-                saveTableData();
+                saveTableData(); // Guardar los datos en localStorage
             }
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('tallaModal').style.display = 'none';
