@@ -240,7 +240,7 @@
 </head>
 <body>
     <header>
-        <h1>Editor de Imágenes y Precios</h1>
+        <h1>Edición de Imágenes</h1>
     </header>
     <div class="container">
         <!-- Diseño mejorado para el input de carga de archivos -->
@@ -386,7 +386,7 @@
                         
                         // Dibujar precio en la parte derecha
                         ctx.textAlign = 'right';
-                        ctx.fillText(precio, canvas.width - 20, canvas.height - 370);
+                        ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
                         
                         const link = document.createElement('a');
                         link.download = 'editado.png';
