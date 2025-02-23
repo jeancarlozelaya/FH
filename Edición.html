@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor de Imágenes</title>
+    <!-- FontAwesome para los íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* Estilos generales */
         body {
@@ -34,20 +36,68 @@
             justify-content: center;
         }
 
-        /* Botón de carga */
-        #imageUpload {
+        /* Diseño mejorado para el input de carga de archivos */
+        .file-upload {
+            position: relative;
+            overflow: hidden;
             margin-bottom: 15px;
-            padding: 6px 10px;
             background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .file-upload:hover {
+            background-color: #2980b9;
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* Botones con íconos */
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .button-container button {
+            background-color: #27ae60;
             color: white;
             border: none;
             border-radius: 4px;
+            padding: 10px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
         }
 
-        #imageUpload:hover {
-            background-color: #2980b9;
+        .button-container button#clearButton {
+            background-color: #e74c3c;
+        }
+
+        .button-container button:hover {
+            background-color: #2ecc71;
+        }
+
+        .button-container button#clearButton:hover {
+            background-color: #c0392b;
         }
 
         /* Estilos de la tabla */
@@ -122,38 +172,6 @@
             border-radius: 6px;
         }
 
-        /* Botón de descarga */
-        button {
-            background-color: #27ae60;
-            color: white;
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            font-size: 13px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            background-color: #2ecc71;
-        }
-
-        /* Botón de borrar */
-        #clearButton {
-            background-color: #e74c3c;
-            color: white;
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            font-size: 13px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        #clearButton:hover {
-            background-color: #c0392b;
-        }
-
         /* RESPONSIVIDAD */
         @media (max-width: 768px) {
             table {
@@ -165,9 +183,9 @@
                 padding: 4px;
             }
 
-            button {
-                font-size: 12px;
-                padding: 5px 10px;
+            .button-container button {
+                font-size: 14px;
+                padding: 8px;
             }
 
             td img {
@@ -192,9 +210,9 @@
                 padding: 3px;
             }
 
-            button {
-                font-size: 11px;
-                padding: 4px 8px;
+            .button-container button {
+                font-size: 12px;
+                padding: 6px;
             }
 
             td img {
@@ -219,7 +237,23 @@
         <h1>Editor de Imágenes y Precios</h1>
     </header>
     <div class="container">
-        <input type="file" id="imageUpload" multiple accept="image/*">
+        <!-- Diseño mejorado para el input de carga de archivos -->
+        <label class="file-upload">
+            <i class="fas fa-upload"></i> Subir imágenes
+            <input type="file" id="imageUpload" multiple accept="image/*">
+        </label>
+
+        <!-- Botones con íconos -->
+        <div class="button-container">
+            <button onclick="downloadImages()" title="Descargar imágenes">
+                <i class="fas fa-download"></i>
+            </button>
+            <button id="clearButton" onclick="clearTable()" title="Borrar datos">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+
+        <!-- Tabla -->
         <table id="imageTable">
             <thead>
                 <tr>
@@ -232,11 +266,10 @@
             </thead>
             <tbody></tbody>
         </table>
-        <button onclick="downloadImages()">Descargar Imágenes</button>
-        <button id="clearButton" onclick="clearTable()">Borrar Datos</button>
     </div>
 
     <script>
+        // JavaScript (el mismo que antes)
         document.getElementById('imageUpload').addEventListener('change', function(event) {
             const files = event.target.files;
             const tbody = document.querySelector('#imageTable tbody');
@@ -264,7 +297,7 @@
                 reader.readAsDataURL(file);
             }
         });
-        
+
         function updatePrice(element) {
             const row = element.closest('tr');
             const precioApp = parseFloat(row.querySelector('.precioApp').value) || 0;
@@ -273,7 +306,7 @@
             row.querySelector('.precioLempiras').textContent = precioLempiras.toFixed(2);
             saveTableData();
         }
-        
+
         function saveTableData() {
             const tableData = [];
             document.querySelectorAll('#imageTable tbody tr').forEach(row => {
@@ -287,7 +320,7 @@
             });
             localStorage.setItem('tableData', JSON.stringify(tableData));
         }
-        
+
         function loadTableData() {
             const tbody = document.querySelector('#imageTable tbody');
             tbody.innerHTML = '';
@@ -311,7 +344,7 @@
                 tbody.appendChild(row);
             });
         }
-        
+
         function downloadImages() {
             document.querySelectorAll('#imageTable tbody tr').forEach(row => {
                 const img = row.querySelector('img');
@@ -353,7 +386,7 @@
             tbody.innerHTML = '';
             localStorage.removeItem('tableData');
         }
-        
+
         window.addEventListener('load', loadTableData);
     </script>
 </body>
