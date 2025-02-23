@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Editor de Imágenes</title>
     <!-- FontAwesome para los íconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -236,6 +236,11 @@
                 min-width: 70px;
             }
         }
+
+        /* Evitar zoom en iPhone */
+        input, select, textarea, button {
+            font-size: 16px; /* Tamaño de fuente mínimo para evitar zoom */
+        }
     </style>
 </head>
 <body>
@@ -356,7 +361,13 @@
         }
 
         function downloadImages() {
-            document.querySelectorAll('#imageTable tbody tr').forEach(row => {
+            const rows = document.querySelectorAll('#imageTable tbody tr');
+            let index = 0;
+
+            function downloadNextImage() {
+                if (index >= rows.length) return;
+
+                const row = rows[index];
                 const img = row.querySelector('img');
                 const precio = row.querySelector('.precio').value;
                 const talla = row.querySelector('.talla').value;
@@ -389,12 +400,20 @@
                         ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
                         
                         const link = document.createElement('a');
-                        link.download = 'editado.png';
+                        link.download = `editado_${index + 1}.png`;
                         link.href = canvas.toDataURL();
                         link.click();
+                        
+                        index++;
+                        setTimeout(downloadNextImage, 100); // Esperar 100ms antes de descargar la siguiente imagen
                     };
+                } else {
+                    index++;
+                    downloadNextImage();
                 }
-            });
+            }
+
+            downloadNextImage();
         }
 
         function clearTable() {
