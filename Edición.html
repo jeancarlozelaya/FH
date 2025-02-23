@@ -79,13 +79,15 @@
             color: white;
             border: none;
             border-radius: 4px;
-            padding: 10px;
+            padding: 15px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: background-color 0.3s;
+            width: 50px;
+            height: 50px;
         }
 
         .button-container button#clearButton {
@@ -184,8 +186,10 @@
             }
 
             .button-container button {
-                font-size: 14px;
-                padding: 8px;
+                font-size: 16px;
+                padding: 12px;
+                width: 45px;
+                height: 45px;
             }
 
             td img {
@@ -211,8 +215,10 @@
             }
 
             .button-container button {
-                font-size: 12px;
-                padding: 6px;
+                font-size: 14px;
+                padding: 10px;
+                width: 40px;
+                height: 40px;
             }
 
             td img {
@@ -234,7 +240,7 @@
 </head>
 <body>
     <header>
-        <h1>Editor de Imágenes y Precios</h1>
+        <h1>Edición de Imágenes</h1>
     </header>
     <div class="container">
         <!-- Diseño mejorado para el input de carga de archivos -->
@@ -269,7 +275,7 @@
     </div>
 
     <script>
-        // JavaScript (el mismo que antes)
+        // JavaScript actualizado
         document.getElementById('imageUpload').addEventListener('change', function(event) {
             const files = event.target.files;
             const tbody = document.querySelector('#imageTable tbody');
@@ -289,7 +295,7 @@
                             </select>
                         </td>
                         <td class="precioLempiras">0</td>
-                        <td><input type="text" class="precio"></td>
+                        <td><input type="text" class="precio" oninput="saveTableData()"></td>
                     `;
                     tbody.appendChild(row);
                     saveTableData();
@@ -339,7 +345,7 @@
                         </select>
                     </td>
                     <td class="precioLempiras">${data.precioLempiras}</td>
-                    <td><input type="text" class="precio" value="${data.precio}"></td>
+                    <td><input type="text" class="precio" value="${data.precio}" oninput="saveTableData()"></td>
                 `;
                 tbody.appendChild(row);
             });
