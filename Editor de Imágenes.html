@@ -6,6 +6,9 @@
     <title>Editor de Imágenes</title>
     <!-- FontAwesome para los íconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- JSZip y FileSaver.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         /* Estilos generales */
         body {
@@ -259,6 +262,9 @@
             <button onclick="downloadImages()" title="Descargar imágenes">
                 <i class="fas fa-download"></i>
             </button>
+            <button onclick="downloadImagesAsZip()" title="Descargar imágenes en ZIP">
+                <i class="fas fa-file-archive"></i>
+            </button>
             <button id="clearButton" onclick="clearTable()" title="Borrar datos">
                 <i class="fas fa-trash"></i>
             </button>
@@ -414,6 +420,66 @@
             }
 
             downloadNextImage();
+        }
+
+        function downloadImagesAsZip() {
+            const zip = new JSZip();
+            const rows = document.querySelectorAll('#imageTable tbody tr');
+            let index = 0;
+
+            function addNextImageToZip() {
+                if (index >= rows.length) {
+                    zip.generateAsync({ type: "blob" }).then(function(content) {
+                        saveAs(content, "imagenes.zip");
+                    });
+                    return;
+                }
+
+                const row = rows[index];
+                const img = row.querySelector('img');
+                const precio = row.querySelector('.precio').value;
+                const talla = row.querySelector('.talla').value;
+                
+                if (img && precio) {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const image = new Image();
+                    image.src = img.src;
+                    
+                    image.onload = function() {
+                        const cropTop = 500;
+                        const cropBottom = 150;
+                        const croppedHeight = image.height - cropTop - cropBottom;
+                        canvas.width = image.width;
+                        canvas.height = croppedHeight;
+                        
+                        ctx.drawImage(image, 0, cropTop, image.width, croppedHeight, 0, 0, canvas.width, canvas.height);
+                        
+                        // Dibujar talla en la parte izquierda
+                        ctx.font = 'bold 50px Arial';
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                        ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
+                        ctx.fillStyle = 'white';
+                        ctx.textAlign = 'left';
+                        ctx.fillText(talla, 20, canvas.height - 370);
+                        
+                        // Dibujar precio en la parte derecha
+                        ctx.textAlign = 'right';
+                        ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
+                        
+                        canvas.toBlob(function(blob) {
+                            zip.file(`editado_${index + 1}.png`, blob);
+                            index++;
+                            addNextImageToZip();
+                        }, 'image/png');
+                    };
+                } else {
+                    index++;
+                    addNextImageToZip();
+                }
+            }
+
+            addNextImageToZip();
         }
 
         function clearTable() {
