@@ -362,43 +362,59 @@ function compressImage(image, callback) {
 }
 
 
-        document.getElementById('imageUpload').addEventListener('change', function(event) {
-            const files = event.target.files;
-            const tbody = document.querySelector('#imageTable tbody');
-            
-            for (let file of files) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const image = new Image();
-                    image.src = e.target.result;
+document.getElementById('imageUpload').addEventListener('change', function(event) {
+    const files = event.target.files;
+    const tbody = document.querySelector('#imageTable tbody');
+    
+    for (let file of files) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const image = new Image();
+            image.src = e.target.result;
 
-                    image.onload = function() {
-                        compressImage(image, function(compressedImage) {
-                            saveImageToIndexedDB(compressedImage, function(id) {
-                                const row = document.createElement('tr');
-                                row.innerHTML = `
-                                    <td><img src="${compressedImage}" data-id="${id}"></td>
-                                    <td><input type="number" class="precioApp" oninput="updatePrice(this)"></td>
-                                    <td>
-                                        <select class="isv" onchange="updatePrice(this)">
-                                            <option value="0.2">20%</option>
-                                            <option value="0.25">25%</option>
-                                            <option value="0.35">35%</option>
-                                        </select>
-                                    </td>
-                                    <td class="precioLempiras">0</td>
-                                    <td><input type="number" class="precio" oninput="saveTableData()"></td>
-                                    <td><input type="text" class="talla" oninput="saveTableData()"></td>
-                                `;
-                                tbody.appendChild(row);
-                                saveTableData();
-                            });
-                        });
-                    };
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+            image.onload = function() {
+                compressImage(image, function(compressedImage) {
+                    // Aquí puedes aplicar el corte si es necesario antes de guardarlo
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const cropTop = 500;
+                    const cropBottom = 150;
+                    const croppedHeight = image.height - cropTop - cropBottom;
+
+                    canvas.width = image.width;
+                    canvas.height = croppedHeight;
+
+                    ctx.drawImage(image, 0, cropTop, image.width, croppedHeight, 0, 0, canvas.width, canvas.height);
+
+                    // Convertir la imagen cortada a base64
+                    const croppedImageData = canvas.toDataURL('image/jpeg');
+
+                    // Guardar la imagen modificada en IndexedDB
+                    saveImageToIndexedDB(croppedImageData, function(id) {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td><img src="${croppedImageData}" data-id="${id}"></td>
+                            <td><input type="number" class="precioApp" oninput="updatePrice(this)"></td>
+                            <td>
+                                <select class="isv" onchange="updatePrice(this)">
+                                    <option value="0.2">20%</option>
+                                    <option value="0.25">25%</option>
+                                    <option value="0.35">35%</option>
+                                </select>
+                            </td>
+                            <td class="precioLempiras">0</td>
+                            <td><input type="number" class="precio" oninput="saveTableData()"></td>
+                            <td><input type="text" class="talla" oninput="saveTableData()"></td>
+                        `;
+                        tbody.appendChild(row);
+                        saveTableData();
+                    });
+                });
+            };
+        };
+        reader.readAsDataURL(file);
+    }
+});
 
         function updatePrice(element) {
             const row = element.closest('tr');
@@ -478,17 +494,15 @@ function compressImage(image, callback) {
         image.crossOrigin = "anonymous"; // Permitir el uso de imágenes externas si es necesario
         image.src = img.src;
 
-        image.onload = function() {
+image.onload = function() {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            const cropTop = 500;
-            const cropBottom = 150;
-            const croppedHeight = image.height - cropTop - cropBottom;
 
+            // Usar las dimensiones originales de la imagen, sin redimensionar ni recortar
             canvas.width = image.width;
-            canvas.height = croppedHeight;
+            canvas.height = image.height;
 
-            ctx.drawImage(image, 0, cropTop, image.width, croppedHeight, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, 0, 0, image.width, image.height);
 
             // Dibujar el logo en la parte superior izquierda
             if (logo.complete) {
@@ -562,14 +576,12 @@ function downloadImagesAsZip() {
         image.onload = function() {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            const cropTop = 500;
-            const cropBottom = 150;
-            const croppedHeight = image.height - cropTop - cropBottom;
 
+            // Usar las dimensiones originales de la imagen, sin redimensionar ni recortar
             canvas.width = image.width;
-            canvas.height = croppedHeight;
+            canvas.height = image.height;
 
-            ctx.drawImage(image, 0, cropTop, image.width, croppedHeight, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, 0, 0, image.width, image.height);
 
             // Dibujar el logo en la parte superior izquierda
             if (logo.complete) {
