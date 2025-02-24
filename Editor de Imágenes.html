@@ -339,7 +339,7 @@
             };
         }
 
-function compressImage(image, callback) {
+function compressImage(image, callback, quality = 0.8) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
@@ -351,16 +351,15 @@ function compressImage(image, callback) {
     canvas.height = height;
     ctx.drawImage(image, 0, 0, width, height);
 
-    // Convertir la imagen sin comprimir
+    // Convertir la imagen a un formato comprimido (WebP)
     canvas.toBlob(function(blob) {
         const reader = new FileReader();
         reader.onload = function() {
-            callback(reader.result);  // Pasar la imagen sin comprimir
+            callback(reader.result);  // Pasar la imagen comprimida
         };
         reader.readAsDataURL(blob);
-    }, 'image/jpeg');  // O cambiar el tipo a PNG si prefieres
+    }, 'image/webp', quality);  // Ajusta el valor de calidad (0 a 1)
 }
-
 
 document.getElementById('imageUpload').addEventListener('change', function(event) {
     const files = event.target.files;
@@ -387,34 +386,41 @@ document.getElementById('imageUpload').addEventListener('change', function(event
                     ctx.drawImage(image, 0, cropTop, image.width, croppedHeight, 0, 0, canvas.width, canvas.height);
 
                     // Convertir la imagen cortada a base64
-                    const croppedImageData = canvas.toDataURL('image/jpeg');
+                    canvas.toBlob(function(blob) {
+                        const reader = new FileReader();
+                        reader.onload = function() {
+                            const croppedImageData = reader.result;
 
-                    // Guardar la imagen modificada en IndexedDB
-                    saveImageToIndexedDB(croppedImageData, function(id) {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td><img src="${croppedImageData}" data-id="${id}"></td>
-                            <td><input type="number" class="precioApp" oninput="updatePrice(this)"></td>
-                            <td>
-                                <select class="isv" onchange="updatePrice(this)">
-                                    <option value="0.2">20%</option>
-                                    <option value="0.25">25%</option>
-                                    <option value="0.35">35%</option>
-                                </select>
-                            </td>
-                            <td class="precioLempiras">0</td>
-                            <td><input type="number" class="precio" oninput="saveTableData()"></td>
-                            <td><input type="text" class="talla" oninput="saveTableData()"></td>
-                        `;
-                        tbody.appendChild(row);
-                        saveTableData();
-                    });
+                            // Guardar la imagen modificada en IndexedDB
+                            saveImageToIndexedDB(croppedImageData, function(id) {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td><img src="${croppedImageData}" data-id="${id}"></td>
+                                    <td><input type="number" class="precioApp" oninput="updatePrice(this)"></td>
+                                    <td>
+                                        <select class="isv" onchange="updatePrice(this)">
+                                            <option value="0.2">20%</option>
+                                            <option value="0.25">25%</option>
+                                            <option value="0.35">35%</option>
+                                        </select>
+                                    </td>
+                                    <td class="precioLempiras">0</td>
+                                    <td><input type="number" class="precio" oninput="saveTableData()"></td>
+                                    <td><input type="text" class="talla" oninput="saveTableData()"></td>
+                                `;
+                                tbody.appendChild(row);
+                                saveTableData();
+                            });
+                        };
+                        reader.readAsDataURL(blob);
+                    }, 'image/webp', 0.8);  // Ajusta el valor de calidad (0 a 1)
                 });
             };
         };
         reader.readAsDataURL(file);
     }
 });
+
 
         function updatePrice(element) {
             const row = element.closest('tr');
