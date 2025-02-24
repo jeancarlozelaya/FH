@@ -10,241 +10,250 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        /* Estilos generales */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
 
-        header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 8px;
-            text-align: center;
-        }
+header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 8px;
+    text-align: center;
+}
 
-        h1 {
-            font-size: 18px;
-            margin: 0;
-        }
+h1 {
+    font-size: 18px;
+    margin: 0;
+}
 
-        /* Contenedor principal */
-        .container {
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
+/* Contenedor principal */
+.container {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
 
-        /* Diseño mejorado para el input de carga de archivos */
-        .file-upload {
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 15px;
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            text-align: center;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
+/* Diseño mejorado para el input de carga de archivos */
+.file-upload {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 15px;
+    background-color: #3498db;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
 
-        .file-upload:hover {
-            background-color: #2980b9;
-        }
+.file-upload:hover {
+    background-color: #2980b9;
+}
 
-        .file-upload input[type="file"] {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
+.file-upload input[type="file"] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
 
-        /* Botones con íconos */
-        .button-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
+/* Botones con íconos */
+.button-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
 
-        .button-container button {
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 15px;
-            cursor: pointer;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.3s;
-            width: 50px;
-            height: 50px;
-        }
+.button-container button {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 15px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+    width: 50px;
+    height: 50px;
+}
 
-        .button-container button#clearButton {
-            background-color: #e74c3c;
-        }
+.button-container button#clearButton {
+    background-color: #e74c3c;
+}
 
-        .button-container button:hover {
-            background-color: #2ecc71;
-        }
+.button-container button:hover {
+    background-color: #2ecc71;
+}
 
-        .button-container button#clearButton:hover {
-            background-color: #c0392b;
-        }
+.button-container button#clearButton:hover {
+    background-color: #c0392b;
+}
 
-        /* Estilos de la tabla */
-        table {
-            width: 100%;
-            max-width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            background-color: white;
-            border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
+/* Estilos de la tabla */
+table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
 
-        th, td {
-            padding: 6px;
-            text-align: center;
-            font-size: 14px;
-            border: 1px solid #ddd;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+th, td {
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-        th {
-            background-color: #34495e;
-            color: white;
-            font-size: 13px;
-            padding: 8px;
-        }
+th {
+    background-color: #34495e;
+    color: white;
+    font-size: 13px;
+    padding: 8px;
+}
 
-        /* Ajuste de anchos de columnas */
-        th:nth-child(1), td:nth-child(1) { width: 15%; } /* Imagen */
-        th:nth-child(2), td:nth-child(2) { width: 20%; } /* Precio App */
-        th:nth-child(3), td:nth-child(3) { width: 10%; } /* ISV */
-        th:nth-child(4), td:nth-child(4) { width: 15%; } /* Precio Lempiras */
-        th:nth-child(5), td:nth-child(5) { width: 15%; } /* Precio */
-        th:nth-child(6), td:nth-child(6) { width: 15%; } /* Talla */
+/* Ajuste de anchos de columnas */
+th:nth-child(1), td:nth-child(1) { width: 30%; } /* Imagen */
+th:nth-child(2), td:nth-child(2) { width: 15%; } /* Precio App */
+th:nth-child(3), td:nth-child(3) { width: 10%; } /* ISV */
+th:nth-child(4), td:nth-child(4) { width: 15%; } /* Precio Lempiras */
+th:nth-child(5), td:nth-child(5) { width: 15%; } /* Precio */
+th:nth-child(6), td:nth-child(6) { width: 15%; } /* Talla */
 
-        /* Inputs y Selects */
-        td input, td select {
-            width: 100%;
-            height: 30px;
-            font-size: 13px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            text-align: center;
-            box-sizing: border-box;
-            background-color: #fff;
-        }
+/* Inputs y Selects */
+td input, td select {
+    width: 100%;
+    height: 30px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    text-align: center;
+    box-sizing: border-box;
+    background-color: #fff;
+}
 
-        /* Precio App y Precio con tamaño fijo */
-        .precioApp, .precio {
-            width: 100%;
-            max-width: 80px;
-            min-width: 80px;
-        }
+/* Precio App y Precio con tamaño fijo */
+.precioApp, .precio {
+    width: 100%;
+    max-width: 80px;
+    min-width: 80px;
+}
 
-        /* Lista desplegable de ISV más compacta */
-        td select.isv {
-            width: 70px;
-            height: 30px;
-            font-size: 13px;
-            padding: 2px;
-            cursor: pointer;
-        }
+/* Lista desplegable de ISV más compacta */
+td select.isv {
+    width: 70px;
+    height: 30px;
+    font-size: 13px;
+    padding: 2px;
+    cursor: pointer;
+}
 
-        /* Imagen más grande */
-        td img {
-            max-width: 70px;
-            max-height: 70px;
-            object-fit: cover;
-            border-radius: 6px;
-        }
+/* Imagen más grande */
+td img {
+    max-width: 150px; /* Aumentar el tamaño de la imagen */
+    max-height: 150px; /* Aumentar el tamaño de la imagen */
+    object-fit: cover;
+    border-radius: 6px;
+}
 
-        /* RESPONSIVIDAD */
-        @media (max-width: 768px) {
-            table {
-                width: 100%;
-                font-size: 12px;
-            }
+/* RESPONSIVIDAD */
+@media (max-width: 768px) {
+    table {
+        width: 100%;
+        font-size: 12px;
+    }
 
-            th, td {
-                padding: 4px;
-            }
+    th, td {
+        padding: 4px;
+    }
 
-            .button-container button {
-                font-size: 16px;
-                padding: 12px;
-                width: 45px;
-                height: 45px;
-            }
+    .button-container button {
+        font-size: 16px;
+        padding: 12px;
+        width: 45px;
+        height: 45px;
+    }
 
-            td img {
-                max-width: 60px;
-                max-height: 60px;
-            }
+    td img {
+        max-width: 100px; /* Ajustar el tamaño de la imagen en móviles */
+        max-height: 100px; /* Ajustar el tamaño de la imagen en móviles */
+    }
 
-            td select.isv {
-                width: 65px;
-                font-size: 12px;
-            }
+    td select.isv {
+        width: 65px;
+        font-size: 12px;
+    }
 
-            .precioApp, .precio {
-                max-width: 75px;
-                min-width: 75px;
-            }
-        }
+    .precioApp, .precio {
+        max-width: 75px;
+        min-width: 75px;
+    }
 
-        @media (max-width: 480px) {
-            th, td {
-                font-size: 11px;
-                padding: 3px;
-            }
+    /* Ajustar el ancho de "Precio Lempiras" en móviles */
+    th:nth-child(4), td:nth-child(4) { width: 10%; } /* Precio Lempiras más pequeño */
+    th:nth-child(6), td:nth-child(6) { width: 20%; } /* Talla más grande */
+}
 
-            .button-container button {
-                font-size: 14px;
-                padding: 10px;
-                width: 40px;
-                height: 40px;
-            }
+@media (max-width: 480px) {
+    th, td {
+        font-size: 11px;
+        padding: 3px;
+    }
 
-            td img {
-                max-width: 50px;
-                max-height: 50px;
-            }
+    .button-container button {
+        font-size: 14px;
+        padding: 10px;
+        width: 40px;
+        height: 40px;
+    }
 
-            td select.isv {
-                width: 60px;
-                font-size: 11px;
-            }
+    td img {
+        max-width: 80px; /* Ajustar el tamaño de la imagen en móviles pequeños */
+        max-height: 80px; /* Ajustar el tamaño de la imagen en móviles pequeños */
+    }
 
-            .precioApp, .precio {
-                max-width: 70px;
-                min-width: 70px;
-            }
-        }
+    td select.isv {
+        width: 60px;
+        font-size: 11px;
+    }
 
-        /* Evitar zoom en iPhone */
-        input, select, textarea, button {
-            font-size: 16px; /* Tamaño de fuente mínimo para evitar zoom */
-        }
-    </style>
+    .precioApp, .precio {
+        max-width: 70px;
+        min-width: 70px;
+    }
+
+    /* Ajustar el ancho de "Precio Lempiras" en móviles pequeños */
+    th:nth-child(4), td:nth-child(4) { width: 8%; } /* Precio Lempiras más pequeño */
+    th:nth-child(6), td:nth-child(6) { width: 22%; } /* Talla más grande */
+}
+
+
+
+/* Evitar zoom en iPhone */
+input, select, textarea, button {
+    font-size: 16px; /* Tamaño de fuente mínimo para evitar zoom */
+}    </style>
 </head>
 <body>
     <header>
