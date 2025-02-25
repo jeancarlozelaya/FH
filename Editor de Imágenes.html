@@ -278,7 +278,7 @@
 const canvas = document.createElement('canvas');
 const ctx = canvas.getContext('2d');
 
-function compressImage(image, callback, quality = 0.1) {
+function compressImage(image, callback, quality = 0.3) {
     // Redimensionar la imagen a un ancho máximo de 400px (manteniendo la relación de aspecto)
     const maxWidth = 25; // Ancho máximo reducido a 400px
     let width = image.width;
@@ -380,7 +380,7 @@ document.getElementById('imageUpload').addEventListener('change', function (even
                             reader.readAsDataURL(blob);
                         },
                         'image/webp', // Usar formato WebP
-                        0.1 // Calidad ajustada a 0.5
+                        0.3 // Calidad ajustada a 0.5
                     );
                 });
             };
