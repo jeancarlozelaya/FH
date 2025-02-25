@@ -272,92 +272,126 @@
             };
         }
 
-        function compressImage(image, callback, quality = 0.8) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            // Usar las dimensiones originales de la imagen, sin redimensionar
-            const width = image.width;
-            const height = image.height;
 
-            canvas.width = width;
-            canvas.height = height;
-            ctx.drawImage(image, 0, 0, width, height);
 
-            // Convertir la imagen a un formato comprimido (WebP)
-            canvas.toBlob(function(blob) {
-                const reader = new FileReader();
-                reader.onload = function() {
-                    callback(reader.result);  // Pasar la imagen comprimida
-                };
-                reader.readAsDataURL(blob);
-            }, 'image/webp', quality);  // Ajusta el valor de calidad (0 a 1)
-        }
+// Reutilizar un solo canvas para todas las operaciones
+const canvas = document.createElement('canvas');
+const ctx = canvas.getContext('2d');
 
-        document.getElementById('imageUpload').addEventListener('change', function(event) {
-            const files = event.target.files;
-            const mosaicView = document.getElementById('mosaicView');
-            
-            for (let file of files) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const image = new Image();
-                    image.src = e.target.result;
+function compressImage(image, callback, quality = 0.1) {
+    // Redimensionar la imagen a un ancho máximo de 400px (manteniendo la relación de aspecto)
+    const maxWidth = 25; // Ancho máximo reducido a 400px
+    let width = image.width;
+    let height = image.height;
 
-                    image.onload = function() {
-                        compressImage(image, function(compressedImage) {
-                            // Aquí puedes aplicar el corte si es necesario antes de guardarlo
-                            const canvas = document.createElement('canvas');
-                            const ctx = canvas.getContext('2d');
-                            const cropTop = 500;
-                            const cropBottom = 150;
-                            const croppedHeight = image.height - cropTop - cropBottom;
+    if (width > maxWidth) {
+        const ratio = maxWidth / width;
+        width = maxWidth;
+        height = height * ratio;
+    }
 
-                            canvas.width = image.width;
-                            canvas.height = croppedHeight;
+    canvas.width = width;
+    canvas.height = height;
 
-                            ctx.drawImage(image, 0, cropTop, image.width, croppedHeight, 0, 0, canvas.width, canvas.height);
+    // Dibujar la imagen redimensionada en el canvas
+    ctx.drawImage(image, 0, 0, width, height);
 
-                            // Convertir la imagen cortada a base64
-                            canvas.toBlob(function(blob) {
-                                const reader = new FileReader();
-                                reader.onload = function() {
-                                    const croppedImageData = reader.result;
+    // Convertir la imagen a WebP con compresión
+    canvas.toBlob(
+        function (blob) {
+            const reader = new FileReader();
+            reader.onload = function () {
+                callback(reader.result); // Pasar la imagen comprimida
+                // Liberar memoria
+                canvas.width = 0;
+                canvas.height = 0;
+            };
+            reader.readAsDataURL(blob);
+        },
+        'image/webp', // Usar formato WebP
+        quality // Calidad ajustada a 0.5
+    );
+}
 
-                                    // Guardar la imagen modificada en IndexedDB
-                                    saveImageToIndexedDB(croppedImageData, function(id) {
-                                        const mosaicItem = document.createElement('div');
-                                        mosaicItem.className = 'mosaic-item';
-                                        mosaicItem.innerHTML = `
-                                            <img src="${croppedImageData}" data-id="${id}">
-                                            <div class="mosaic-details">
-                                                <div class="row">
-                                                    <input type="number" class="precioApp" oninput="updatePrice(this)" placeholder="Precio App">
-                                                    <select class="isv" onchange="updatePrice(this)">
-                                                        <option value="0.2">20%</option>
-                                                        <option value="0.25">25%</option>
-                                                        <option value="0.35">35%</option>
-                                                    </select>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="precioLempiras">0</div>
-                                                    <input type="number" class="precio" oninput="saveTableData()" placeholder="Precio">
-                                                </div>
-                                                <input type="text" class="talla" oninput="saveTableData()" placeholder="Talla">
+// Debouncing para evitar llamadas frecuentes a saveTableData
+let saveTimeout;
+function debounceSaveTableData() {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(saveTableData, 500); // Guardar después de 500ms de inactividad
+}
+
+
+
+document.getElementById('imageUpload').addEventListener('change', function (event) {
+    const files = event.target.files;
+    const mosaicView = document.getElementById('mosaicView');
+
+    for (let file of files) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const image = new Image();
+            image.src = e.target.result;
+
+            image.onload = function () {
+                compressImage(image, function (compressedImage) {
+                    // Aplicar el corte después de redimensionar
+                    const cropTop = 500; // Ajustar según sea necesario
+                    const cropBottom = 150; // Ajustar según sea necesario
+                    const croppedHeight = image.height - cropTop - cropBottom;
+
+                    canvas.width = image.width;
+                    canvas.height = croppedHeight;
+
+                    ctx.drawImage(image, 0, cropTop, image.width, croppedHeight, 0, 0, canvas.width, canvas.height);
+
+                    // Convertir la imagen cortada a base64
+                    canvas.toBlob(
+                        function (blob) {
+                            const reader = new FileReader();
+                            reader.onload = function () {
+                                const croppedImageData = reader.result;
+
+                                // Guardar la imagen modificada en IndexedDB
+                                saveImageToIndexedDB(croppedImageData, function (id) {
+                                    const mosaicItem = document.createElement('div');
+                                    mosaicItem.className = 'mosaic-item';
+                                    mosaicItem.innerHTML = `
+                                        <img src="${croppedImageData}" data-id="${id}">
+                                        <div class="mosaic-details">
+                                            <div class="row">
+                                                <input type="number" class="precioApp" oninput="updatePrice(this)" placeholder="Precio App">
+                                                <select class="isv" onchange="updatePrice(this)">
+                                                    <option value="0.2">20%</option>
+                                                    <option value="0.25">25%</option>
+                                                    <option value="0.35">35%</option>
+                                                </select>
                                             </div>
-                                        `;
-                                        mosaicView.appendChild(mosaicItem);
-                                        saveTableData();
-                                    });
-                                };
-                                reader.readAsDataURL(blob);
-                            }, 'image/webp', 0.8);  // Ajusta el valor de calidad (0 a 1)
-                        });
-                    };
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+                                            <div class="row">
+                                                <div class="precioLempiras">0</div>
+                                                <input type="number" class="precio" oninput="debounceSaveTableData()" placeholder="Precio">
+                                            </div>
+                                            <input type="text" class="talla" oninput="debounceSaveTableData()" placeholder="Talla">
+                                        </div>
+                                    `;
+                                    mosaicView.appendChild(mosaicItem);
+                                    debounceSaveTableData();
+                                });
+                            };
+                            reader.readAsDataURL(blob);
+                        },
+                        'image/webp', // Usar formato WebP
+                        0.1 // Calidad ajustada a 0.5
+                    );
+                });
+            };
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+
+
+
 
         function updatePrice(element) {
             const mosaicItem = element.closest('.mosaic-item');
