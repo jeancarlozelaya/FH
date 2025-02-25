@@ -105,44 +105,46 @@
             background-color: #c0392b;
         }
 
-        /* Estilos de la tabla */
-        table {
-            width: 100%;
-            max-width: 100%;
-            border-collapse: collapse;
+        /* Nueva vista en mosaico */
+        .mosaic-view {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
             margin-top: 10px;
+        }
+
+        .mosaic-item {
+            display: flex;
             background-color: white;
             border-radius: 6px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            width: calc(50% - 5px);
         }
 
-        th, td {
-            padding: 6px;
-            text-align: center;
-            font-size: 14px;
-            border: 1px solid #ddd;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .mosaic-item img {
+            max-width: 100px;
+            max-height: 100px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-right: 10px;
         }
 
-        th {
-            background-color: #34495e;
-            color: white;
-            font-size: 13px;
-            padding: 8px;
+        .mosaic-details {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-grow: 1;
         }
 
-        /* Ajuste de anchos de columnas */
-        th:nth-child(1), td:nth-child(1) { width: 15%; } /* Imagen */
-        th:nth-child(2), td:nth-child(2) { width: 20%; } /* Precio App */
-        th:nth-child(3), td:nth-child(3) { width: 10%; } /* ISV */
-        th:nth-child(4), td:nth-child(4) { width: 15%; } /* Precio Lempiras */
-        th:nth-child(5), td:nth-child(5) { width: 15%; } /* Precio */
-        th:nth-child(6), td:nth-child(6) { width: 15%; } /* Talla */
+        .mosaic-details .row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
 
-        /* Inputs y Selects */
-        td input, td select {
+        .mosaic-details .row input,
+        .mosaic-details .row select {
             width: 100%;
             height: 30px;
             font-size: 13px;
@@ -153,96 +155,39 @@
             background-color: #fff;
         }
 
-        /* Precio App y Precio con tamaño fijo */
-        .precioApp, .precio {
-            width: 100%;
-            max-width: 80px;
-            min-width: 80px;
-        }
+.mosaic-details .precioLempiras {
+    font-size: 14px;
+    width: 100%;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 30px; /* Igual que los input y select */
+    border: 1px solid #ccc; /* Mismo borde */
+    border-radius: 3px; /* Mismo redondeado */
+    box-sizing: border-box; /* Asegura que respete el tamaño */
+    background-color: #fff; /* Fondo blanco para uniformidad */
+}
 
-        /* Lista desplegable de ISV más compacta */
-        td select.isv {
-            width: 70px;
+
+
+        .mosaic-details .talla {
+            width: 100%;
             height: 30px;
             font-size: 13px;
-            padding: 2px;
-            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            text-align: center;
+            box-sizing: border-box;
+            background-color: #fff;
         }
 
-        /* Imagen más grande */
-        td img {
-            max-width: 70px;
-            max-height: 70px;
-            object-fit: cover;
-            border-radius: 6px;
-        }
-
-        /* RESPONSIVIDAD */
         @media (max-width: 768px) {
-            table {
+            .mosaic-item {
                 width: 100%;
-                font-size: 12px;
             }
-
-            th, td {
-                padding: 4px;
-            }
-
-            .button-container button {
-                font-size: 16px;
-                padding: 12px;
-                width: 45px;
-                height: 45px;
-            }
-
-            td img {
-                max-width: 60px;
-                max-height: 60px;
-            }
-
-            td select.isv {
-                width: 65px;
-                font-size: 12px;
-            }
-
-            .precioApp, .precio {
-                max-width: 75px;
-                min-width: 75px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            th, td {
-                font-size: 11px;
-                padding: 3px;
-            }
-
-            .button-container button {
-                font-size: 14px;
-                padding: 10px;
-                width: 40px;
-                height: 40px;
-            }
-
-            td img {
-                max-width: 50px;
-                max-height: 50px;
-            }
-
-            td select.isv {
-                width: 60px;
-                font-size: 11px;
-            }
-
-            .precioApp, .precio {
-                max-width: 70px;
-                min-width: 70px;
-            }
-        }
-
-        /* Evitar zoom en iPhone */
-        input, select, textarea, button {
-            font-size: 16px; /* Tamaño de fuente mínimo para evitar zoom */
         }
     </style>
 </head>
@@ -270,20 +215,8 @@
             </button>
         </div>
 
-        <!-- Tabla -->
-        <table id="imageTable">
-            <thead>
-                <tr>
-                    <th>Foto</th>
-                    <th>Precio App</th>
-                    <th>ISV</th>
-                    <th>Precio Lempiras</th>
-                    <th>Precio</th>
-                    <th>Talla</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <!-- Vista en mosaico -->
+        <div class="mosaic-view" id="mosaicView"></div>
     </div>
 
     <script>
@@ -339,107 +272,111 @@
             };
         }
 
-function compressImage(image, callback, quality = 0.8) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    // Usar las dimensiones originales de la imagen, sin redimensionar
-    const width = image.width;
-    const height = image.height;
+        function compressImage(image, callback, quality = 0.8) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Usar las dimensiones originales de la imagen, sin redimensionar
+            const width = image.width;
+            const height = image.height;
 
-    canvas.width = width;
-    canvas.height = height;
-    ctx.drawImage(image, 0, 0, width, height);
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(image, 0, 0, width, height);
 
-    // Convertir la imagen a un formato comprimido (WebP)
-    canvas.toBlob(function(blob) {
-        const reader = new FileReader();
-        reader.onload = function() {
-            callback(reader.result);  // Pasar la imagen comprimida
-        };
-        reader.readAsDataURL(blob);
-    }, 'image/webp', quality);  // Ajusta el valor de calidad (0 a 1)
-}
+            // Convertir la imagen a un formato comprimido (WebP)
+            canvas.toBlob(function(blob) {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    callback(reader.result);  // Pasar la imagen comprimida
+                };
+                reader.readAsDataURL(blob);
+            }, 'image/webp', quality);  // Ajusta el valor de calidad (0 a 1)
+        }
 
-document.getElementById('imageUpload').addEventListener('change', function(event) {
-    const files = event.target.files;
-    const tbody = document.querySelector('#imageTable tbody');
-    
-    for (let file of files) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const image = new Image();
-            image.src = e.target.result;
+        document.getElementById('imageUpload').addEventListener('change', function(event) {
+            const files = event.target.files;
+            const mosaicView = document.getElementById('mosaicView');
+            
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const image = new Image();
+                    image.src = e.target.result;
 
-            image.onload = function() {
-                compressImage(image, function(compressedImage) {
-                    // Aquí puedes aplicar el corte si es necesario antes de guardarlo
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    const cropTop = 500;
-                    const cropBottom = 150;
-                    const croppedHeight = image.height - cropTop - cropBottom;
+                    image.onload = function() {
+                        compressImage(image, function(compressedImage) {
+                            // Aquí puedes aplicar el corte si es necesario antes de guardarlo
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            const cropTop = 500;
+                            const cropBottom = 150;
+                            const croppedHeight = image.height - cropTop - cropBottom;
 
-                    canvas.width = image.width;
-                    canvas.height = croppedHeight;
+                            canvas.width = image.width;
+                            canvas.height = croppedHeight;
 
-                    ctx.drawImage(image, 0, cropTop, image.width, croppedHeight, 0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(image, 0, cropTop, image.width, croppedHeight, 0, 0, canvas.width, canvas.height);
 
-                    // Convertir la imagen cortada a base64
-                    canvas.toBlob(function(blob) {
-                        const reader = new FileReader();
-                        reader.onload = function() {
-                            const croppedImageData = reader.result;
+                            // Convertir la imagen cortada a base64
+                            canvas.toBlob(function(blob) {
+                                const reader = new FileReader();
+                                reader.onload = function() {
+                                    const croppedImageData = reader.result;
 
-                            // Guardar la imagen modificada en IndexedDB
-                            saveImageToIndexedDB(croppedImageData, function(id) {
-                                const row = document.createElement('tr');
-                                row.innerHTML = `
-                                    <td><img src="${croppedImageData}" data-id="${id}"></td>
-                                    <td><input type="number" class="precioApp" oninput="updatePrice(this)"></td>
-                                    <td>
-                                        <select class="isv" onchange="updatePrice(this)">
-                                            <option value="0.2">20%</option>
-                                            <option value="0.25">25%</option>
-                                            <option value="0.35">35%</option>
-                                        </select>
-                                    </td>
-                                    <td class="precioLempiras">0</td>
-                                    <td><input type="number" class="precio" oninput="saveTableData()"></td>
-                                    <td><input type="text" class="talla" oninput="saveTableData()"></td>
-                                `;
-                                tbody.appendChild(row);
-                                saveTableData();
-                            });
-                        };
-                        reader.readAsDataURL(blob);
-                    }, 'image/webp', 0.8);  // Ajusta el valor de calidad (0 a 1)
-                });
-            };
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
+                                    // Guardar la imagen modificada en IndexedDB
+                                    saveImageToIndexedDB(croppedImageData, function(id) {
+                                        const mosaicItem = document.createElement('div');
+                                        mosaicItem.className = 'mosaic-item';
+                                        mosaicItem.innerHTML = `
+                                            <img src="${croppedImageData}" data-id="${id}">
+                                            <div class="mosaic-details">
+                                                <div class="row">
+                                                    <input type="number" class="precioApp" oninput="updatePrice(this)" placeholder="Precio App">
+                                                    <select class="isv" onchange="updatePrice(this)">
+                                                        <option value="0.2">20%</option>
+                                                        <option value="0.25">25%</option>
+                                                        <option value="0.35">35%</option>
+                                                    </select>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="precioLempiras">0</div>
+                                                    <input type="number" class="precio" oninput="saveTableData()" placeholder="Precio">
+                                                </div>
+                                                <input type="text" class="talla" oninput="saveTableData()" placeholder="Talla">
+                                            </div>
+                                        `;
+                                        mosaicView.appendChild(mosaicItem);
+                                        saveTableData();
+                                    });
+                                };
+                                reader.readAsDataURL(blob);
+                            }, 'image/webp', 0.8);  // Ajusta el valor de calidad (0 a 1)
+                        });
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
 
         function updatePrice(element) {
-            const row = element.closest('tr');
-            const precioApp = parseFloat(row.querySelector('.precioApp').value) || 0;
-            const isv = parseFloat(row.querySelector('.isv').value) || 0;
+            const mosaicItem = element.closest('.mosaic-item');
+            const precioApp = parseFloat(mosaicItem.querySelector('.precioApp').value) || 0;
+            const isv = parseFloat(mosaicItem.querySelector('.isv').value) || 0;
             const precioLempiras = ((precioApp * 26) + 50) * (1 + isv);
-            row.querySelector('.precioLempiras').textContent = precioLempiras.toFixed(2);
+            mosaicItem.querySelector('.precioLempiras').textContent = precioLempiras.toFixed(2);
             saveTableData();
         }
 
         function saveTableData() {
             const tableData = [];
-            document.querySelectorAll('#imageTable tbody tr').forEach(row => {
-                const img = row.querySelector('img').src;
-                const precioApp = row.querySelector('.precioApp').value;
-                const isv = row.querySelector('.isv').value;
-                const precioLempiras = row.querySelector('.precioLempiras').textContent;
-                const precio = row.querySelector('.precio').value;
-                const talla = row.querySelector('.talla').value;
+            document.querySelectorAll('.mosaic-item').forEach(mosaicItem => {
+                const img = mosaicItem.querySelector('img').src;
+                const precioApp = mosaicItem.querySelector('.precioApp').value;
+                const isv = mosaicItem.querySelector('.isv').value;
+                const precioLempiras = mosaicItem.querySelector('.precioLempiras').textContent;
+                const precio = mosaicItem.querySelector('.precio').value;
+                const talla = mosaicItem.querySelector('.talla').value;
                 
                 tableData.push({ img, precioApp, isv, precioLempiras, precio, talla });
             });
@@ -447,188 +384,190 @@ document.getElementById('imageUpload').addEventListener('change', function(event
         }
 
         function loadTableData() {
-            const tbody = document.querySelector('#imageTable tbody');
-            tbody.innerHTML = '';
+            const mosaicView = document.getElementById('mosaicView');
+            mosaicView.innerHTML = '';
             const tableData = JSON.parse(localStorage.getItem('tableData')) || [];
             
             tableData.forEach(data => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><img src="${data.img}"></td>
-                    <td><input type="number" class="precioApp" value="${data.precioApp}" oninput="updatePrice(this)"></td>
-                    <td>
-                        <select class="isv" onchange="updatePrice(this)">
-                            <option value="0.2" ${data.isv == 0.2 ? 'selected' : ''}>20%</option>
-                            <option value="0.25" ${data.isv == 0.25 ? 'selected' : ''}>25%</option>
-                            <option value="0.35" ${data.isv == 0.35 ? 'selected' : ''}>35%</option>
-                        </select>
-                    </td>
-                    <td class="precioLempiras">${data.precioLempiras}</td>
-                    <td><input type="number" class="precio" value="${data.precio}" oninput="saveTableData()"></td>
-                    <td><input type="text" class="talla" value="${data.talla}" oninput="saveTableData()"></td>
+                const mosaicItem = document.createElement('div');
+                mosaicItem.className = 'mosaic-item';
+                mosaicItem.innerHTML = `
+                    <img src="${data.img}">
+                    <div class="mosaic-details">
+                        <div class="row">
+                            <input type="number" class="precioApp" value="${data.precioApp}" oninput="updatePrice(this)" placeholder="Precio App">
+                            <select class="isv" onchange="updatePrice(this)">
+                                <option value="0.2" ${data.isv == 0.2 ? 'selected' : ''}>20%</option>
+                                <option value="0.25" ${data.isv == 0.25 ? 'selected' : ''}>25%</option>
+                                <option value="0.35" ${data.isv == 0.35 ? 'selected' : ''}>35%</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="precioLempiras">${data.precioLempiras}</div>
+                            <input type="number" class="precio" value="${data.precio}" oninput="saveTableData()" placeholder="Precio">
+                        </div>
+                        <input type="text" class="talla" value="${data.talla}" oninput="saveTableData()" placeholder="Talla">
+                    </div>
                 `;
-                tbody.appendChild(row);
+                mosaicView.appendChild(mosaicItem);
             });
         }
 
+        function downloadImages() {
+            const mosaicItems = document.querySelectorAll('.mosaic-item');
+            let index = 0;
 
+            function downloadNextImage() {
+                if (index >= mosaicItems.length) {
+                    console.log('Todas las imágenes han sido descargadas.');
+                    return;
+                }
 
+                const mosaicItem = mosaicItems[index];
+                const img = mosaicItem.querySelector('img');
+                const precio = mosaicItem.querySelector('.precio').value;
+                const talla = mosaicItem.querySelector('.talla').value;
 
-           function downloadImages() {
-    const rows = document.querySelectorAll('#imageTable tbody tr');
-    let index = 0;
+                if (!img || !img.src) {
+                    console.error('No se encontró una imagen válida en el mosaico:', mosaicItem);
+                    index++;
+                    downloadNextImage(); // Continuar con la siguiente imagen
+                    return;
+                }
 
-    function downloadNextImage() {
-        if (index >= rows.length) {
-            console.log('Todas las imágenes han sido descargadas.');
-            return;
-        }
+                const image = new Image();
+                image.crossOrigin = "anonymous"; // Permitir el uso de imágenes externas si es necesario
+                image.src = img.src;
 
-        const row = rows[index];
-        const img = row.querySelector('img');
-        const precio = row.querySelector('.precio').value;
-        const talla = row.querySelector('.talla').value;
+                image.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
 
-        if (!img || !img.src) {
-            console.error('No se encontró una imagen válida en la fila:', row);
-            index++;
-            downloadNextImage(); // Continuar con la siguiente imagen
-            return;
-        }
+                    // Usar las dimensiones originales de la imagen, sin redimensionar ni recortar
+                    canvas.width = image.width;
+                    canvas.height = image.height;
 
-        const image = new Image();
-        image.crossOrigin = "anonymous"; // Permitir el uso de imágenes externas si es necesario
-        image.src = img.src;
+                    ctx.drawImage(image, 0, 0, image.width, image.height);
 
-image.onload = function() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+                    // Dibujar el logo en la parte superior izquierda
+                    if (logo.complete) {
+                        const logoWidth = 100; // Ancho del logo
+                        const logoHeight = (logo.height / logo.width) * logoWidth; // Mantener la proporción
+                        ctx.drawImage(logo, 10, 10, logoWidth, logoHeight);
+                    }
 
-            // Usar las dimensiones originales de la imagen, sin redimensionar ni recortar
-            canvas.width = image.width;
-            canvas.height = image.height;
+                    // Dibujar talla en la parte izquierda
+                    ctx.font = 'bold 50px Arial';
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
+                    ctx.fillStyle = 'white';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(talla, 20, canvas.height - 370);
 
-            ctx.drawImage(image, 0, 0, image.width, image.height);
+                    // Dibujar precio en la parte derecha
+                    ctx.textAlign = 'right';
+                    ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
 
-            // Dibujar el logo en la parte superior izquierda
-            if (logo.complete) {
-                const logoWidth = 100; // Ancho del logo
-                const logoHeight = (logo.height / logo.width) * logoWidth; // Mantener la proporción
-                ctx.drawImage(logo, 10, 10, logoWidth, logoHeight);
+                    // Descargar la imagen
+                    const link = document.createElement('a');
+                    link.download = `editado_${index + 1}.png`;
+                    link.href = canvas.toDataURL();
+                    link.click();
+
+                    index++;
+                    setTimeout(downloadNextImage, 100); // Esperar 100ms antes de descargar la siguiente imagen
+                };
+
+                image.onerror = function() {
+                    console.error('Error al cargar la imagen:', img.src);
+                    index++;
+                    downloadNextImage(); // Continuar con la siguiente imagen
+                };
             }
 
-            // Dibujar talla en la parte izquierda
-            ctx.font = 'bold 50px Arial';
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
-            ctx.fillStyle = 'white';
-            ctx.textAlign = 'left';
-            ctx.fillText(talla, 20, canvas.height - 370);
-
-            // Dibujar precio en la parte derecha
-            ctx.textAlign = 'right';
-            ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
-
-            // Descargar la imagen
-            const link = document.createElement('a');
-            link.download = `editado_${index + 1}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
-
-            index++;
-            setTimeout(downloadNextImage, 100); // Esperar 100ms antes de descargar la siguiente imagen
-        };
-
-        image.onerror = function() {
-            console.error('Error al cargar la imagen:', img.src);
-            index++;
-            downloadNextImage(); // Continuar con la siguiente imagen
-        };
-    }
-
-    downloadNextImage();
-}
-
-function downloadImagesAsZip() {
-    const zip = new JSZip();
-    const rows = document.querySelectorAll('#imageTable tbody tr');
-    let index = 0;
-
-    function addNextImageToZip() {
-        if (index >= rows.length) {
-            zip.generateAsync({ type: "blob" }).then(function(content) {
-                saveAs(content, "imagenes.zip");
-                console.log('Todas las imágenes han sido comprimidas en el archivo ZIP.');
-            });
-            return;
+            downloadNextImage();
         }
 
-        const row = rows[index];
-        const img = row.querySelector('img');
-        const precio = row.querySelector('.precio').value;
-        const talla = row.querySelector('.talla').value;
+        function downloadImagesAsZip() {
+            const zip = new JSZip();
+            const mosaicItems = document.querySelectorAll('.mosaic-item');
+            let index = 0;
 
-        if (!img || !img.src) {
-            console.error('No se encontró una imagen válida en la fila:', row);
-            index++;
-            addNextImageToZip(); // Continuar con la siguiente imagen
-            return;
-        }
+            function addNextImageToZip() {
+                if (index >= mosaicItems.length) {
+                    zip.generateAsync({ type: "blob" }).then(function(content) {
+                        saveAs(content, "imagenes.zip");
+                        console.log('Todas las imágenes han sido comprimidas en el archivo ZIP.');
+                    });
+                    return;
+                }
 
-        const image = new Image();
-        image.crossOrigin = "anonymous"; // Permitir el uso de imágenes externas si es necesario
-        image.src = img.src;
+                const mosaicItem = mosaicItems[index];
+                const img = mosaicItem.querySelector('img');
+                const precio = mosaicItem.querySelector('.precio').value;
+                const talla = mosaicItem.querySelector('.talla').value;
 
-        image.onload = function() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+                if (!img || !img.src) {
+                    console.error('No se encontró una imagen válida en el mosaico:', mosaicItem);
+                    index++;
+                    addNextImageToZip(); // Continuar con la siguiente imagen
+                    return;
+                }
 
-            // Usar las dimensiones originales de la imagen, sin redimensionar ni recortar
-            canvas.width = image.width;
-            canvas.height = image.height;
+                const image = new Image();
+                image.crossOrigin = "anonymous"; // Permitir el uso de imágenes externas si es necesario
+                image.src = img.src;
 
-            ctx.drawImage(image, 0, 0, image.width, image.height);
+                image.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
 
-            // Dibujar el logo en la parte superior izquierda
-            if (logo.complete) {
-                const logoWidth = 100; // Ancho del logo
-                const logoHeight = (logo.height / logo.width) * logoWidth; // Mantener la proporción
-                ctx.drawImage(logo, 10, 10, logoWidth, logoHeight);
+                    // Usar las dimensiones originales de la imagen, sin redimensionar ni recortar
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+
+                    ctx.drawImage(image, 0, 0, image.width, image.height);
+
+                    // Dibujar el logo en la parte superior izquierda
+                    if (logo.complete) {
+                        const logoWidth = 100; // Ancho del logo
+                        const logoHeight = (logo.height / logo.width) * logoWidth; // Mantener la proporción
+                        ctx.drawImage(logo, 10, 10, logoWidth, logoHeight);
+                    }
+
+                    // Dibujar talla en la parte izquierda
+                    ctx.font = 'bold 50px Arial';
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
+                    ctx.fillStyle = 'white';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(talla, 20, canvas.height - 370);
+
+                    // Dibujar precio en la parte derecha
+                    ctx.textAlign = 'right';
+                    ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
+
+                    // Convertir el canvas a un blob y agregarlo al ZIP
+                    canvas.toBlob(function(blob) {
+                        zip.file(`editado_${index + 1}.png`, blob);
+                        index++;
+                        addNextImageToZip(); // Continuar con la siguiente imagen
+                    }, 'image/png');
+                };
+
+                image.onerror = function() {
+                    console.error('Error al cargar la imagen:', img.src);
+                    index++;
+                    addNextImageToZip(); // Continuar con la siguiente imagen
+                };
             }
 
-            // Dibujar talla en la parte izquierda
-            ctx.font = 'bold 50px Arial';
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
-            ctx.fillStyle = 'white';
-            ctx.textAlign = 'left';
-            ctx.fillText(talla, 20, canvas.height - 370);
-
-            // Dibujar precio en la parte derecha
-            ctx.textAlign = 'right';
-            ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
-
-            // Convertir el canvas a un blob y agregarlo al ZIP
-            canvas.toBlob(function(blob) {
-                zip.file(`editado_${index + 1}.png`, blob);
-                index++;
-                addNextImageToZip(); // Continuar con la siguiente imagen
-            }, 'image/png');
-        };
-
-        image.onerror = function() {
-            console.error('Error al cargar la imagen:', img.src);
-            index++;
-            addNextImageToZip(); // Continuar con la siguiente imagen
-        };
-    }
-
-    addNextImageToZip();
-}
+            addNextImageToZip();
+        }
 
         function clearTable() {
-            const tbody = document.querySelector('#imageTable tbody');
-            tbody.innerHTML = '';
+            const mosaicView = document.getElementById('mosaicView');
+            mosaicView.innerHTML = '';
             localStorage.removeItem('tableData');
         }
 
