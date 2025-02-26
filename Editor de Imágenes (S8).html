@@ -352,8 +352,8 @@ document.getElementById('imageUpload').addEventListener('change', function (even
                 image.onload = function () {
                     compressImage(image, function (compressedImage) {
                         // Aplicar el corte después de redimensionar
-                        const cropTop = 500; // Ajustar según sea necesario
-                        const cropBottom = 150; // Ajustar según sea necesario
+                        const cropTop = 320; // Ajustar según sea necesario
+                        const cropBottom = 100; // Ajustar según sea necesario
                         const croppedHeight = image.height - cropTop - cropBottom;
 
                         canvas.width = image.width;
