@@ -221,7 +221,25 @@
 
     <script>
         const logo = new Image();
-        logo.src = ''; // Asegúrate de que esta ruta sea correcta
+
+
+
+function imageToBase64(imgPath, callback) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        callback(e.target.result);
+    };
+    fetch(imgPath)
+        .then(response => response.blob())
+        .then(blob => reader.readAsDataURL(blob))
+        .catch(error => console.error('Error al convertir a base64:', error));
+}
+
+imageToBase64('Imágenes/FashionHouse.png', function(base64) {
+    logo.src = base64;
+});
+
+
 
         let db;
         const request = indexedDB.open('ImageDB', 1);
