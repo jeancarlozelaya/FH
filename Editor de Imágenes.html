@@ -326,69 +326,78 @@ document.getElementById('imageUpload').addEventListener('change', function (even
     const files = event.target.files;
     const mosaicView = document.getElementById('mosaicView');
 
-    for (let file of files) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const image = new Image();
-            image.src = e.target.result;
+    // Crear una lista de promesas para procesar las imágenes en orden
+    const imageProcessingPromises = Array.from(files).map(file => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const image = new Image();
+                image.src = e.target.result;
 
-            image.onload = function () {
-                compressImage(image, function (compressedImage) {
-                    // Aplicar el corte después de redimensionar
-                    const cropTop = 500; // Ajustar según sea necesario
-                    const cropBottom = 150; // Ajustar según sea necesario
-                    const croppedHeight = image.height - cropTop - cropBottom;
+                image.onload = function () {
+                    compressImage(image, function (compressedImage) {
+                        // Aplicar el corte después de redimensionar
+                        const cropTop = 500; // Ajustar según sea necesario
+                        const cropBottom = 150; // Ajustar según sea necesario
+                        const croppedHeight = image.height - cropTop - cropBottom;
 
-                    canvas.width = image.width;
-                    canvas.height = croppedHeight;
+                        canvas.width = image.width;
+                        canvas.height = croppedHeight;
 
-                    ctx.drawImage(image, 0, cropTop, image.width, croppedHeight, 0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(image, 0, cropTop, image.width, croppedHeight, 0, 0, canvas.width, canvas.height);
 
-                    // Convertir la imagen cortada a base64
-                    canvas.toBlob(
-                        function (blob) {
-                            const reader = new FileReader();
-                            reader.onload = function () {
-                                const croppedImageData = reader.result;
-
-                                // Guardar la imagen modificada en IndexedDB
-                                saveImageToIndexedDB(croppedImageData, function (id) {
-                                    const mosaicItem = document.createElement('div');
-                                    mosaicItem.className = 'mosaic-item';
-                                    mosaicItem.innerHTML = `
-                                        <img src="${croppedImageData}" data-id="${id}">
-                                        <div class="mosaic-details">
-                                            <div class="row">
-                                                <input type="number" class="precioApp" oninput="updatePrice(this)" placeholder="Precio App">
-                                                <select class="isv" onchange="updatePrice(this)">
-                                                    <option value="0.2">20%</option>
-                                                    <option value="0.25">25%</option>
-                                                    <option value="0.35">35%</option>
-                                                </select>
-                                            </div>
-                                            <div class="row">
-                                                <div class="precioLempiras">0</div>
-                                                <input type="number" class="precio" oninput="debounceSaveTableData()" placeholder="Precio">
-                                            </div>
-                                            <input type="text" class="talla" oninput="debounceSaveTableData()" placeholder="Talla">
-                                        </div>
-                                    `;
-                                    mosaicView.appendChild(mosaicItem);
-                                    debounceSaveTableData();
-                                });
-                            };
-                            reader.readAsDataURL(blob);
-                        },
-                        'image/webp', // Usar formato WebP
-                        0.3 // Calidad ajustada a 0.5
-                    );
-                });
+                        // Convertir la imagen cortada a base64
+                        canvas.toBlob(
+                            function (blob) {
+                                const reader = new FileReader();
+                                reader.onload = function () {
+                                    const croppedImageData = reader.result;
+                                    resolve(croppedImageData);
+                                };
+                                reader.readAsDataURL(blob);
+                            },
+                            'image/webp', // Usar formato WebP
+                            0.3 // Calidad ajustada a 0.5
+                        );
+                    });
+                };
             };
-        };
-        reader.readAsDataURL(file);
-    }
-});
+            reader.readAsDataURL(file);
+        });
+    });
 
+    // Procesar todas las imágenes en orden
+    Promise.all(imageProcessingPromises).then(croppedImagesData => {
+        croppedImagesData.forEach((croppedImageData, index) => {
+            saveImageToIndexedDB(croppedImageData, function (id) {
+                const mosaicItem = document.createElement('div');
+                mosaicItem.className = 'mosaic-item';
+                mosaicItem.innerHTML = `
+                    <img src="${croppedImageData}" data-id="${id}">
+                    <div class="mosaic-details">
+                        <div class="row">
+                            <input type="number" class="precioApp" oninput="updatePrice(this)" placeholder="Precio App">
+                            <select class="isv" onchange="updatePrice(this)">
+                                <option value="0.2">20%</option>
+                                <option value="0.25">25%</option>
+                                <option value="0.35">35%</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="precioLempiras">0</div>
+                            <input type="number" class="precio" oninput="debounceSaveTableData()" placeholder="Precio">
+                        </div>
+                        <input type="text" class="talla" oninput="debounceSaveTableData()" placeholder="Talla">
+                    </div>
+                `;
+                mosaicView.appendChild(mosaicItem);
+                debounceSaveTableData();
+            });
+        });
+    }).catch(error => {
+        console.error('Error al procesar las imágenes:', error);
+    });
+});
 
 
 
@@ -491,16 +500,16 @@ document.getElementById('imageUpload').addEventListener('change', function (even
                     }
 
                     // Dibujar talla en la parte izquierda
-                    ctx.font = 'bold 50px Arial';
+                    ctx.font = 'bold 35px Arial';
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
+                    ctx.fillRect(0, canvas.height - 300, canvas.width, 70);
                     ctx.fillStyle = 'white';
                     ctx.textAlign = 'left';
-                    ctx.fillText(talla, 20, canvas.height - 370);
+                    ctx.fillText(talla, 20, canvas.height - 250);
 
                     // Dibujar precio en la parte derecha
                     ctx.textAlign = 'right';
-                    ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
+                    ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 250);
 
                     // Descargar la imagen
                     const link = document.createElement('a');
@@ -570,16 +579,16 @@ document.getElementById('imageUpload').addEventListener('change', function (even
                     }
 
                     // Dibujar talla en la parte izquierda
-                    ctx.font = 'bold 50px Arial';
+                    ctx.font = 'bold 35px Arial';
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
+                    ctx.fillRect(0, canvas.height - 300, canvas.width, 70);
                     ctx.fillStyle = 'white';
                     ctx.textAlign = 'left';
-                    ctx.fillText(talla, 20, canvas.height - 370);
+                    ctx.fillText(talla, 20, canvas.height - 250);
 
                     // Dibujar precio en la parte derecha
                     ctx.textAlign = 'right';
-                    ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
+                    ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 250);
 
                     // Convertir el canvas a un blob y agregarlo al ZIP
                     canvas.toBlob(function(blob) {
