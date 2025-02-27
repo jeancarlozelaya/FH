@@ -481,157 +481,177 @@ document.getElementById('imageUpload').addEventListener('change', function (even
             });
         }
 
-        function downloadImages() {
-            const mosaicItems = document.querySelectorAll('.mosaic-item');
-            let index = 0;
+function downloadImages() {
+    const mosaicItems = document.querySelectorAll('.mosaic-item');
+    let index = 0;
 
-            function downloadNextImage() {
-                if (index >= mosaicItems.length) {
-                    console.log('Todas las imágenes han sido descargadas.');
-                    return;
-                }
-
-                const mosaicItem = mosaicItems[index];
-                const img = mosaicItem.querySelector('img');
-                const precio = mosaicItem.querySelector('.precio').value;
-                const talla = mosaicItem.querySelector('.talla').value;
-
-                if (!img || !img.src) {
-                    console.error('No se encontró una imagen válida en el mosaico:', mosaicItem);
-                    index++;
-                    downloadNextImage(); // Continuar con la siguiente imagen
-                    return;
-                }
-
-                const image = new Image();
-                image.crossOrigin = "anonymous"; // Permitir el uso de imágenes externas si es necesario
-                image.src = img.src;
-
-                image.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-
-                    // Usar las dimensiones originales de la imagen, sin redimensionar ni recortar
-                    canvas.width = image.width;
-                    canvas.height = image.height;
-
-                    ctx.drawImage(image, 0, 0, image.width, image.height);
-
-                    // Dibujar el logo en la parte superior izquierda
-                    if (logo.complete) {
-                        const logoWidth = 100; // Ancho del logo
-                        const logoHeight = (logo.height / logo.width) * logoWidth; // Mantener la proporción
-                        ctx.drawImage(logo, 10, 10, logoWidth, logoHeight);
-                    }
-
-                    // Dibujar talla en la parte izquierda
-                    ctx.font = 'bold 50px Arial';
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
-                    ctx.fillStyle = 'white';
-                    ctx.textAlign = 'left';
-                    ctx.fillText(talla, 20, canvas.height - 370);
-
-                    // Dibujar precio en la parte derecha
-                    ctx.textAlign = 'right';
-                    ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
-
-                    // Descargar la imagen
-                    const link = document.createElement('a');
-                    link.download = `editado_${index + 1}.png`;
-                    link.href = canvas.toDataURL();
-                    link.click();
-
-                    index++;
-                    setTimeout(downloadNextImage, 100); // Esperar 100ms antes de descargar la siguiente imagen
-                };
-
-                image.onerror = function() {
-                    console.error('Error al cargar la imagen:', img.src);
-                    index++;
-                    downloadNextImage(); // Continuar con la siguiente imagen
-                };
-            }
-
-            downloadNextImage();
+    function downloadNextImage() {
+        if (index >= mosaicItems.length) {
+            console.log('Todas las imágenes han sido descargadas.');
+            return;
         }
 
-        function downloadImagesAsZip() {
-            const zip = new JSZip();
-            const mosaicItems = document.querySelectorAll('.mosaic-item');
-            let index = 0;
+        const mosaicItem = mosaicItems[index];
+        const img = mosaicItem.querySelector('img');
+        const precio = mosaicItem.querySelector('.precio').value;
+        const talla = mosaicItem.querySelector('.talla').value;
 
-            function addNextImageToZip() {
-                if (index >= mosaicItems.length) {
-                    zip.generateAsync({ type: "blob" }).then(function(content) {
-                        saveAs(content, "imagenes.zip");
-                        console.log('Todas las imágenes han sido comprimidas en el archivo ZIP.');
-                    });
-                    return;
-                }
+        if (!img || !img.src) {
+            console.error('No se encontró una imagen válida en el mosaico:', mosaicItem);
+            index++;
+            downloadNextImage(); // Continuar con la siguiente imagen
+            return;
+        }
 
-                const mosaicItem = mosaicItems[index];
-                const img = mosaicItem.querySelector('img');
-                const precio = mosaicItem.querySelector('.precio').value;
-                const talla = mosaicItem.querySelector('.talla').value;
+        const image = new Image();
+        image.crossOrigin = "anonymous"; // Permitir el uso de imágenes externas si es necesario
+        image.src = img.src;
 
-                if (!img || !img.src) {
-                    console.error('No se encontró una imagen válida en el mosaico:', mosaicItem);
-                    index++;
-                    addNextImageToZip(); // Continuar con la siguiente imagen
-                    return;
-                }
+        image.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
 
-                const image = new Image();
-                image.crossOrigin = "anonymous"; // Permitir el uso de imágenes externas si es necesario
-                image.src = img.src;
+            // Usar las dimensiones originales de la imagen, sin redimensionar ni recortar
+            canvas.width = image.width;
+            canvas.height = image.height;
 
-                image.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
+            ctx.drawImage(image, 0, 0, image.width, image.height);
 
-                    // Usar las dimensiones originales de la imagen, sin redimensionar ni recortar
-                    canvas.width = image.width;
-                    canvas.height = image.height;
-
-                    ctx.drawImage(image, 0, 0, image.width, image.height);
-
-                    // Dibujar el logo en la parte superior izquierda
-                    if (logo.complete) {
-                        const logoWidth = 100; // Ancho del logo
-                        const logoHeight = (logo.height / logo.width) * logoWidth; // Mantener la proporción
-                        ctx.drawImage(logo, 10, 10, logoWidth, logoHeight);
-                    }
-
-                    // Dibujar talla en la parte izquierda
-                    ctx.font = 'bold 50px Arial';
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
-                    ctx.fillStyle = 'white';
-                    ctx.textAlign = 'left';
-                    ctx.fillText(talla, 20, canvas.height - 370);
-
-                    // Dibujar precio en la parte derecha
-                    ctx.textAlign = 'right';
-                    ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
-
-                    // Convertir el canvas a un blob y agregarlo al ZIP
-                    canvas.toBlob(function(blob) {
-                        zip.file(`editado_${index + 1}.png`, blob);
-                        index++;
-                        addNextImageToZip(); // Continuar con la siguiente imagen
-                    }, 'image/png');
-                };
-
-                image.onerror = function() {
-                    console.error('Error al cargar la imagen:', img.src);
-                    index++;
-                    addNextImageToZip(); // Continuar con la siguiente imagen
-                };
+            // Dibujar el logo en la parte superior izquierda
+            if (logo.complete) {
+                const logoWidth = 100; // Ancho del logo
+                const logoHeight = (logo.height / logo.width) * logoWidth; // Mantener la proporción
+                ctx.drawImage(logo, 10, 10, logoWidth, logoHeight);
             }
 
-            addNextImageToZip();
+            // Dibujar talla en la parte izquierda
+            ctx.font = 'bold 50px Arial';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'left';
+            ctx.fillText(talla, 20, canvas.height - 370);
+
+            // Dibujar precio en la parte derecha
+            ctx.textAlign = 'right';
+            ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
+
+            // Dibujar "SOLO POR ENCARGO" en la parte superior derecha
+            ctx.font = 'bold 30px Arial';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            const text = "SOLO POR ENCARGO";
+            const textWidth = ctx.measureText(text).width;
+            ctx.fillRect(canvas.width - textWidth - 20, 10, textWidth + 10, 40); // Fondo del texto
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'right';
+            ctx.fillText(text, canvas.width - 15, 40);
+
+            // Descargar la imagen
+            const link = document.createElement('a');
+            link.download = `editado_${index + 1}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+
+            index++;
+            setTimeout(downloadNextImage, 100); // Esperar 100ms antes de descargar la siguiente imagen
+        };
+
+        image.onerror = function() {
+            console.error('Error al cargar la imagen:', img.src);
+            index++;
+            downloadNextImage(); // Continuar con la siguiente imagen
+        };
+    }
+
+    downloadNextImage();
+}
+
+function downloadImagesAsZip() {
+    const zip = new JSZip();
+    const mosaicItems = document.querySelectorAll('.mosaic-item');
+    let index = 0;
+
+    function addNextImageToZip() {
+        if (index >= mosaicItems.length) {
+            zip.generateAsync({ type: "blob" }).then(function(content) {
+                saveAs(content, "imagenes.zip");
+                console.log('Todas las imágenes han sido comprimidas en el archivo ZIP.');
+            });
+            return;
         }
+
+        const mosaicItem = mosaicItems[index];
+        const img = mosaicItem.querySelector('img');
+        const precio = mosaicItem.querySelector('.precio').value;
+        const talla = mosaicItem.querySelector('.talla').value;
+
+        if (!img || !img.src) {
+            console.error('No se encontró una imagen válida en el mosaico:', mosaicItem);
+            index++;
+            addNextImageToZip(); // Continuar con la siguiente imagen
+            return;
+        }
+
+        const image = new Image();
+        image.crossOrigin = "anonymous"; // Permitir el uso de imágenes externas si es necesario
+        image.src = img.src;
+
+        image.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Usar las dimensiones originales de la imagen, sin redimensionar ni recortar
+            canvas.width = image.width;
+            canvas.height = image.height;
+
+            ctx.drawImage(image, 0, 0, image.width, image.height);
+
+            // Dibujar el logo en la parte superior izquierda
+            if (logo.complete) {
+                const logoWidth = 100; // Ancho del logo
+                const logoHeight = (logo.height / logo.width) * logoWidth; // Mantener la proporción
+                ctx.drawImage(logo, 10, 10, logoWidth, logoHeight);
+            }
+
+            // Dibujar talla en la parte izquierda
+            ctx.font = 'bold 50px Arial';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'left';
+            ctx.fillText(talla, 20, canvas.height - 370);
+
+            // Dibujar precio en la parte derecha
+            ctx.textAlign = 'right';
+            ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
+
+            // Dibujar "SOLO POR ENCARGO" en la parte superior derecha
+            ctx.font = 'bold 30px Arial';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            const text = "SOLO POR ENCARGO";
+            const textWidth = ctx.measureText(text).width;
+            ctx.fillRect(canvas.width - textWidth - 20, 10, textWidth + 10, 40); // Fondo del texto
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'right';
+            ctx.fillText(text, canvas.width - 15, 40);
+
+            // Convertir el canvas a un blob y agregarlo al ZIP
+            canvas.toBlob(function(blob) {
+                zip.file(`editado_${index + 1}.png`, blob);
+                index++;
+                addNextImageToZip(); // Continuar con la siguiente imagen
+            }, 'image/png');
+        };
+
+        image.onerror = function() {
+            console.error('Error al cargar la imagen:', img.src);
+            index++;
+            addNextImageToZip(); // Continuar con la siguiente imagen
+        };
+    }
+
+    addNextImageToZip();
+}
 
         function clearTable() {
             const mosaicView = document.getElementById('mosaicView');
