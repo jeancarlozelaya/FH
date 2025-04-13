@@ -197,7 +197,7 @@
         .delete-item {
             position: absolute;
             top: 5px;
-            left: 5px;
+            left: 5px;  /* Cambiado de right a left */
             background: #e74c3c;
             color: white;
             border: none;
@@ -211,7 +211,7 @@
             font-size: 10px;
             opacity: 0.7;
             transition: opacity 0.3s;
-            z-index: 1;
+            z-index: 1; /* Para asegurar que esté por encima de otros elementos */
         }
 
         .delete-item:hover {
@@ -222,56 +222,6 @@
             .mosaic-item {
                 width: 100%;
             }
-        }
-
-        /* Estilos personalizados para SweetAlert2 */
-        .swal2-popup {
-            width: 300px !important;
-            max-width: 90% !important;
-            font-size: 0.9em !important;
-        }
-
-        .swal2-html-container {
-            margin-bottom: 15px !important;
-            line-height: 1.4 !important;
-        }
-
-        .swal2-actions {
-            display: flex !important;
-            justify-content: center !important;
-            gap: 10px !important;
-            flex-wrap: nowrap !important;
-            width: 80% !important;
-            margin: 0 auto !important;
-        }
-
-        .swal2-confirm {
-            flex: 1 !important;
-            min-width: 120px !important;
-            background-color: #28a745 !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 4px !important;
-            padding: 10px 20px !important;
-            font-size: 14px !important;
-            transition: background-color 0.3s ease !important;
-        }
-
-        .swal2-cancel {
-            flex: 1 !important;
-            min-width: 120px !important;
-            background-color: #FF6347 !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 4px !important;
-            padding: 10px 20px !important;
-            font-size: 14px !important;
-            transition: background-color 0.3s ease !important;
-        }
-
-        .swal2-icon.swal2-icon-show {
-            background-color: transparent !important;
-            border: none !important;
         }
     </style>
 </head>
@@ -521,7 +471,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Ocurrió un error al procesar las imágenes'
+                    text: 'Ocurrió un error al procesar las imágenes',
                 });
             });
         });
@@ -602,7 +552,7 @@
                 Swal.fire({
                     icon: 'warning',
                     title: 'No hay imágenes',
-                    text: 'No hay imágenes para descargar'
+                    text: 'No hay imágenes para descargar',
                 });
                 return;
             }
@@ -697,7 +647,7 @@
                 Swal.fire({
                     icon: 'warning',
                     title: 'No hay imágenes',
-                    text: 'No hay imágenes para comprimir'
+                    text: 'No hay imágenes para comprimir',
                 });
                 return;
             }
