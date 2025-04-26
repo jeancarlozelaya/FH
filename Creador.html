@@ -815,9 +815,8 @@ function obtenerFuente() {
 function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
     const imageMatch = data.match(/<div class="crop-image-container" data-before-crop-src="(.*?)"/i);
     const skuMatch = data.match(/<span class="product-intro__head-sku-text">\s*SKU:\s*(.*?)<\/span>/i);
-    const priceAppMatch = data.match(/"getPrice":{"retailPrice":{"amount":"(.*?)"/i);
-
-    const priceAppDto = data.match(/<p class="product-intro__ssr-priceMain"[^>]*?>\$(.*?)<\/p>/i);
+    const priceAppMatch = data.match(/"retailPrice":{"amount":"([\d.]+)"/i);
+    const priceAppDto = data.match(/"salePrice":{"amount":"([\d.]+)"/i);
 
     const titleMatch = data.match(/<title>(.*?) \| SHEIN USA<\/title>/i);
 
