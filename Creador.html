@@ -873,9 +873,11 @@ function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
 
 
 // Calcular precio en lempiras
-function calculatePriceInLempiras(priceApp, percentage) {
-    return (priceApp * 26.2).toFixed(2);
+function calculatePriceInLempiras(priceApp) {
+    const priceWithISV = priceApp * 1.07; // Suma el 7%
+    return (priceWithISV * 26.2).toFixed(2); // Convierte a lempiras
 }
+
 
 
 // Generar Tallas
@@ -1020,7 +1022,7 @@ function copySelectedRows() {
         const porcentaje = item.percentage !== undefined ? item.percentage : 0;
 
         // Fórmula `priceLempiras` que usa la celda a la izquierda y el porcentaje correcto
-        const priceLempirasFormula = `=INDIRECT("RC[-2]", 0) * 26.2`;
+        const priceLempirasFormula = `=INDIRECT("RC[-2]", 0) * 1.07 * 26.2`;
 
         // Incluir el valor de la columna "Descuento"
         const descuento = item.priceAppDto || 0; // Asegúrate de que el descuento esté definido
