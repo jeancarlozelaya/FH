@@ -874,8 +874,7 @@ function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
 
 // Calcular precio en lempiras
 function calculatePriceInLempiras(priceApp, percentage) {
-	const basePrice = priceApp * 26.2 + 50;
-	return (basePrice + (basePrice * percentage)).toFixed(2);
+    return (priceApp * 26.2).toFixed(2);
 }
 
 
@@ -1021,7 +1020,7 @@ function copySelectedRows() {
         const porcentaje = item.percentage !== undefined ? item.percentage : 0;
 
         // Fórmula `priceLempiras` que usa la celda a la izquierda y el porcentaje correcto
-        const priceLempirasFormula = `=(INDIRECT("RC[-2]", 0) * 26.2 + 50) * (1 + ${porcentaje})`;
+        const priceLempirasFormula = `=INDIRECT("RC[-2]", 0) * 26.2`;
 
         // Incluir el valor de la columna "Descuento"
         const descuento = item.priceAppDto || 0; // Asegúrate de que el descuento esté definido
@@ -1250,7 +1249,6 @@ function togglePreview() {
     // Elementos adicionales a ocultar
     const title = document.querySelector("h2");
     const enlaceInput = document.getElementById("enlace");
-    const percentageSelect = document.getElementById("percentageSelect");
     const addButton = document.querySelector("button[onclick='obtenerFuente()']");
     const clearButton = document.querySelector("button[onclick='clearInput()']");
     const openColorPicker2Button = document.getElementById("openColorPicker2");
@@ -1288,7 +1286,6 @@ function togglePreview() {
         // Ocultar elementos adicionales
         if (title) title.style.display = 'none';
         if (enlaceInput) enlaceInput.style.display = 'none';
-        if (percentageSelect) percentageSelect.style.display = 'none';
         if (addButton) addButton.style.display = 'none';
         if (clearButton) clearButton.style.display = 'none';
 
@@ -1339,7 +1336,6 @@ function togglePreview() {
         // Mostrar elementos adicionales
         if (title) title.style.display = '';
         if (enlaceInput) enlaceInput.style.display = '';
-        if (percentageSelect) percentageSelect.style.display = '';
         if (addButton) addButton.style.display = '';
         if (clearButton) clearButton.style.display = '';
 
@@ -1355,8 +1351,6 @@ function togglePreview() {
             totalLempirasRow.style.display = 'none';
         }
 
-
-
         // Ocultar botones de vista previa
         openColorPicker2Button.style.display = 'none';
         downloadTableImageButton.style.display = 'none';
@@ -1368,6 +1362,7 @@ function togglePreview() {
 
     previewMode = !previewMode; // Cambiar el estado de la vista previa
 }
+
 
 
 
@@ -1812,7 +1807,7 @@ document.addEventListener("click", function (event) {
             <!-- Casilla de texto más alta y menos ancha -->
             <input type="text" id="enlace" placeholder="Enlace del artículo" style="height: 40px; width: 200px; padding: 5px;">
 
-            <select id="percentageSelect">
+            <select id="percentageSelect" style="display: none;">
                 <option value="20">20%</option>
                 <option value="25">25%</option>
                 <option value="35">35%</option>
