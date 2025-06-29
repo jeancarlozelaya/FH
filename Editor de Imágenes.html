@@ -546,11 +546,6 @@
                             <div class="mosaic-details">
                                 <div class="row">
                                     <input type="number" class="precioApp" oninput="updatePrice(this)" placeholder="Precio App">
-                                    <select class="isv" onchange="updatePrice(this)">
-                                        <option value="0.2">20%</option>
-                                        <option value="0.25">25%</option>
-                                        <option value="0.35">35%</option>
-                                    </select>
                                 </div>
                                 <div class="row">
                                     <div class="precioLempiras">0</div>
@@ -576,8 +571,8 @@
         function updatePrice(element) {
             const mosaicItem = element.closest('.mosaic-item');
             const precioApp = parseFloat(mosaicItem.querySelector('.precioApp').value) || 0;
-            const isv = parseFloat(mosaicItem.querySelector('.isv').value) || 0;
-            const precioCalculado = ((precioApp * 26.2) + 50) * (1 + isv);
+            // Nueva fórmula: precioApp + (precioApp * 1.07) * 26.2
+            const precioCalculado = (precioApp * 1.07) * 26.2;
             const precioLempirasElement = mosaicItem.querySelector('.precioLempiras');
             const precioInput = mosaicItem.querySelector('.precio');
             const precioIngresado = parseFloat(precioInput.value) || 0;
@@ -600,13 +595,12 @@
             document.querySelectorAll('.mosaic-item').forEach(mosaicItem => {
                 const img = mosaicItem.querySelector('img').src;
                 const precioApp = mosaicItem.querySelector('.precioApp').value;
-                const isv = mosaicItem.querySelector('.isv').value;
                 const precioLempiras = mosaicItem.querySelector('.precioLempiras').textContent;
                 const precio = mosaicItem.querySelector('.precio').value;
                 const talla = mosaicItem.querySelector('.talla').value;
                 const alertClass = mosaicItem.querySelector('.precio').classList.contains('alert') ? true : false;
                 
-                tableData.push({ img, precioApp, isv, precioLempiras, precio, talla, alertClass });
+                tableData.push({ img, precioApp, precioLempiras, precio, talla, alertClass });
             });
             localStorage.setItem('tableData', JSON.stringify(tableData));
         }
@@ -625,11 +619,6 @@
                     <div class="mosaic-details">
                         <div class="row">
                             <input type="number" class="precioApp" value="${data.precioApp}" oninput="updatePrice(this)" placeholder="Precio App">
-                            <select class="isv" onchange="updatePrice(this)">
-                                <option value="0.2" ${data.isv == 0.2 ? 'selected' : ''}>20%</option>
-                                <option value="0.25" ${data.isv == 0.25 ? 'selected' : ''}>25%</option>
-                                <option value="0.35" ${data.isv == 0.35 ? 'selected' : ''}>35%</option>
-                            </select>
                         </div>
                         <div class="row">
                             <div class="precioLempiras">${data.precioLempiras}</div>
