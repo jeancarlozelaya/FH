@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Calculadora de Precios</title>
+    <title>Calculadora de Precios y Pesos</title>
     <style>
         * {
             box-sizing: border-box;
@@ -17,6 +17,9 @@
             background-color: #f0f2f5;
             touch-action: manipulation;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
         
         .calculator {
@@ -37,10 +40,17 @@
             font-weight: 600;
         }
         
+        h2 {
+            margin: 20px 0 10px;
+            color: #444;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
         input {
             width: 100%;
             padding: 15px;
-            margin: 15px 0;
+            margin: 10px 0;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             font-size: 18px;
@@ -70,19 +80,22 @@
             margin-top: 10px;
         }
         
-        /* Asegurar que el contenido sea visible con teclado activo */
+        .info-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
         @media (max-height: 700px) {
             body {
                 padding-top: 10px;
                 padding-bottom: 20px;
             }
-            .calculator {
-                margin-top: 10px;
-            }
         }
     </style>
 </head>
 <body>
+    <!-- Calculadora de Precios -->
     <div class="calculator">
         <h1>Calculadora de Precios</h1>
         
@@ -104,7 +117,42 @@
         </div>
     </div>
 
+    <!-- Calculadora de Pesos -->
+    <div class="calculator">
+        <h1>Calculadora de Pesos</h1>
+        
+        <input 
+            type="number" 
+            id="weight" 
+            placeholder="Peso en libras" 
+            step="0.1" 
+            min="0"
+            inputmode="decimal"
+        >
+        
+        <input 
+            type="number" 
+            id="quantity" 
+            placeholder="Número de artículos" 
+            min="1"
+            inputmode="numeric"
+        >
+        
+        <div class="info-text">
+            Tarifas: 1-7 artículos ($6) | 8-11 ($5) | 12+ ($4)
+        </div>
+        
+        <div class="result" id="weightResult">
+            L 0.00
+        </div>
+        
+        <div class="formula">
+            (Peso × Tarifa) × 26.2 = Lempiras
+        </div>
+    </div>
+
     <script>
+        // Calculadora de Precios
         const priceInput = document.getElementById('priceApp');
         const resultDisplay = document.getElementById('result');
 
@@ -116,16 +164,43 @@
             resultDisplay.textContent = `L ${priceInLempiras}`;
         });
 
+        // Calculadora de Pesos
+        const weightInput = document.getElementById('weight');
+        const quantityInput = document.getElementById('quantity');
+        const weightResultDisplay = document.getElementById('weightResult');
+
+        function calculateWeightCost() {
+            const weight = parseFloat(weightInput.value) || 0;
+            const quantity = parseInt(quantityInput.value) || 0;
+            
+            // Determinar tarifa según cantidad
+            let rate;
+            if (quantity <= 0) {
+                rate = 0;
+            } else if (quantity <= 7) {
+                rate = 6;
+            } else if (quantity <= 11) {
+                rate = 5;
+            } else {
+                rate = 4;
+            }
+            
+            const totalCost = (weight * rate * 26.2).toFixed(2);
+            weightResultDisplay.textContent = `L ${totalCost}`;
+        }
+
+        weightInput.addEventListener('input', calculateWeightCost);
+        quantityInput.addEventListener('input', calculateWeightCost);
+
         // Bloquear zoom
         document.addEventListener('gesturestart', function(e) {
             e.preventDefault();
         });
 
-        // Enfocar el input al cargar (opcional)
+        // Enfocar el primer input al cargar
         window.onload = function() {
             priceInput.focus();
             
-            // Desplazarse ligeramente hacia arriba en móviles
             if (window.innerHeight < 700) {
                 window.scrollTo(0, 0);
             }
