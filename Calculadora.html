@@ -17,18 +17,6 @@
             background-color: #f0f2f5;
             touch-action: manipulation;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            /* Centrado solo en desktop */
-            justify-content: center;
-        }
-        
-        @media (max-height: 600px) {
-            body {
-                justify-content: flex-start; /* En móviles, empieza desde arriba */
-                padding-top: 30px;
-            }
         }
         
         .calculator {
@@ -38,8 +26,8 @@
             padding: 25px;
             width: 100%;
             max-width: 350px;
+            margin: 0 auto;
             text-align: center;
-            margin: 10px 0;
         }
         
         h1 {
@@ -80,6 +68,17 @@
             font-size: 14px;
             color: #777;
             margin-top: 10px;
+        }
+        
+        /* Asegurar que el contenido sea visible con teclado activo */
+        @media (max-height: 700px) {
+            body {
+                padding-top: 10px;
+                padding-bottom: 20px;
+            }
+            .calculator {
+                margin-top: 10px;
+            }
         }
     </style>
 </head>
@@ -125,6 +124,11 @@
         // Enfocar el input al cargar (opcional)
         window.onload = function() {
             priceInput.focus();
+            
+            // Desplazarse ligeramente hacia arriba en móviles
+            if (window.innerHeight < 700) {
+                window.scrollTo(0, 0);
+            }
         };
     </script>
 </body>
