@@ -1890,27 +1890,44 @@ function importData() {
     }
 
     try {
-        const importedItems = importText.split('\n---ITEM---\n').map(itemStr => {
-            try {
-                const item = JSON.parse(itemStr);
-                // Actualizar colorClients si el item tiene color y clientName
-                if (item.color && (item.clientName || item.clientPayment !== undefined)) {
-                    colorClients[item.color] = {
-                        name: item.clientName || '',
-                        payment: item.clientPayment || 0
-                    };
+        let importedItems = [];
+        
+        // Verificar si el texto comienza con { (formato JSON)
+        if (importText.startsWith('{') || importText.startsWith('[') || importText.includes('---ITEM---')) {
+            // Formato JSON (el actual)
+            importedItems = importText.split('\n---ITEM---\n').map(itemStr => {
+                try {
+                    return JSON.parse(itemStr);
+                } catch (e) {
+                    console.error("Error parsing item:", itemStr);
+                    return null;
                 }
-                return item;
-            } catch (e) {
-                console.error("Error parsing item:", itemStr);
-                return null;
-            }
-        }).filter(item => item !== null);
+            }).filter(item => item !== null);
+        } else {
+            // Formato Excel (nuevo)
+            importedItems = parseExcelFormat(importText);
+        }
 
         if (importedItems.length === 0) {
             showMessage("No se encontraron datos válidos para importar.", 'error');
             return;
         }
+
+        // Procesar los items importados
+        importedItems.forEach(item => {
+            // Actualizar colorClients si el item tiene color y clientName
+            if (item.color && (item.clientName || item.clientPayment !== undefined)) {
+                colorClients[item.color] = {
+                    name: item.clientName || '',
+                    payment: item.clientPayment || 0
+                };
+            }
+            
+            // Asegurarse de que el precio en lempiras esté calculado
+            if (!item.priceLempiras && item.priceApp) {
+                item.priceLempiras = calculatePriceInLempiras(item.priceApp);
+            }
+        });
 
         items.unshift(...importedItems);
         saveColorClients();
@@ -1971,7 +1988,8 @@ function parseExcelFormat(text) {
                 priceAppDto: discount,
                 priceLempiras: calculatePriceInLempiras(priceApp),
                 enlace: link || `https://us.shein.com/search?keywords=${sku}`,
-                precioPersonalizado: customPrice
+                precioPersonalizado: customPrice,
+                color: '#ffffff' // Color por defecto
             };
             
             items.push(newItem);
@@ -1982,7 +2000,6 @@ function parseExcelFormat(text) {
     
     return items;
 }
-
 
 
 // Objeto para guardar la asociación de colores con clientes
