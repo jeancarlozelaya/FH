@@ -1795,6 +1795,144 @@ document.addEventListener("click", function (event) {
 });
 
 
+
+
+
+// Función para exportar filas seleccionadas como texto
+function exportSelectedRows() {
+    const selectedItems = Array.from(document.querySelectorAll('.itemCheckbox:checked')).map(checkbox => {
+        const index = checkbox.getAttribute('data-index');
+        return JSON.stringify(items[index]);
+    }).join('\n---ITEM---\n'); // Separador especial entre items
+
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(selectedItems).then(() => {
+            showMessage("Datos exportados al portapapeles.", 'success');
+        }).catch(err => {
+            console.error('Error al copiar:', err);
+            showManualCopyModal(selectedItems);
+        });
+    } else {
+        showManualCopyModal(selectedItems);
+    }
+}
+
+// Función para mostrar el modal de importación
+function showImportModal() {
+    document.getElementById("importModal").style.display = "block";
+    document.getElementById("importDataTextArea").value = "";
+    document.getElementById("importDataTextArea").focus();
+}
+
+// Función para cerrar el modal de importación
+function closeImportModal() {
+    document.getElementById("importModal").style.display = "none";
+}
+
+// Función para importar datos
+function importData() {
+    const importText = document.getElementById("importDataTextArea").value.trim();
+    if (!importText) {
+        showMessage("No hay datos para importar.", 'error');
+        return;
+    }
+
+    try {
+        let importedItems = [];
+        
+        // Detectar si es el formato JSON (nuestro formato de exportación)
+        if (importText.includes('---ITEM---') || importText.startsWith('{')) {
+            importedItems = importText.split('\n---ITEM---\n').map(itemStr => {
+                try {
+                    return JSON.parse(itemStr);
+                } catch (e) {
+                    console.error("Error parsing item:", itemStr);
+                    return null;
+                }
+            }).filter(item => item !== null);
+        } 
+        // Si no es JSON, asumimos que es el formato de texto plano para Excel
+        else {
+            importedItems = parseExcelFormat(importText);
+        }
+
+        if (importedItems.length === 0) {
+            showMessage("No se encontraron datos válidos para importar.", 'error');
+            return;
+        }
+
+        // Agregar los nuevos items al principio del array
+        items.unshift(...importedItems);
+        
+        saveToLocalStorage();
+        updateTable();
+        closeImportModal();
+        showMessage(`${importedItems.length} items importados con éxito.`, 'success');
+    } catch (error) {
+        console.error("Error importing data:", error);
+        showMessage("Error al importar datos. Verifica el formato.", 'error');
+    }
+}
+
+
+function parseExcelFormat(text) {
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+    const items = [];
+    
+    for (const line of lines) {
+        try {
+            const columns = line.split('\t');
+            
+            // Extraer la URL de la imagen (eliminando la fórmula =IMAGE())
+            let imageUrl = columns[0].replace(/^=IMAGE\("|"\)$/g, '');
+            
+            // Extraer el título
+            const title = columns[1];
+            
+            // Extraer la talla (puede estar en diferentes columnas según el formato)
+            const size = columns[2];
+            
+            // Extraer SKU
+            const sku = columns[3];
+            
+            // Extraer precio App
+            const priceApp = parseFloat(columns[4]) || 0;
+            
+            // Extraer descuento (si existe)
+            const discount = parseFloat(columns[5]) || 0;
+            
+            // Extraer precio personalizado (última columna)
+            const customPrice = parseFloat(columns[columns.length - 1]) || '';
+            
+            // Extraer enlace (eliminando la fórmula =HYPERLINK())
+            let link = '';
+            if (columns[7] && columns[7].includes('HYPERLINK')) {
+                link = columns[7].replace(/^=HYPERLINK\("|".*$/g, '');
+            }
+            
+            // Crear el nuevo item
+            const newItem = {
+                image: imageUrl,
+                title: title,
+                sizes: [size],
+                selectedSize: size,
+                sku: sku,
+                priceApp: priceApp,
+                priceAppDto: discount,
+                priceLempiras: calculatePriceInLempiras(priceApp),
+                enlace: link || `https://us.shein.com/search?keywords=${sku}`,
+                precioPersonalizado: customPrice
+            };
+            
+            items.push(newItem);
+        } catch (e) {
+            console.error("Error parsing line:", line, e);
+        }
+    }
+    
+    return items;
+}
+
 </script>
 
 </head>
@@ -1849,6 +1987,15 @@ document.addEventListener("click", function (event) {
                 <button id="previewButton" class="with-icon" onclick="togglePreview()">
                     <i class="fas fa-eye"></i> <!-- Vista Previa -->
                 </button>
+
+
+<button id="exportButton" class="with-icon" onclick="exportSelectedRows()">
+    <i class="fas fa-file-export"></i> <!-- Exportar -->
+</button>
+<button id="importButton" class="with-icon" onclick="showImportModal()">
+    <i class="fas fa-file-import"></i> <!-- Importar -->
+</button>
+
 
             </div>
         </div>
@@ -1940,6 +2087,17 @@ document.addEventListener("click", function (event) {
         <button class="with-icon" onclick="setMode('emprendedor')">
             <i class="fa-solid fa-user"></i>
         </button>
+    </div>
+</div>
+
+
+<div id="importModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000; width: 80%; max-width: 500px;">
+    <h3>Importar Datos</h3>
+    <p>Pega aquí los datos copiados de otra instancia:</p>
+    <textarea id="importDataTextArea" style="width: 100%; height: 200px; margin-bottom: 10px;"></textarea>
+    <div style="display: flex; gap: 10px;">
+        <button onclick="importData()" style="flex: 1;">Importar</button>
+        <button onclick="closeImportModal()" style="flex: 1;">Cancelar</button>
     </div>
 </div>
 
