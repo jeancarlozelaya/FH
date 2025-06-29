@@ -904,6 +904,13 @@ function updateTable() {
             row.style.backgroundColor = item.color;
         }
         
+        // Determinar el estilo para el precio personalizado
+        const precioPersonalizado = item.precioPersonalizado || 0;
+        const priceLempiras = parseFloat(item.priceLempiras) || 0;
+        const precioStyle = precioPersonalizado < priceLempiras ? 
+            'style="background-color: #ff0000; color: white;"' : 
+            'style="background-color: white; color: black;"';
+        
         row.innerHTML = 
             `<td>
                 <div style="position: relative; display: inline-block;">
@@ -923,7 +930,7 @@ function updateTable() {
                 </div>
             </td>
             <td class="preview-hidden">${item.priceLempiras}</td>
-            <td><input type="number" id="customPriceInput${index}" class="small-input" value="${item.precioPersonalizado}" placeholder="Precio" oninput="updateCustomPrice(${index})"></td>
+            <td><input type="number" id="customPriceInput${index}" class="small-input" value="${item.precioPersonalizado}" placeholder="Precio" oninput="updateCustomPrice(${index})" ${precioStyle}></td>
             <td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>
             <td class="hidden-column">
                 <div style="display: flex; align-items: center; gap: 5px;">
@@ -934,19 +941,12 @@ function updateTable() {
                 </div>
             </td>`;
 
-        // Aplicar el color específicamente a la celda de la imagen después de crear la fila
-        if (item.color) {
-            const imageCell = row.querySelector('td:first-child');
-            if (imageCell) {
-                imageCell.style.backgroundColor = item.color;
-            }
-        }
+        // Resto del código...
         
         tableBody.appendChild(row);
     });
     updateButtonStates();
 }
-
 
 
 function toggleEditDto(index) {
@@ -1135,13 +1135,30 @@ function decodeHtmlEntities(str) {
 // Función para Actualizar el Estado de los Botones
 function updateButtonStates() {
     const selectedItemsCount = document.querySelectorAll('.itemCheckbox:checked').length;
+    const exportButton = document.querySelector('button[onclick="exportSelectedRows()"]');
+    const colorClientsButton = document.querySelector('button[onclick="showColorClientsModal()"]');
+    const groupByColorButton = document.querySelector('button[onclick="groupByColor()"]');
+    const previewButton = document.querySelector('button[onclick="togglePreview()"]');
+    
+    // Ocultar/mostrar botones según si hay filas
+    const hasItems = items.length > 0;
+    
+    // Botón de exportar (solo visible si hay filas seleccionadas)
+    exportButton.style.display = selectedItemsCount === 0 ? 'none' : 'flex';
+    
+    // Botones que deben aparecer solo si hay filas en la tabla
+    colorClientsButton.style.display = hasItems ? 'flex' : 'none';
+    groupByColorButton.style.display = hasItems ? 'flex' : 'none';
+    previewButton.style.display = hasItems ? 'flex' : 'none';
+    
+    // Deshabilitar otros botones como antes
     document.querySelector('button[onclick="openColorPicker(event)"]').disabled = selectedItemsCount === 0;
     document.querySelector('button[onclick="copySelectedRows()"]').disabled = selectedItemsCount === 0;
     document.querySelector('button[onclick="duplicateSelectedRow()"]').disabled = selectedItemsCount === 0;
     document.querySelector('button[onclick="undoDelete()"]').disabled = lastDeletedItems.length === 0;
     document.querySelector('button[onclick="deleteSelectedItems()"]').disabled = selectedItemsCount === 0;
-    // Elimina la línea que deshabilita el botón de agrupar por colores
 }
+
 
      
 // Función para mostrar los Mensajes de Estado
@@ -1241,8 +1258,22 @@ function deleteSelectedItems() {
 
 // Función para Guardar el precio editado
 function updateCustomPrice(index) {
-    const customPrice = document.getElementById(`customPriceInput${index}`).value;
-    items[index].precioPersonalizado = customPrice;  // Guardar el precio personalizado en el item
+    const customPriceInput = document.getElementById(`customPriceInput${index}`);
+    const customPrice = customPriceInput.value;
+    items[index].precioPersonalizado = customPrice;
+    
+    // Actualizar el estilo según el valor
+    const priceLempiras = parseFloat(items[index].priceLempiras) || 0;
+    const precioPersonalizado = parseFloat(customPrice) || 0;
+    
+    if (precioPersonalizado < priceLempiras) {
+        customPriceInput.style.backgroundColor = '#ff0000';
+        customPriceInput.style.color = 'white';
+    } else {
+        customPriceInput.style.backgroundColor = 'white';
+        customPriceInput.style.color = 'black';
+    }
+    
     saveToLocalStorage();
 }
 
