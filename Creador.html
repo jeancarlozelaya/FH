@@ -1852,6 +1852,7 @@ function exportSelectedRows() {
         return JSON.stringify({
             ...item,
             clientName: item.clientName || '',
+            clientPayment: item.clientPayment || 0,
             color: item.color || '#ffffff'
         });
     }).join('\n---ITEM---\n');
@@ -1893,8 +1894,11 @@ function importData() {
             try {
                 const item = JSON.parse(itemStr);
                 // Actualizar colorClients si el item tiene color y clientName
-                if (item.color && item.clientName) {
-                    colorClients[item.color] = item.clientName;
+                if (item.color && (item.clientName || item.clientPayment !== undefined)) {
+                    colorClients[item.color] = {
+                        name: item.clientName || '',
+                        payment: item.clientPayment || 0
+                    };
                 }
                 return item;
             } catch (e) {
@@ -1909,7 +1913,7 @@ function importData() {
         }
 
         items.unshift(...importedItems);
-        saveColorClients(); // Guardar los nombres de clientes
+        saveColorClients();
         saveToLocalStorage();
         updateTable();
         closeImportModal();
@@ -1919,7 +1923,6 @@ function importData() {
         showMessage("Error al importar datos. Verifica el formato.", 'error');
     }
 }
-
 
 
 function parseExcelFormat(text) {
@@ -1989,19 +1992,35 @@ let colorClients = {};
 function loadColorClients() {
     const savedColorClients = localStorage.getItem("colorClients");
     if (savedColorClients) {
-        colorClients = JSON.parse(savedColorClients);
+        try {
+            colorClients = JSON.parse(savedColorClients);
+            
+            // Migración: si el valor es string (formato antiguo), convertirlo a objeto
+            for (const color in colorClients) {
+                if (typeof colorClients[color] === 'string') {
+                    colorClients[color] = {
+                        name: colorClients[color],
+                        payment: 0
+                    };
+                }
+            }
+        } catch (e) {
+            console.error("Error parsing colorClients:", e);
+            colorClients = {};
+        }
     }
 }
+
 
 // Mostrar el modal de gestión de clientes por color
 function showColorClientsModal() {
     const modal = document.getElementById("colorClientsModal");
     const listContainer = document.getElementById("colorClientsList");
     
-    // Obtener todos los colores únicos usados en los items
-    const usedColors = [...new Set(items.map(item => item.color).filter(color => color !== undefined))];
+    // Obtener colores únicos
+    const colors = items.map(item => item.color).filter(color => color !== undefined);
+    const usedColors = [...new Set(colors)];
     
-    // Si no hay colores usados, mostrar mensaje
     if (usedColors.length === 0) {
         listContainer.innerHTML = '<p>No hay colores asignados todavía.</p>';
         modal.style.display = 'block';
@@ -2017,57 +2036,103 @@ function showColorClientsModal() {
         colorDiv.style.marginBottom = '10px';
         colorDiv.style.padding = '5px';
         colorDiv.style.borderBottom = '1px solid #eee';
+        colorDiv.style.gap = '10px';
         
+        // Cuadro de color
         const colorBox = document.createElement("div");
         colorBox.style.width = '20px';
         colorBox.style.height = '20px';
         colorBox.style.backgroundColor = color;
-        colorBox.style.marginRight = '10px';
         colorBox.style.border = '1px solid #ccc';
+        colorBox.style.flexShrink = '0';
         
+        // Input para el nombre
         const clientNameInput = document.createElement("input");
         clientNameInput.type = 'text';
-        clientNameInput.value = colorClients[color] || '';
+        clientNameInput.value = (colorClients[color] && colorClients[color].name) || '';
         clientNameInput.placeholder = 'Nombre del cliente';
         clientNameInput.style.flex = '1';
-        clientNameInput.style.marginRight = '10px';
+        clientNameInput.style.padding = '5px';
         clientNameInput.disabled = true;
         
+        // Input para el monto (nuevo comportamiento)
+        const clientPaymentInput = document.createElement("input");
+        clientPaymentInput.type = 'number';
+        clientPaymentInput.placeholder = 'Monto';
+        clientPaymentInput.style.width = '80px';
+        clientPaymentInput.style.padding = '5px';
+        clientPaymentInput.disabled = true;
+        
+        // Mostrar el monto guardado (solo si no es 0)
+        if (colorClients[color] && colorClients[color].payment !== 0) {
+            clientPaymentInput.value = colorClients[color].payment;
+        }
+        
+        // Limpiar el campo al hacer clic
+        clientPaymentInput.addEventListener('focus', () => {
+            if (clientPaymentInput.value === '0') {
+                clientPaymentInput.value = '';
+            }
+        });
+        
+        // Botón de editar/guardar
         const editButton = document.createElement("button");
         editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+        editButton.style.padding = '5px 10px';
+        editButton.style.flexShrink = '0';
+        
         editButton.onclick = function() {
             if (clientNameInput.disabled) {
+                // Modo edición
                 clientNameInput.disabled = false;
+                clientPaymentInput.disabled = false;
                 clientNameInput.focus();
                 editButton.innerHTML = '<i class="fas fa-save"></i>';
             } else {
+                // Modo guardar
                 clientNameInput.disabled = true;
-                colorClients[color] = clientNameInput.value.trim();
+                clientPaymentInput.disabled = true;
+                
+                // Guardar datos (si el monto está vacío, se guarda como undefined)
+                const paymentValue = clientPaymentInput.value.trim() === '' ? undefined : parseFloat(clientPaymentInput.value);
+                
+                colorClients[color] = {
+                    name: clientNameInput.value.trim(),
+                    payment: paymentValue
+                };
+                
                 saveColorClients();
                 
-                // Actualizar los nombres de clientes en los items con este color
+                // Actualizar items
                 items.forEach(item => {
                     if (item.color === color) {
-                        item.clientName = colorClients[color];
+                        item.clientName = colorClients[color].name;
+                        item.clientPayment = colorClients[color].payment;
                     }
                 });
                 
                 saveToLocalStorage();
                 editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-                showMessage("Nombre de cliente guardado.", 'success');
+                
+                // Forzar actualización visual: mostrar placeholder si no hay monto
+                if (clientPaymentInput.value === '0' || clientPaymentInput.value.trim() === '') {
+                    clientPaymentInput.value = '';
+                }
+                
+                showMessage("Datos del cliente guardados.", 'success');
             }
         };
         
         colorDiv.appendChild(colorBox);
         colorDiv.appendChild(clientNameInput);
+        colorDiv.appendChild(clientPaymentInput);
         colorDiv.appendChild(editButton);
+        
         listContainer.appendChild(colorDiv);
     });
     
     modal.style.display = 'block';
 }
-
-
 
 
 // Cerrar el modal de clientes por color
@@ -2079,6 +2144,44 @@ function closeColorClientsModal() {
 function saveColorClients() {
     localStorage.setItem("colorClients", JSON.stringify(colorClients));
 }
+
+
+
+
+
+function confirmClearAllClients() {
+    if (confirm("¿Estás seguro de que deseas eliminar todos los nombres de clientes y montos de pago? Esta acción no se puede deshacer.")) {
+        clearAllClients();
+    }
+}
+
+
+
+// Función para borrar todos los clientes y montos
+function clearAllClients() {
+    // Limpiar el objeto colorClients (ahora almacenará tanto nombre como pago)
+    for (const color in colorClients) {
+        colorClients[color] = { name: '', payment: 0 };
+    }
+    
+    // Actualizar los items
+    items.forEach(item => {
+        if (item.color) {
+            item.clientName = '';
+            item.clientPayment = 0;
+        }
+    });
+    
+    saveColorClients();
+    saveToLocalStorage();
+    showColorClientsModal(); // Recargar la vista
+    showMessage("Todos los clientes y pagos han sido eliminados.", 'success');
+}
+
+
+
+
+
 
 
 </script>
@@ -2259,6 +2362,9 @@ function saveColorClients() {
 
 <div id="colorClientsModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000; width: 80%; max-width: 500px;">
     <h3>Asociar Clientes a Colores</h3>
+    <button onclick="confirmClearAllClients()" style="margin-bottom: 15px; background-color: #ff4444; color: white;">
+        <i class="fas fa-trash-alt"></i> Eliminar Todos los Clientes
+    </button>
     <div id="colorClientsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
         <!-- Aquí se generará la lista de colores y clientes -->
     </div>
