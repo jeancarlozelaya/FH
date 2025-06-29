@@ -13,27 +13,37 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            touch-action: manipulation;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            /* Centrado solo en desktop */
             justify-content: center;
-            height: 100vh;
-            background-color: #f0f2f5;
-            touch-action: manipulation; /* Evita zoom en móviles */
+        }
+        
+        @media (max-height: 600px) {
+            body {
+                justify-content: flex-start; /* En móviles, empieza desde arriba */
+                padding-top: 30px;
+            }
         }
         
         .calculator {
             background-color: white;
             border-radius: 16px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            width: 90%;
+            padding: 25px;
+            width: 100%;
             max-width: 350px;
             text-align: center;
+            margin: 10px 0;
         }
         
         h1 {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             color: #333;
             font-size: 22px;
             font-weight: 600;
@@ -56,7 +66,7 @@
         }
         
         .result {
-            margin: 25px 0;
+            margin: 20px 0;
             padding: 20px;
             background-color: #007bff;
             color: white;
@@ -107,10 +117,15 @@
             resultDisplay.textContent = `L ${priceInLempiras}`;
         });
 
-        // Bloquear zoom en móviles
+        // Bloquear zoom
         document.addEventListener('gesturestart', function(e) {
             e.preventDefault();
         });
+
+        // Enfocar el input al cargar (opcional)
+        window.onload = function() {
+            priceInput.focus();
+        };
     </script>
 </body>
 </html>
