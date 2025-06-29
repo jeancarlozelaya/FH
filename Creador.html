@@ -772,9 +772,9 @@ window.onload = function () {
     if (savedItems) {
         items = JSON.parse(savedItems);
         updateTable();
-        loadColors();
     }
-    setMode('normal', false); // Cargar en modo normal por defecto sin mostrar el mensaje
+    loadColorClients(); // Añade esta línea
+    setMode('normal', false);
     updateButtonStates();
 };
 
@@ -836,20 +836,20 @@ function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
 
         const sizes = [...new Set(sizePatterns.flatMap(pattern => [...data.matchAll(pattern)].map(match => match[1])))];
 
-        const item = {
-            image: image,
-            title: titleMatch[1],
-            sku: skuMatch[1],
-            priceApp: parseFloat(priceAppMatch[1]),
-            priceLempiras: calculatePriceInLempiras(parseFloat(priceAppMatch[1]), porcentajeSeleccionado),
-            percentage: porcentajeSeleccionado,
-            sizes: sizes,
-            selectedSize: "",
-            enlace: enlace,
-            priceAppDto: parseFloat(priceAppDto[1]),
-            editingDto: false // Estado de edición para "Dto"
-
-        };
+    const item = {
+        image: image,
+        title: titleMatch[1],
+        sku: skuMatch[1],
+        priceApp: parseFloat(priceAppMatch[1]),
+        priceLempiras: calculatePriceInLempiras(parseFloat(priceAppMatch[1]), porcentajeSeleccionado),
+        percentage: porcentajeSeleccionado,
+        sizes: sizes,
+        selectedSize: "",
+        enlace: enlace,
+        priceAppDto: parseFloat(priceAppDto[1]),
+        editingDto: false,
+        color: '#ffffff' // Asignar color blanco por defecto
+    };
 
         items.push(item);
         saveToLocalStorage();
@@ -898,6 +898,12 @@ function updateTable() {
     tableBody.innerHTML = "";
     items.forEach((item, index) => {
         const row = document.createElement("tr");
+        
+        // Aplicar el color de fondo si existe
+        if (item.color) {
+            row.style.backgroundColor = item.color;
+        }
+        
         row.innerHTML = 
             `<td>
                 <div style="position: relative; display: inline-block;">
@@ -919,7 +925,7 @@ function updateTable() {
             <td class="preview-hidden">${item.priceLempiras}</td>
             <td><input type="number" id="customPriceInput${index}" class="small-input" value="${item.precioPersonalizado}" placeholder="Precio" oninput="updateCustomPrice(${index})"></td>
             <td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>
-            <td class="hidden-column"> <!-- Columna "Dto" oculta por defecto -->
+            <td class="hidden-column">
                 <div style="display: flex; align-items: center; gap: 5px;">
                     <button onclick="toggleEditDto(${index})">
                         ${item.editingDto ? '<i class="fas fa-save"></i>' : '<i class="fas fa-pencil-alt"></i>'}
@@ -928,13 +934,19 @@ function updateTable() {
                 </div>
             </td>`;
 
+        // Aplicar el color específicamente a la celda de la imagen después de crear la fila
         if (item.color) {
-            row.style.backgroundColor = item.color;
+            const imageCell = row.querySelector('td:first-child');
+            if (imageCell) {
+                imageCell.style.backgroundColor = item.color;
+            }
         }
+        
         tableBody.appendChild(row);
     });
     updateButtonStates();
 }
+
 
 
 function toggleEditDto(index) {
@@ -1441,12 +1453,21 @@ function applyColorToSelectedRows(color) {
         const index = checkbox.getAttribute('data-index');
         const row = document.querySelector(`#itemTableBody tr:nth-child(${parseInt(index) + 1})`);
         if (row) {
+            // Aplicar el color a toda la fila
             row.style.backgroundColor = color;
-            items[index].color = color; // Guardar el color en el item
+            
+            // Aplicar el color específicamente a la celda de la imagen
+            const imageCell = row.querySelector('td:first-child');
+            if (imageCell) {
+                imageCell.style.backgroundColor = color;
+            }
+            
+            // Guardar el color en el item
+            items[index].color = color;
         }
     });
     saveToLocalStorage();
-    closeColorPicker(); // Cerrar el menú después de seleccionar un color
+    closeColorPicker();
 }
 
 
@@ -1516,32 +1537,26 @@ function groupByColor() {
 // Función para filtrar las filas por color
 function filterRowsByColor(color) {
     const rows = document.querySelectorAll("#itemTableBody tr");
-    const filteredRows = []; // Almacenar las filas filtradas
+    const filteredRows = [];
 
     rows.forEach((row, index) => {
-        const itemColor = items[index].color || '#ffffff'; // Usar el color almacenado en los datos
+        // Usar color blanco por defecto si no hay color definido
+        const itemColor = items[index].color || '#ffffff';
+        
         if (itemColor.toLowerCase() === color.toLowerCase()) {
-            row.style.display = ''; // Mostrar la fila si coincide el color
-            filteredRows.push(row); // Agregar la fila a la lista de filtradas
-
-    // Calcular y mostrar el total solo con las filas visibles
-    const total = calculateTotalPrice(filteredRows);
-    showTotalRow(total);
-
-    closeColorPicker2(); // Cerrar la paleta después de seleccionar un color
-
+            row.style.display = '';
+            filteredRows.push(row);
         } else {
-            row.style.display = 'none'; // Ocultar la fila si no coincide
-
-    // Calcular y mostrar el total solo con las filas visibles
-    const total = calculateTotalPrice(filteredRows);
-    showTotalRow(total);
-
-    closeColorPicker2(); // Cerrar la paleta después de seleccionar un color
-
+            row.style.display = 'none';
         }
     });
+
+    const total = calculateTotalPrice(filteredRows);
+    showTotalRow(total);
+    closeColorPicker2();
 }
+
+
 
 // Función para cerrar la segunda paleta de colores
         function closeColorPicker2() {
@@ -1802,9 +1817,14 @@ document.addEventListener("click", function (event) {
 function exportSelectedRows() {
     const selectedItems = Array.from(document.querySelectorAll('.itemCheckbox:checked')).map(checkbox => {
         const index = checkbox.getAttribute('data-index');
-        return JSON.stringify(items[index]);
-    }).join('\n---ITEM---\n'); // Separador especial entre items
-
+        const item = items[index];
+        return JSON.stringify({
+            ...item,
+            clientName: item.clientName || '',
+            color: item.color || '#ffffff'
+        });
+    }).join('\n---ITEM---\n');
+    
     if (navigator.clipboard) {
         navigator.clipboard.writeText(selectedItems).then(() => {
             showMessage("Datos exportados al portapapeles.", 'success');
@@ -1838,32 +1858,27 @@ function importData() {
     }
 
     try {
-        let importedItems = [];
-        
-        // Detectar si es el formato JSON (nuestro formato de exportación)
-        if (importText.includes('---ITEM---') || importText.startsWith('{')) {
-            importedItems = importText.split('\n---ITEM---\n').map(itemStr => {
-                try {
-                    return JSON.parse(itemStr);
-                } catch (e) {
-                    console.error("Error parsing item:", itemStr);
-                    return null;
+        const importedItems = importText.split('\n---ITEM---\n').map(itemStr => {
+            try {
+                const item = JSON.parse(itemStr);
+                // Actualizar colorClients si el item tiene color y clientName
+                if (item.color && item.clientName) {
+                    colorClients[item.color] = item.clientName;
                 }
-            }).filter(item => item !== null);
-        } 
-        // Si no es JSON, asumimos que es el formato de texto plano para Excel
-        else {
-            importedItems = parseExcelFormat(importText);
-        }
+                return item;
+            } catch (e) {
+                console.error("Error parsing item:", itemStr);
+                return null;
+            }
+        }).filter(item => item !== null);
 
         if (importedItems.length === 0) {
             showMessage("No se encontraron datos válidos para importar.", 'error');
             return;
         }
 
-        // Agregar los nuevos items al principio del array
         items.unshift(...importedItems);
-        
+        saveColorClients(); // Guardar los nombres de clientes
         saveToLocalStorage();
         updateTable();
         closeImportModal();
@@ -1873,6 +1888,7 @@ function importData() {
         showMessage("Error al importar datos. Verifica el formato.", 'error');
     }
 }
+
 
 
 function parseExcelFormat(text) {
@@ -1932,6 +1948,107 @@ function parseExcelFormat(text) {
     
     return items;
 }
+
+
+
+// Objeto para guardar la asociación de colores con clientes
+let colorClients = {};
+
+// Cargar los clientes desde localStorage al iniciar
+function loadColorClients() {
+    const savedColorClients = localStorage.getItem("colorClients");
+    if (savedColorClients) {
+        colorClients = JSON.parse(savedColorClients);
+    }
+}
+
+// Mostrar el modal de gestión de clientes por color
+function showColorClientsModal() {
+    const modal = document.getElementById("colorClientsModal");
+    const listContainer = document.getElementById("colorClientsList");
+    
+    // Obtener todos los colores únicos usados en los items
+    const usedColors = [...new Set(items.map(item => item.color).filter(color => color !== undefined))];
+    
+    // Si no hay colores usados, mostrar mensaje
+    if (usedColors.length === 0) {
+        listContainer.innerHTML = '<p>No hay colores asignados todavía.</p>';
+        modal.style.display = 'block';
+        return;
+    }
+    
+    listContainer.innerHTML = '';
+    
+    usedColors.forEach(color => {
+        const colorDiv = document.createElement("div");
+        colorDiv.style.display = 'flex';
+        colorDiv.style.alignItems = 'center';
+        colorDiv.style.marginBottom = '10px';
+        colorDiv.style.padding = '5px';
+        colorDiv.style.borderBottom = '1px solid #eee';
+        
+        const colorBox = document.createElement("div");
+        colorBox.style.width = '20px';
+        colorBox.style.height = '20px';
+        colorBox.style.backgroundColor = color;
+        colorBox.style.marginRight = '10px';
+        colorBox.style.border = '1px solid #ccc';
+        
+        const clientNameInput = document.createElement("input");
+        clientNameInput.type = 'text';
+        clientNameInput.value = colorClients[color] || '';
+        clientNameInput.placeholder = 'Nombre del cliente';
+        clientNameInput.style.flex = '1';
+        clientNameInput.style.marginRight = '10px';
+        clientNameInput.disabled = true;
+        
+        const editButton = document.createElement("button");
+        editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+        editButton.onclick = function() {
+            if (clientNameInput.disabled) {
+                clientNameInput.disabled = false;
+                clientNameInput.focus();
+                editButton.innerHTML = '<i class="fas fa-save"></i>';
+            } else {
+                clientNameInput.disabled = true;
+                colorClients[color] = clientNameInput.value.trim();
+                saveColorClients();
+                
+                // Actualizar los nombres de clientes en los items con este color
+                items.forEach(item => {
+                    if (item.color === color) {
+                        item.clientName = colorClients[color];
+                    }
+                });
+                
+                saveToLocalStorage();
+                editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+                showMessage("Nombre de cliente guardado.", 'success');
+            }
+        };
+        
+        colorDiv.appendChild(colorBox);
+        colorDiv.appendChild(clientNameInput);
+        colorDiv.appendChild(editButton);
+        listContainer.appendChild(colorDiv);
+    });
+    
+    modal.style.display = 'block';
+}
+
+
+
+
+// Cerrar el modal de clientes por color
+function closeColorClientsModal() {
+    document.getElementById("colorClientsModal").style.display = 'none';
+}
+
+// Guardar los nombres de clientes en localStorage
+function saveColorClients() {
+    localStorage.setItem("colorClients", JSON.stringify(colorClients));
+}
+
 
 </script>
 
@@ -1995,6 +2112,12 @@ function parseExcelFormat(text) {
 <button id="importButton" class="with-icon" onclick="showImportModal()">
     <i class="fas fa-file-import"></i> <!-- Importar -->
 </button>
+
+
+<button id="colorClientsButton" class="with-icon" onclick="showColorClientsModal()">
+    <i class="fas fa-address-book"></i> <!-- Ícono de clientes -->
+</button>
+
 
 
             </div>
@@ -2100,6 +2223,17 @@ function parseExcelFormat(text) {
         <button onclick="closeImportModal()" style="flex: 1;">Cancelar</button>
     </div>
 </div>
+
+
+
+<div id="colorClientsModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000; width: 80%; max-width: 500px;">
+    <h3>Asociar Clientes a Colores</h3>
+    <div id="colorClientsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+        <!-- Aquí se generará la lista de colores y clientes -->
+    </div>
+    <button onclick="closeColorClientsModal()" style="width: 100%;">Cerrar</button>
+</div>
+
 
 </body>
 
