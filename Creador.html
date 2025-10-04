@@ -804,7 +804,7 @@ function obtenerFuente() {
         return; // Salir para evitar que se ejecute con el enlace incorrecto
     }
     showMessage("Procesando, por favor espere...", 'processing');
-    const url = `https://script.google.com/macros/s/AKfycbwq82FHIL2RGyh_6pl9jluP2sKltOXzqMHzeMHTPq2ITbM5GHA8uhFLupRDHVA8zhWS/exec?url=${encodeURIComponent(enlace)}`;
+    const url = `https://script.google.com/macros/s/AKfycbyMQJJuoUqhA3jEuh6Xizwu_VOr-Qd1fRGc6fGzsjPYyp_WkgZs5Zesd0HucNtgelxx/exec?url=${encodeURIComponent(enlace)}`;
     fetch(url)
         .then(response => response.text())
         .then(data => extractData(data, porcentajeSeleccionado, enlace))
@@ -813,64 +813,166 @@ function obtenerFuente() {
 
 // Extraer datos del HTML    
 function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
-    const imageMatch = data.match(/<div class="crop-image-container" data-before-crop-src="(.*?)"/i);
-    const skuMatch = data.match(/<span class="product-intro__head-sku-text">\s*SKU:\s*(.*?)<\/span>/i);
+    console.log("Analizando datos... Intento:", retryCount + 1);
+
+    // Verificar si la página tiene datos de producto
+    const hasProductData = data.includes('product-intro') || 
+                          data.includes('crop-image-container') || 
+                          data.includes('goods_sn') ||
+                          data.includes('retailPrice');
+
+    if (!hasProductData && retryCount < 10) {
+        console.log("Esperando datos del producto...");
+        setTimeout(() => {
+            obtenerFuente();
+        }, 1000);
+        return;
+    }
+
+    // IMAGEN - Buscar en múltiples ubicaciones
+    const imagePatterns = [
+        /<div class="crop-image-container"[^>]*data-before-crop-src="(.*?)"/i,
+        /<img[^>]*class="[^"]*bsc-crop-image-container[^"]*"[^>]*src="(.*?)"/i,
+        /"imageMain":"(.*?)"/i,
+        /"original_image":"(.*?)"/i,
+        /"goods_img":"(.*?)"/i,
+        /<meta[^>]*property="og:image"[^>]*content="(.*?)"/i
+    ];
+
+    // SKU 
+    const skuPatterns = [
+        /"goods_sn":"(.*?)"/i,
+        /"sku":"(.*?)"/i,
+        /<span class="product-intro__head-sku-text">\s*SKU:\s*(.*?)<\/span>/i,
+        /<meta[^>]*property="product:sku"[^>]*content="(.*?)"/i
+    ];
+
+    // PRECIOS
+    const pricePatterns = [
+        /"retailPrice":{"amount":"([\d.]+)"/i,
+        /"salePrice":{"amount":"([\d.]+)"/i,
+        /"price":"\$?([\d.]+)"/i,
+        /"price_amount":"([\d.]+)"/i,
+        /<meta[^>]*property="product:price:amount"[^>]*content="([\d.]+)"/i
+    ];
+
+    // NOMBRE
+    const titlePatterns = [
+        /"goods_name":"(.*?)"/i,
+        /<title>(.*?) \| SHEIN USA<\/title>/i,
+        /<meta[^>]*property="og:title"[^>]*content="(.*?)"/i,
+        /<h1[^>]*class="[^"]*product-intro__head-title[^"]*"[^>]*>(.*?)<\/h1>/i
+    ];
+
+    // TALLAS
+    const sizePatterns = [
+        /"size":"(.*?)"/g,
+        /"size_name":"(.*?)"/g,
+        /"attr_value_name":"(.*?)"/g,
+        /data-attr_value_name="(.*?)"/g,
+        /<p class="product-intro__size-radio-inner[^>]*>(.*?)<\/p>/g
+    ];
+
+    // Función para buscar patrones
+    function findFirstMatch(patterns, source) {
+        for (let pattern of patterns) {
+            const match = source.match(pattern);
+            if (match && match[1]) {
+                return match[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
+            }
+        }
+        return null;
+    }
+
+    // Extraer datos
+    const image = findFirstMatch(imagePatterns, data);
+    const sku = findFirstMatch(skuPatterns, data);
+    const title = findFirstMatch(titlePatterns, data);
+    
+    // Precios
     const priceAppMatch = data.match(/"retailPrice":{"amount":"([\d.]+)"/i);
     const priceAppDto = data.match(/"salePrice":{"amount":"([\d.]+)"/i);
 
-    const titleMatch = data.match(/<title>(.*?) \| SHEIN USA<\/title>/i);
+    // Tallas
+    const sizes = [...new Set(
+        sizePatterns.flatMap(pattern => 
+            [...data.matchAll(pattern)]
+                .map(match => match[1])
+                .filter(size => size && size.length < 20 && !size.includes('http'))
+        )
+    )];
 
-    // Extraer tallas desde diferentes patrones en el HTML
-    const sizePatterns = [
-                /"size":"(.*?)"/g,
-                /data-attr_value_name="(.*?)"/g,
-                /<p class="product-intro__size-radio-inner product-intro__sizes-item-text--one">(.*?)<\/p>/g
-    ];
+    // Verificar datos mínimos
+    const hasRequiredData = image && title && (priceAppMatch || priceAppDto);
 
-
-    if (imageMatch && skuMatch && priceAppMatch && titleMatch) {
-        let image = imageMatch[1];
-        if (!image.startsWith("http")) {
-            image = "https:" + image;
+    if (hasRequiredData) {
+        // Procesar imagen
+        let processedImage = image;
+        if (processedImage && !processedImage.startsWith("http")) {
+            processedImage = "https:" + processedImage;
         }
 
-        const sizes = [...new Set(sizePatterns.flatMap(pattern => [...data.matchAll(pattern)].map(match => match[1])))];
+        // Limpiar título
+        let cleanTitle = title.replace(/&#39;/g, "'")
+                             .replace(/&amp;/g, '&')
+                             .replace(/\| SHEIN USA$/, '')
+                             .trim();
 
-    const item = {
-        image: image,
-        title: titleMatch[1],
-        sku: skuMatch[1],
-        priceApp: parseFloat(priceAppMatch[1]),
-        priceLempiras: calculatePriceInLempiras(parseFloat(priceAppMatch[1]), porcentajeSeleccionado),
-        percentage: porcentajeSeleccionado,
-        sizes: sizes,
-        selectedSize: "",
-        enlace: enlace,
-        priceAppDto: parseFloat(priceAppDto[1]),
-        editingDto: false,
-        color: '#ffffff' // Asignar color blanco por defecto
-    };
+        const item = {
+            image: processedImage,
+            title: cleanTitle,
+            sku: sku || "N/A",
+            priceApp: priceAppMatch ? parseFloat(priceAppMatch[1]) : 0,
+            priceLempiras: calculatePriceInLempiras(
+                priceAppMatch ? parseFloat(priceAppMatch[1]) : 
+                priceAppDto ? parseFloat(priceAppDto[1]) : 0, 
+                porcentajeSeleccionado
+            ),
+            percentage: porcentajeSeleccionado,
+            sizes: sizes.length > 0 ? sizes : ["Única"],
+            selectedSize: "",
+            enlace: enlace,
+            priceAppDto: priceAppDto ? parseFloat(priceAppDto[1]) : 0,
+            editingDto: false,
+            color: '#ffffff'
+        };
 
         items.push(item);
         saveToLocalStorage();
         updateTable();
 
-        setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
-
+        setMode(currentMode, false);
         showMessage("Datos cargados con éxito.", 'success');
+        
+        console.log("✅ Datos extraídos:", {
+            imagen: processedImage,
+            titulo: cleanTitle,
+            sku: sku,
+            tallas: sizes,
+            precioOriginal: priceAppMatch ? priceAppMatch[1] : 'No encontrado',
+            precioOferta: priceAppDto ? priceAppDto[1] : 'No encontrado'
+        });
+        
     } else {
-        // Verifica el mensaje de error y realiza un nuevo intento
-        if (retryCount < 5) { // Límite de reintentos
+        console.log("❌ Datos faltantes - Intento", retryCount + 1, ":", {
+            imagen: !!image,
+            titulo: !!title,
+            precio: !!(priceAppMatch || priceAppDto),
+            sku: !!sku
+        });
+
+        // Reintentar con más paciencia
+        if (retryCount < 8) {
+            const delay = Math.min(2000, 500 * (retryCount + 1)); // Delay progresivo
             setTimeout(() => {
-                showMessage("Reintentando obtener datos...", 'processing');
-                obtenerFuente(); // Vuelve a intentar obtener la fuente
-            }, 0); // Espera 2 segundos antes de reintentar
+                showMessage(`Esperando datos del producto... (${retryCount + 1}/8)`, 'processing');
+                obtenerFuente();
+            }, delay);
         } else {
-            showMessage("No se extrajo información. Se alcanzó el número máximo de reintentos.", 'error');
+            showMessage("No se pudieron cargar los datos después de varios intentos.", 'error');
         }
     }
 }
-
 
 // Calcular precio en lempiras
 function calculatePriceInLempiras(priceApp) {
