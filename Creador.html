@@ -591,6 +591,25 @@ td input[type="checkbox"] {
     button .fa-save {
         color: #ffffff; 
     }
+
+/* --- Efecto de Carga para Input (Request 1) --- */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+    }
+}
+
+#enlace:disabled {
+    background-color: #f8f9fa; /* Un fondo leggermente gris */
+}
+/* --- Fin Efecto Carga --- */
+
 </style>
 
 <script>
@@ -601,6 +620,7 @@ let messageTimeout;
 let allChecked = false;
 let lastDeletedItems = []; 
 let previewMode = false;
+let currentFetchController = null;
 
 // Inicialización al cargar la página
 window.onload = function () {
@@ -631,29 +651,59 @@ function obtenerFuente() {
     }
     
     const baseURL = "https://us.shein.com/";
-    if (!enlace.startsWith(baseURL)) {
-        const newEnlace = baseURL + enlace.replace(/^https?:\/\/(www\.)?(m\.)?es\.shein\.com\//, "");
-        document.getElementById("enlace").value = newEnlace;      
-        obtenerFuente(); // Llama a la versión corregida de sí mismo
-        return; 
-    }
     
+    // --- INICIO: Lógica de Normalización de URL (Request 2) ---
+    // Esta regex limpia cualquier dominio de shein (o nada) y se queda solo con el path
+    const cleanPath = enlace.replace(/^(https?:\/\/)?([a-zA-Z0-9.-]+\.)?shein\.com\//i, "");
+    const finalEnlace = baseURL + cleanPath;
+    // --- FIN: Lógica de Normalización ---
+
+    // Actualiza el valor en la caja de texto
+    document.getElementById("enlace").value = finalEnlace;
+    
+    // --- INICIO: Lógica de UI (Request 1) ---
+    const enlaceInput = document.getElementById("enlace");
+    const clearButton = document.querySelector("button[onclick='clearInput()']");
+    
+    // 1. Iniciar estado de carga
+    enlaceInput.disabled = true;
+    enlaceInput.style.animation = "pulse 1.5s infinite";
+    
+    if (clearButton) {
+        clearButton.innerHTML = '<i class="fas fa-times"></i> Cancelar';
+        
+        // 2. Modificar la función del botón para "Cancelar"
+        clearButton.onclick = function() {
+            if (currentFetchController) {
+                currentFetchController.abort(); // Cancelar el fetch en curso
+            }
+            resetUI(); // Restaurar la UI
+            showMessage("Proceso cancelado.", 'error');
+        };
+    }
+    // --- FIN: Lógica de UI ---
+
     showMessage("Procesando, por favor espere...", 'processing');
     
-    // Iniciar el fetch con lógica de reintentos
-    fetchWithRetry(enlace, porcentajeSeleccionado, 5); // 5 reintentos
+    // Iniciar el fetch
+    fetchWithRetry(finalEnlace, porcentajeSeleccionado, 5); // 5 reintentos
 }
 
 // NUEVA FUNCIÓN: Fetch con reintentos
 function fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft) {
     if (retriesLeft <= 0) {
         showMessage("No se extrajo información. Se alcanzó el número máximo de reintentos.", 'error');
+        resetUI(); // <-- Resetear UI al fallar
         return;
     }
 
+    // Crear y asignar el AbortController
+    currentFetchController = new AbortController();
+    const signal = currentFetchController.signal;
+
     const url = `https://script.google.com/macros/s/AKfycbwq82FHIL2RGyh_6pl9jluP2sKltOXzqMHzeMHTPq2ITbM5GHA8uhFLupRDHVA8zhWS/exec?url=${encodeURIComponent(enlace)}`;
     
-    fetch(url)
+    fetch(url, { signal }) // <-- Pasar el signal al fetch
         .then(response => {
             if (!response.ok) {
                 throw new Error(`Error de red: ${response.statusText}`);
@@ -661,22 +711,27 @@ function fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft) {
             return response.text();
         })
         .then(data => {
-            // Llamar a extractData. Ahora devuelve true/false
             const success = extractData(data, porcentajeSeleccionado, enlace);
             
-            if (!success) {
+            if (success) {
+                resetUI(); // <-- Resetear UI al tener éxito
+            } else {
                 // Si la extracción falló, reintentar el fetch
                 console.log(`Datos clave faltantes. Reintentando... ${retriesLeft - 1} intentos restantes.`);
                 showMessage("Reintentando obtener datos...", 'processing');
                 
-                // Usar setTimeout para dar un respiro entre reintentos
                 setTimeout(() => {
                     fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft - 1);
-                }, 500); // 500ms de espera
+                }, 500);
             }
-            // Si success es true, extractData ya mostró el mensaje de éxito.
         })
         .catch(error => {
+            if (error.name === 'AbortError') {
+                console.log('Fetch abortado por el usuario.');
+                // resetUI() ya se llamó desde el botón de cancelar
+                return;
+            }
+
             console.error("Error en fetch:", error);
             // Reintentar en caso de error de red
             setTimeout(() => {
@@ -684,7 +739,6 @@ function fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft) {
             }, 500);
         });
 }
-
 
 
 /**
@@ -934,10 +988,31 @@ function undoDelete() {
 }
 
 
-// Borrar Texto de Enlace
+// Borrar Texto de Enlace (MODIFICADO)
 function clearInput() {
 	document.getElementById("enlace").value = "";
 	document.getElementById("resultado").innerText = "";
+    resetUI(); // Asegura que la UI esté reseteada
+}
+
+// NUEVA función para resetear la UI (Request 1)
+function resetUI() {
+    const enlaceInput = document.getElementById("enlace");
+    // Busca el botón, ya sea que diga "Borrar" o "Cancelar"
+    const clearButton = document.querySelector("button[onclick='clearInput()'], button[onclick*='currentFetchController']"); 
+    
+    enlaceInput.disabled = false;
+    enlaceInput.style.animation = "none";
+    
+    if (clearButton) {
+        clearButton.innerHTML = '<i class="fas fa-eraser"></i>';
+        clearButton.onclick = clearInput; // Restaura la función original de "Borrar"
+    }
+    
+    if (currentFetchController) {
+        currentFetchController.abort(); // Cancela cualquier fetch si aún estuviera activo
+    }
+    currentFetchController = null; // Limpia el controlador
 }
 
 
