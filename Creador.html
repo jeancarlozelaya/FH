@@ -10,6 +10,68 @@
 
 <style>
 
+/* Estilos para el botón flotante superior */
+.floating-dropdown-top {
+    position: fixed;
+    top: 20px; /* Distancia desde la parte superior */
+    left: 20px; /* Distancia desde la izquierda */
+    z-index: 1000;
+}
+
+/* Estilos para el menú flotante superior */
+.floating-menu-top {
+    display: none; /* Oculto por defecto */
+    position: absolute;
+    top: 60px; /* Posición debajo del botón */
+    left: 0;
+    flex-direction: column; /* Íconos en columna */
+    gap: 10px; /* Espacio entre íconos */
+    background-color: rgba(255, 255, 255, 0.9); /* Fondo semi-transparente */
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Mostrar el menú cuando está activo */
+.floating-menu-top.show {
+    display: flex;
+}
+
+/* Estilo para los botones del menú flotante superior */
+.floating-menu-top button.with-icon {
+    background-color: #007bff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floating-menu-top button.with-icon:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo para los íconos dentro del menú flotante superior */
+.floating-menu-top button.with-icon i {
+    font-size: 16px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* Estilo para el botón de descarga */
 #downloadTableImage {
     position: fixed;
@@ -35,6 +97,10 @@
 #downloadTableImage:hover {
     background-color: #0056b3;
 }
+
+
+
+
 
 .hidden-cell {
     display: none;
@@ -86,6 +152,22 @@
     display: flex;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* Estilo para el checkbox dentro de la celda de la imagen */
 td div {
     position: relative;
@@ -98,6 +180,20 @@ td input[type="checkbox"] {
     right: 0;
     z-index: 1; /* Asegura que el checkbox esté por encima de la imagen */
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* Estilo para el selector de colores */
 .color-picker {
@@ -113,6 +209,11 @@ td input[type="checkbox"] {
     gap: 5px;
     width: 120px; /* Ajustar el ancho */
     z-index: 1001; /* Asegurar que esté por encima de otros elementos */
+
+
+
+
+
 }
 
 .color-picker.show {
@@ -132,6 +233,12 @@ td input[type="checkbox"] {
     transform: scale(1.2); /* Efecto de escala al pasar el mouse */
     border-color: #007bff;
 }
+
+
+
+
+
+
 
     /* Ocultar botones deshabilitados en el menú flotante */
     .floating-menu button.with-icon:disabled {
@@ -235,6 +342,9 @@ td input[type="checkbox"] {
         max-width: 100%;
     }
 
+
+
+
     /* Estilos base para la tabla */
     table {
         width: 100%;
@@ -294,9 +404,12 @@ td input[type="checkbox"] {
         width: 80px; /* Más estrecha */
     }
 
+
 th:nth-child(9), td:nth-child(9) { /* Columna del Dto */
     width: 80px; /* Más estrecha */
 }
+
+
 
     /* Asegurar que el select dentro de la columna de talla ocupe todo el ancho */
     td:nth-child(3) select {
@@ -363,6 +476,9 @@ td:nth-child(7) input {
     text-align: center; /* Centrar el texto horizontalmente */
     line-height: 15px; /* Centrar el texto verticalmente */
 }
+
+
+
     }
 
     /* Contenedor de la tabla con desplazamiento vertical */
@@ -383,6 +499,17 @@ td:nth-child(7) input {
     .controls {
         margin-bottom: 10px;
     }
+
+
+
+
+
+
+
+
+
+
+
 
     .error {
         color: red;
@@ -471,66 +598,34 @@ td:nth-child(7) input {
         display: none;
     }
 
-/* Estilos mejorados para el contenedor de mensajes */
+/* Estilos para el contenedor de mensajes */
 #resultado {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10000;
+    top: 5px;
+    right: 20px;
+    z-index: 1000;
     display: none;
-    background-color: transparent;
-    padding: 0;
-    border-radius: 10px;
-    text-align: center;
+    background-color: rgba(0, 0, 0, 0.8); /* Fondo oscuro semi-transparente */
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 14px;
 }
 
-/* Nuevos estilos para el spinner mejorado */
-.spinner-container {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 30px 40px;
-    border-radius: 15px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    border: 1px solid #e0e0e0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    min-width: 200px;
-}
-
-.spinner-text {
-    color: #333;
+/* Estilos para el ícono de carga */
+.fa-spinner {
     font-size: 16px;
-    font-weight: 500;
-    margin: 0;
+    animation: spin 1s linear infinite; /* Animación de giro */
 }
 
-.enhanced-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #e3e3e3;
-    border-top: 4px solid #007bff;
-    border-radius: 50%;
-    animation: enhanced-spin 1s linear infinite;
-}
-
-@keyframes enhanced-spin {
+@keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
-/* Estilos para los mensajes normales */
-.message-normal {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 15px 25px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e0e0e0;
-    color: #333;
-    font-size: 14px;
-    font-weight: 500;
-}
+
+
+
 
     /* Media queries para dispositivos móviles */
     @media (max-width: 768px) {
@@ -560,26 +655,21 @@ td:nth-child(7) input {
 
         #resultado {
             max-width: 250px;
+            padding: 8px;
+            font-size: 10px;
         }
 
-        .spinner-container {
-            padding: 20px 30px;
-            min-width: 150px;
+        #resultado p {
+            font-size: 12px;
         }
 
-        .spinner-text {
+        #resultado h3 {
             font-size: 14px;
         }
 
-        .enhanced-spinner {
-            width: 30px;
-            height: 30px;
-            border-width: 3px;
-        }
-
-        .message-normal {
-            padding: 12px 20px;
-            font-size: 12px;
+        #resultado button {
+            padding: 6px 10px;
+            font-size: 10px;
         }
 
         table {
@@ -655,16 +745,26 @@ td:nth-child(7) input {
     button .fa-save {
         color: #ffffff; /* Color del ícono de guardar */
     }
+
+
+
+
+
+
+
 </style>
 
 <script>
+
+
 let items = [];
 let lastDeletedItem = null;
-let messageTimeout;
+let messageTimeout;  // Variable global para almacenar el timeout
 let allChecked = false;
 let lastDeletedItems = [];
 let previewMode = false;
-let currentMode = 'normal';
+let currentMode = 'normal'; // Variable global para almacenar el modo actual
+
 
 // Inicialización al cargar la página
 window.onload = function () {
@@ -673,178 +773,203 @@ window.onload = function () {
         items = JSON.parse(savedItems);
         updateTable();
     }
-    loadColorClients();
+    loadColorClients(); // Añade esta línea
+    setMode('normal', false);
     updateButtonStates();
 };
+
 
 // Guardar en localStorage
 function saveToLocalStorage() {
     localStorage.setItem("items", JSON.stringify(items));
 }
 
+
 // Obtener datos del enlace
 function obtenerFuente() {
     let enlace = document.getElementById("enlace").value.trim();
+    const porcentajeSeleccionado = parseFloat(document.getElementById("percentageSelect").value) / 100;
     if (!enlace) {
         showMessage("Por favor, ingrese un enlace válido.", 'error');
         return;
     }
+    // Si el enlace no comienza con "https://us.shein.com/", modificarlo
     const baseURL = "https://us.shein.com/";
     if (!enlace.startsWith(baseURL)) {
+        // Reemplazar el inicio de la URL hasta el primer '/' después de "shein.com/"
         const newEnlace = baseURL + enlace.replace(/^https?:\/\/(www\.)?(m\.)?(es\.)?shein\.com\//, "");
         document.getElementById("enlace").value = newEnlace;      
+        // Volver a ejecutar la función con la URL corregida
         obtenerFuente();
-        return;
+        return; // Salir para evitar que se ejecute con el enlace incorrecto
     }
     showMessage("Procesando, por favor espere...", 'processing');
-    const url = `https://script.google.com/macros/s/AKfycbyMQJJuoUqhA3jEuh6Xizwu_VOr-Qd1fRGc6fGzsjPYyp_WkgZs5Zesd0HucNtgelxx/exec?url=${encodeURIComponent(enlace)}`;
+    const url = `https://script.google.com/macros/s/AKfycbwq82FHIL2RGyh_6pl9jluP2sKltOXzqMHzeMHTPq2ITbM5GHA8uhFLupRDHVA8zhWS/exec?url=${encodeURIComponent(enlace)}`;
     fetch(url)
         .then(response => response.text())
-        .then(data => extractData(data, enlace))
+        .then(data => extractData(data, porcentajeSeleccionado, enlace))
+}
+
+
+/**
+ * Intenta encontrar una coincidencia en los datos usando una lista de patrones regex.
+ * Devuelve el primer grupo de captura de la primera coincidencia exitosa.
+ * @param {string} data El texto HTML/JSON donde buscar.
+ * @param {RegExp[]} patterns Un array de expresiones regulares a probar.
+ * @returns {string|null} El valor coincidente o null.
+ */
+function findMatch(data, patterns) {
+    for (const pattern of patterns) {
+        const match = data.match(pattern);
+        if (match && match[1]) {
+            return match[1]; // Devuelve el primer grupo de captura
+        }
+    }
+    return null;
 }
 
 // Extraer datos del HTML    
-function extractData(data, enlace, retryCount = 0) {
-    console.log("Analizando datos... Intento:", retryCount + 1);
+// Extraer datos del HTML    
+function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
+    
+    // --- Definición de Patrones (Títulos, SKU, Imagen, Precios - Sin cambios) ---
 
-    const hasProductData = data.includes('product-intro') || 
-                          data.includes('crop-image-container') || 
-                          data.includes('goods_sn') ||
-                          data.includes('retailPrice');
-
-    if (!hasProductData && retryCount < 10) {
-        console.log("Esperando datos del producto...");
-        setTimeout(() => {
-            obtenerFuente();
-        }, 1000);
-        return;
-    }
-
-    const imagePatterns = [
-        /<div class="crop-image-container"[^>]*data-before-crop-src="(.*?)"/i,
-        /<img[^>]*class="[^"]*bsc-crop-image-container[^"]*"[^>]*src="(.*?)"/i,
-        /"imageMain":"(.*?)"/i,
-        /"original_image":"(.*?)"/i,
-        /"goods_img":"(.*?)"/i,
-        /<meta[^>]*property="og:image"[^>]*content="(.*?)"/i
+    const titlePatterns = [
+        /"goods_name":"(.*?)"/i, // Desde gbRawData (muy fiable)
+        /<h1 class="product-intro__head-name".*?<span class="fsp-element">(.*?)<\/span>/i, // Desde H1
+        /<title>(.*?) \| SHEIN USA<\/title>/i, // Original
+        /<title>(.*?) \| SHEIN<\/title>/i,     // Original
+        /<meta property="og:title" content="(.*?)"/i // Original
     ];
 
     const skuPatterns = [
-        /"goods_sn":"(.*?)"/i,
-        /"sku":"(.*?)"/i,
-        /<span class="product-intro__head-sku-text">\s*SKU:\s*(.*?)<\/span>/i,
-        /<meta[^>]*property="product:sku"[^>]*content="(.*?)"/i
+        /"goods_sn":"(s[wz][a-zA-Z0-9]*)"/i,         // Desde gbRawData (prioridad 1)
+        /<span class="product-intro__head-sku-text">\s*SKU:\s*(s[wz][a-zA-Z0-9]*)<\/span>/i, // Original
+        /"skc_name":"(s[wz][a-zA-Z0-9]*)"/i,        // Fallback en JSON
+        /data-clipboard-text="(s[wz][a-zA-Z0-9]*)"/i, // Original
+        /&skc=(s[wz][a-zA-Z0-9]*)&/i                 // Original
     ];
 
-    const pricePatterns = [
-        /"retailPrice":{"amount":"([\d.]+)"/i,
-        /"salePrice":{"amount":"([\d.]+)"/i,
-        /"price":"\$?([\d.]+)"/i,
-        /"price_amount":"([\d.]+)"/i,
-        /<meta[^>]*property="product:price:amount"[^>]*content="([\d.]+)"/i
+    const imagePatterns = [
+        /<div class="crop-image-container" data-before-crop-src="(.*?)"/i,
+        /<link rel="preload".*?href="(\/\/img\.ltwebstatic\.com\/[^"]*)"/i,
+        /data-before-crop-src="(\/\/img\.ltwebstatic\.com\/[^"]*)"/i,
+        /data-src="(\/\/img\.ltwebstatic\.com\/[^"]*)"/i,
+        /<img .*?src="(\/\/img\.ltwebstatic\.com\/[^"]*)"/i
     ];
 
-    const titlePatterns = [
-        /"goods_name":"(.*?)"/i,
-        /<title>(.*?) \| SHEIN USA<\/title>/i,
-        /<meta[^>]*property="og:title"[^>]*content="(.*?)"/i,
-        /<h1[^>]*class="[^"]*product-intro__head-title[^"]*"[^>]*>(.*?)<\/h1>/i
-    ];
+    const priceAppPatterns = [ /"retailPrice":{"amount":"([\d.]+)"/i ];
+    const priceAppDtoPatterns = [ /"salePrice":{"amount":"([\d.]+)"/i ];
 
-    const sizePatterns = [
-        /"size":"(.*?)"/g,
-        /"size_name":"(.*?)"/g,
-        /"attr_value_name":"(.*?)"/g,
-        /data-attr_value_name="(.*?)"/g,
-        /<p class="product-intro__size-radio-inner[^>]*>(.*?)<\/p>/g
-    ];
+    // --- Búsqueda de Datos (Campos Únicos - Sin cambios) ---
+    let image = findMatch(data, imagePatterns);
+    const sku = findMatch(data, skuPatterns);
+    const priceAppStr = findMatch(data, priceAppPatterns);
+    const priceAppDtoStr = findMatch(data, priceAppDtoPatterns);
+    const title = findMatch(data, titlePatterns);
 
-    function findFirstMatch(patterns, source) {
-        for (let pattern of patterns) {
-            const match = source.match(pattern);
-            if (match && match[1]) {
-                return match[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
-            }
-        }
-        return null;
+    // --- Lógica de Tallas (¡NUEVA Y MEJORADA!) ---
+    let sizes = [];
+    
+    // 1. Intentar extraer del bloque JSON (la forma más confiable)
+    // Primero, aislamos solo el bloque de "Talla" (Size) del JSON
+    const sizeBlockMatch = data.match(/"attr_name":"Talla".*?"attr_value_list":(\[.*?\])/);
+    if (sizeBlockMatch && sizeBlockMatch[1]) {
+        const sizeBlock = sizeBlockMatch[1]; // Esto es el string: "[{...}, {...}]"
+        
+        // Patrones específicos para buscar DENTRO de ese bloque
+        const jsonSizePatterns = [
+            /"attr_local_size_value":"(.*?)"/g, // Para '2', '4', '6', '8/10'
+            /"attr_value_name":"(.*?)"/g       // Para 'XS', 'S', 'M'
+        ];
+
+        // Usamos flatMap para buscar con todos los patrones DENTRO de ese bloque
+        const jsonSizes = jsonSizePatterns.flatMap(pattern => 
+            [...sizeBlock.matchAll(pattern)].map(match => match[1])
+        );
+        sizes.push(...jsonSizes);
     }
 
-    const image = findFirstMatch(imagePatterns, data);
-    const sku = findFirstMatch(skuPatterns, data);
-    const title = findFirstMatch(titlePatterns, data);
+    // 2. Patrones de "fallback" para el HTML (si el JSON falla o cambia)
+    // Estos ahora son más específicos para no capturar colores
+    const htmlSizePatterns = [
+        // Busca data-attr_value_name PERO solo si está precedido por data-attr_id="87" (ID de Talla)
+        /data-attr_id="87".*?data-attr_value_name="(.*?)"/g, 
+        // Este patrón ya era específico para las tallas
+        /<p class="product-intro__size-radio-inner.*?>(.*?)<\/p>/g
+    ];
     
-    const priceAppMatch = data.match(/"retailPrice":{"amount":"([\d.]+)"/i);
-    const priceAppDto = data.match(/"salePrice":{"amount":"([\d.]+)"/i);
+    const htmlSizes = htmlSizePatterns.flatMap(pattern => 
+        [...data.matchAll(pattern)].map(match => match[1])
+    );
+    sizes.push(...htmlSizes);
 
-    const sizes = [...new Set(
-        sizePatterns.flatMap(pattern => 
-            [...data.matchAll(pattern)]
-                .map(match => match[1])
-                .filter(size => size && size.length < 20 && !size.includes('http'))
-        )
-    )];
+    // 3. Limpiar y unificar la lista (eliminar duplicados y vacíos)
+    const finalSizes = [...new Set(sizes.filter(s => s && s.trim() !== ''))];
 
-    const hasRequiredData = image && title && (priceAppMatch || priceAppDto);
 
-    if (hasRequiredData) {
-        let processedImage = image;
-        if (processedImage && !processedImage.startsWith("http")) {
-            processedImage = "https:" + processedImage;
+    // --- Validación y Creación del Objeto ---
+    if (image && sku && priceAppStr && title) {
+        if (!image.startsWith("http")) {
+            image = "https:" + image;
         }
 
-        let cleanTitle = title.replace(/&#39;/g, "'")
-                             .replace(/&amp;/g, '&')
-                             .replace(/\| SHEIN USA$/, '')
-                             .trim();
+        const priceApp = parseFloat(priceAppStr); // Precio Regular
+        const priceAppDto = priceAppDtoStr ? parseFloat(priceAppDtoStr) : priceApp; // Precio Descuento
 
         const item = {
-            image: processedImage,
-            title: cleanTitle,
-            sku: sku || "N/A",
-            priceApp: priceAppMatch ? parseFloat(priceAppMatch[1]) : 0,
-            priceLempiras: calculatePriceInLempiras(
-                priceAppMatch ? parseFloat(priceAppMatch[1]) : 
-                priceAppDto ? parseFloat(priceAppDto[1]) : 0
-            ),
-            sizes: sizes.length > 0 ? sizes : ["Única"],
+            image: image,
+            title: title, 
+            sku: sku,     
+            priceApp: priceApp,
+            priceLempiras: calculatePriceInLempiras(parseFloat(priceApp)), // Usamos el precio regular
+            percentage: porcentajeSeleccionado,
+            sizes: finalSizes, // <-- ¡Usamos la lista final limpia!
             selectedSize: "",
             enlace: enlace,
-            priceAppDto: priceAppDto ? parseFloat(priceAppDto[1]) : 0,
+            priceAppDto: priceAppDto,
             editingDto: false,
-            color: '#ffffff'
+            color: '#ffffff' // Asignar color blanco por defecto
         };
 
         items.push(item);
         saveToLocalStorage();
         updateTable();
-        updateButtonStates();
-        showMessage("Datos cargados con éxito.", 'success');
-        
-    } else {
-        console.log("❌ Datos faltantes - Intento", retryCount + 1, ":", {
-            imagen: !!image,
-            titulo: !!title,
-            precio: !!(priceAppMatch || priceAppDto),
-            sku: !!sku
-        });
 
-        if (retryCount < 8) {
-            const delay = Math.min(2000, 500 * (retryCount + 1));
+        setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
+
+        showMessage("Datos cargados con éxito.", 'success');
+    } else {
+        // --- Lógica de Reintento (Original) ---
+        
+         console.log("Faltaron datos clave:", { 
+             image: !!image, 
+             sku: !!sku, 
+             priceAppStr: !!priceAppStr, 
+             title: !!title 
+         });
+
+        if (retryCount < 5) { // Límite de reintentos
             setTimeout(() => {
-                showMessage(`Esperando datos del producto... (${retryCount + 1}/8)`, 'processing');
-                obtenerFuente();
-            }, delay);
+                showMessage("Reintentando obtener datos...", 'processing');
+                obtenerFuente(); // Vuelve a intentar obtener la fuente
+            }, 0); 
         } else {
-            showMessage("No se pudieron cargar los datos después de varios intentos.", 'error');
+            showMessage("No se extrajo información. Se alcanzó el número máximo de reintentos.", 'error');
         }
     }
 }
 
+
+
+
 // Calcular precio en lempiras
 function calculatePriceInLempiras(priceApp) {
-    const priceWithISV = priceApp * 1.07;
-    return (priceWithISV * 26.3).toFixed(2);
+    const priceWithISV = priceApp * 1.07; // Suma el 7%
+    return (priceWithISV * 26.3).toFixed(2); // Convierte a lempiras
 }
+
+
 
 // Generar Tallas
 function generateSizeSelect(index, item) {
@@ -857,6 +982,7 @@ function generateSizeSelect(index, item) {
 	</select>`;
 }
 
+
 // Actualizar la tabla
 function updateTable() {
     const tableBody = document.getElementById("itemTableBody");
@@ -864,10 +990,12 @@ function updateTable() {
     items.forEach((item, index) => {
         const row = document.createElement("tr");
         
+        // Aplicar el color de fondo si existe
         if (item.color) {
             row.style.backgroundColor = item.color;
         }
         
+        // Determinar el estilo para el precio personalizado
         const precioPersonalizado = item.precioPersonalizado || 0;
         const priceLempiras = parseFloat(item.priceLempiras) || 0;
         const precioStyle = precioPersonalizado < priceLempiras ? 
@@ -903,25 +1031,32 @@ function updateTable() {
                     ${item.editingDto ? `<input type="number" id="priceAppDtoInput${index}" value="${item.priceAppDto}" class="small-input editable">` : item.priceAppDto}
                 </div>
             </td>`;
+
+        // Resto del código...
         
         tableBody.appendChild(row);
     });
     updateButtonStates();
 }
 
+
 function toggleEditDto(index) {
+    // Cambiar el estado de edición
     items[index].editingDto = !items[index].editingDto;
 
     if (!items[index].editingDto) {
+        // Guardar el nuevo valor si se está saliendo del modo de edición
         const newDto = parseFloat(document.getElementById(`priceAppDtoInput${index}`).value);
         items[index].priceAppDto = newDto;
         saveToLocalStorage();
         showMessage("Descuento actualizado con éxito.", 'success');
     }
 
+    // Actualizar la tabla para reflejar los cambios
     updateTable();
-    updateButtonStates();
+    setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
 }
+
 
 // Ocultar columnas y encabezados
 const style = document.createElement('style');
@@ -931,6 +1066,8 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
 
+
+
 // Actualizar talla seleccionada
 function updateSelectedSize(index) {
 	const selectedSize = document.getElementById(`sizeSelect${index}`).value;
@@ -938,12 +1075,285 @@ function updateSelectedSize(index) {
 	saveToLocalStorage();
 }
 
-// Actualizar precio personalizado
+
+
+function deleteItem(index) {
+	document.getElementById("dropdownMenu").classList.remove("show");
+	lastDeletedItem = items[index];
+	items.splice(index, 1);
+	saveToLocalStorage();
+	updateTable();
+}
+
+
+// Deshacer eliminación
+function undoDelete() {
+	document.getElementById("dropdownMenu").classList.remove("show");
+	if (lastDeletedItems.length > 0) {
+		items = items.concat(lastDeletedItems);
+                lastDeletedItems = [];
+                saveToLocalStorage();
+                updateTable();
+                setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
+		showMessage("Se recuperó la última eliminación con éxito.", 'success');
+	}
+}
+
+
+// Borrar Texto de Enlace
+function clearInput() {
+	document.getElementById("enlace").value = "";
+	document.getElementById("resultado").innerText = "";
+}
+
+
+// Copiar Filas Seleccionadas Para Exportar
+function copySelectedRows() {
+    document.getElementById("dropdownMenu").classList.remove("show");
+    const selectedItems = Array.from(document.querySelectorAll('.itemCheckbox:checked')).map(checkbox => {
+        const index = checkbox.getAttribute('data-index');
+        const item = items[index];
+        const imageFormula = `=IMAGE("${item.image}")`;
+        const detailFormula = `=HYPERLINK("${item.enlace}", "Ver detalle")`;
+        const selectedSize = item.selectedSize || '""';
+        const customPriceInput = document.getElementById(`customPriceInput${index}`);
+        const customPrice = customPriceInput ? customPriceInput.value.trim() : '';
+        const priceToCopy = customPrice !== '' ? customPrice : item.priceApp.toFixed(2);
+        const decodedTitle = decodeHtmlEntities(item.title);
+
+        // Asegura que el porcentaje esté definido y utiliza items[index].percentage
+        const porcentaje = item.percentage !== undefined ? item.percentage : 0;
+
+        // Fórmula `priceLempiras` que usa la celda a la izquierda y el porcentaje correcto
+        const priceLempirasFormula = `=INDIRECT("RC[-2]", 0) * 1.07 * 26.3`;
+
+        // Incluir el valor de la columna "Descuento"
+        const descuento = item.priceAppDto || 0; // Asegúrate de que el descuento esté definido
+
+        return [
+            imageFormula,
+            decodedTitle,
+            `${selectedSize}`,
+            item.sku,
+            item.priceApp.toFixed(2),
+            descuento, // Agregar el valor de la columna "Descuento"
+            priceLempirasFormula, // Fórmula relativa para el precio en lempiras
+            detailFormula,
+            '',
+            customPrice
+        ].join('\t');
+    });
+
+    if (selectedItems.length === 0) {
+        alert("Por favor, seleccione al menos un artículo para copiar.");
+        return;
+    }
+
+    const textToCopy = selectedItems.join('\n');
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+
+            showMessage("Datos copiados al portapapeles.", 'success');
+
+        }).catch(err => {
+            console.error('Error al copiar: ', err);
+            alert("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.");
+            showManualCopyModal(textToCopy);
+        });
+    } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.select();
+
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+            showMessage("Datos copiados al portapapeles.", 'success');
+
+
+            } else {
+                showMessage("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.", 'error');
+                showManualCopyModal(textToCopy);
+            }
+        } catch (err) {
+            console.error('Error al copiar (fallback): ', err);
+            showMessage("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.", 'error');
+            showManualCopyModal(textToCopy);
+        }
+
+        document.body.removeChild(textArea);
+    }
+}
+
+
+// Función para mostrar el modal con el texto a copiar manualmente
+function showManualCopyModal(text) {
+    const modal = document.getElementById('manualCopyModal');
+    const textArea = document.getElementById('manualCopyTextArea');
+    textArea.value = text;
+    modal.style.display = 'block';
+}
+
+
+// Función para copiar manualmente desde el área de texto del modal
+function copyTextAreaContent() {
+    const textArea = document.getElementById('manualCopyTextArea');
+    textArea.select();
+    document.execCommand('copy');
+    alert("Texto copiado al portapapeles.");
+}
+
+
+// Función para cerrar el modal
+function closeManualCopyModal() {
+    const modal = document.getElementById('manualCopyModal');
+    modal.style.display = 'none';
+}
+
+
+// Función para decodificar entidades HTML
+function decodeHtmlEntities(str) {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = str;
+    return textarea.value;
+}
+
+
+// Función para Actualizar el Estado de los Botones
+function updateButtonStates() {
+    const selectedItemsCount = document.querySelectorAll('.itemCheckbox:checked').length;
+    const exportButton = document.querySelector('button[onclick="exportSelectedRows()"]');
+    const colorClientsButton = document.querySelector('button[onclick="showColorClientsModal()"]');
+    const groupByColorButton = document.querySelector('button[onclick="groupByColor()"]');
+    const previewButton = document.querySelector('button[onclick="togglePreview()"]');
+    
+    // Ocultar/mostrar botones según si hay filas
+    const hasItems = items.length > 0;
+    
+    // Botón de exportar (solo visible si hay filas seleccionadas)
+    exportButton.style.display = selectedItemsCount === 0 ? 'none' : 'flex';
+    
+    // Botones que deben aparecer solo si hay filas en la tabla
+    colorClientsButton.style.display = hasItems ? 'flex' : 'none';
+    groupByColorButton.style.display = hasItems ? 'flex' : 'none';
+    previewButton.style.display = hasItems ? 'flex' : 'none';
+    
+    // Deshabilitar otros botones como antes
+    document.querySelector('button[onclick="openColorPicker(event)"]').disabled = selectedItemsCount === 0;
+    document.querySelector('button[onclick="copySelectedRows()"]').disabled = selectedItemsCount === 0;
+    document.querySelector('button[onclick="duplicateSelectedRow()"]').disabled = selectedItemsCount === 0;
+    document.querySelector('button[onclick="undoDelete()"]').disabled = lastDeletedItems.length === 0;
+    document.querySelector('button[onclick="deleteSelectedItems()"]').disabled = selectedItemsCount === 0;
+}
+
+
+     
+// Función para mostrar los Mensajes de Estado
+function showMessage(message, type) {
+    const resultDiv = document.getElementById("resultado");
+
+    // Limpiar el contenido anterior
+    resultDiv.innerHTML = "";
+
+    // Crear un nuevo elemento para el mensaje
+    const messageElement = document.createElement("div");
+    messageElement.className = `message ${type}`; // Agregar clases para el estilo y el tipo de mensaje
+
+    // Mostrar un ícono de carga si el tipo es "processing"
+    if (type === "processing") {
+        messageElement.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`; // Ícono giratorio
+    } else {
+        messageElement.textContent = message; // Mensaje de texto normal
+    }
+
+    // Agregar el mensaje al contenedor
+    resultDiv.appendChild(messageElement);
+
+    // Mostrar el mensaje
+    resultDiv.style.display = 'block';
+
+    // Ocultar el mensaje después de 3 segundos (excepto para "processing")
+    if (type !== "processing") {
+        if (messageTimeout) {
+            clearTimeout(messageTimeout);
+
+        }
+        messageTimeout = setTimeout(() => {
+            resultDiv.style.display = 'none'; // Ocultar el div
+        }, 2000);
+    }
+
+}
+
+
+// Botón de Check de Encabezado para marcar y desmarcar todas las filas
+function toggleSelectAll() {
+    document.getElementById("dropdownMenu").classList.remove("show");
+
+    allChecked = !allChecked;
+    document.querySelectorAll('.itemCheckbox').forEach(checkbox => {
+        checkbox.checked = allChecked;
+    });
+
+    updateButtonStates();
+
+    const selectAllButton = document.getElementById("selectAllButton");
+    selectAllButton.innerText = allChecked ? "☐" : "☑";
+}
+
+
+// Función para editar precios de App
+function toggleEditPrice(index) {
+    document.getElementById("dropdownMenu").classList.remove("show");
+
+    if (items[index].editingPrice) {
+        // Guardar el precio editado
+        const newPrice = parseFloat(document.getElementById(`priceAppInput${index}`).value);
+
+        // Verificar si el nuevo precio es diferente al precio actual
+        if (newPrice !== items[index].priceApp) {
+            items[index].priceApp = newPrice;
+            items[index].priceLempiras = calculatePriceInLempiras(newPrice, items[index].percentage);
+
+            // Mostrar el mensaje solo si hubo un cambio
+            showMessage("Precio de App actualizado con éxito.", 'success');
+        }
+    }
+
+    // Cambiar el estado de edición
+    items[index].editingPrice = !items[index].editingPrice;
+    saveToLocalStorage();
+    updateTable();
+    setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
+}
+
+
+// Función para eliminar filas seleccionadas
+function deleteSelectedItems() {
+    document.getElementById("dropdownMenu").classList.remove("show");
+
+    lastDeletedItems = items.filter((_, index) => document.querySelector(`.itemCheckbox[data-index="${index}"]`).checked);
+    items = items.filter((_, index) => !document.querySelector(`.itemCheckbox[data-index="${index}"]`).checked);
+
+    saveToLocalStorage();
+    updateTable();
+    setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
+    updateButtonStates(); // Asegúrate de agregar esto
+    showMessage("Filas eliminadas con éxito.", 'success');
+}
+
+
+// Función para Guardar el precio editado
 function updateCustomPrice(index) {
     const customPriceInput = document.getElementById(`customPriceInput${index}`);
     const customPrice = customPriceInput.value;
     items[index].precioPersonalizado = customPrice;
     
+    // Actualizar el estilo según el valor
     const priceLempiras = parseFloat(items[index].priceLempiras) || 0;
     const precioPersonalizado = parseFloat(customPrice) || 0;
     
@@ -958,36 +1368,6 @@ function updateCustomPrice(index) {
     saveToLocalStorage();
 }
 
-// Función mejorada para mostrar mensajes
-function showMessage(message, type) {
-    const resultDiv = document.getElementById("resultado");
-    resultDiv.innerHTML = "";
-
-    if (type === "processing") {
-        // Spinner mejorado
-        resultDiv.innerHTML = `
-            <div class="spinner-container">
-                <div class="enhanced-spinner"></div>
-                <p class="spinner-text">${message}</p>
-            </div>
-        `;
-    } else {
-        // Mensaje normal
-        const messageClass = type === 'error' ? 'error' : type === 'success' ? 'processing' : '';
-        resultDiv.innerHTML = `<div class="message-normal ${messageClass}">${message}</div>`;
-    }
-
-    resultDiv.style.display = 'block';
-
-    if (type !== "processing") {
-        if (messageTimeout) {
-            clearTimeout(messageTimeout);
-        }
-        messageTimeout = setTimeout(() => {
-            resultDiv.style.display = 'none';
-        }, 3000);
-    }
-}
 
 // Función para la vista previa
 function togglePreview() {
@@ -998,8 +1378,11 @@ function togglePreview() {
     const body = document.body;
     const tableHeaders = document.querySelectorAll("#itemTable thead th");
 
-    const columnsToHideNormal = [4, 5, 8];
+    // Columnas que se van a ocultar/mostrar según el modo
+    const columnsToHideNormal = [4, 5, 8]; // Columnas para el modo normal
+    const columnsToHideEmprendedor = [5, 6]; // Columnas para el modo emprendedor
 
+    // Elementos adicionales a ocultar
     const title = document.querySelector("h2");
     const enlaceInput = document.getElementById("enlace");
     const addButton = document.querySelector("button[onclick='obtenerFuente()']");
@@ -1007,13 +1390,20 @@ function togglePreview() {
     const openColorPicker2Button = document.getElementById("openColorPicker2");
     const downloadTableImageButton = document.getElementById("downloadTableImage");
 
+    // Botón flotante superior
+    const floatingDropdownTop = document.querySelector(".floating-dropdown-top");
+
+    // Fila del total
     const totalRow = document.getElementById("totalRow");
 
     if (!previewMode) {
+        // Activar el modo de vista previa
         body.classList.add("preview-mode");
 
-        const columnsToHide = columnsToHideNormal;
+        // Mostrar u ocultar columnas según el modo
+        const columnsToHide = currentMode === "normal" ? columnsToHideNormal : columnsToHideEmprendedor;
 
+        // Ocultar las columnas
         Array.from(tableBody.rows).forEach(row => {
             columnsToHide.forEach(index => {
                 if (row.cells[index]) {
@@ -1022,315 +1412,131 @@ function togglePreview() {
             });
         });
 
+        // Ocultar los encabezados
         tableHeaders.forEach((header, index) => {
             if (columnsToHide.includes(index)) {
                 header.classList.add("header-hidden");
             }
         });
 
+        // Ocultar elementos adicionales
         if (title) title.style.display = 'none';
         if (enlaceInput) enlaceInput.style.display = 'none';
         if (addButton) addButton.style.display = 'none';
         if (clearButton) clearButton.style.display = 'none';
 
-        if (totalRow) {
-            totalRow.style.display = 'none';
+        // Ocultar el botón flotante superior
+        if (floatingDropdownTop) {
+            floatingDropdownTop.style.display = 'none';
         }
 
+        // Ocultar la fila del total
+        if (totalRow) {
+            totalRow.style.display = 'none';
+            isvRow.style.display = 'none';
+            totalLempirasRow.style.display = 'none';
+        }
+
+        // Mostrar botones de vista previa
         openColorPicker2Button.style.display = 'inline-block';
         downloadTableImageButton.style.display = 'inline-block';
 
+        // Cambiar el ícono del botón de vista previa
         dropdownToggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
         dropdownToggle.onclick = togglePreview;
     } else {
+        // Desactivar el modo de vista previa
         body.classList.remove("preview-mode");
 
+        // Mostrar todas las columnas
         Array.from(tableBody.rows).forEach(row => {
-            columnsToHideNormal.forEach(index => {
+            columnsToHideNormal.concat(columnsToHideEmprendedor).forEach(index => {
                 if (row.cells[index]) {
                     row.cells[index].classList.remove("col-hidden");
                 }
             });
         });
 
+        // Mostrar los encabezados
         tableHeaders.forEach((header, index) => {
-            if (columnsToHideNormal.includes(index)) {
+            if (columnsToHideNormal.concat(columnsToHideEmprendedor).includes(index)) {
                 header.classList.remove("header-hidden");
             }
         });
 
+        // Mostrar todas las filas de la tabla
         Array.from(tableBody.rows).forEach(row => {
-            row.style.display = '';
+            row.style.display = ''; // Asegurarse de mostrar todas las filas
         });
 
+        // Mostrar elementos adicionales
         if (title) title.style.display = '';
         if (enlaceInput) enlaceInput.style.display = '';
         if (addButton) addButton.style.display = '';
         if (clearButton) clearButton.style.display = '';
 
-        if (totalRow) {
-            totalRow.style.display = 'none';
+        // Mostrar el botón flotante superior
+        if (floatingDropdownTop) {
+            floatingDropdownTop.style.display = 'block';
         }
 
+        // Asegurarse de que la fila del total siga oculta
+        if (totalRow) {
+            totalRow.style.display = 'none';
+            isvRow.style.display = 'none';
+            totalLempirasRow.style.display = 'none';
+        }
+
+        // Ocultar botones de vista previa
         openColorPicker2Button.style.display = 'none';
         downloadTableImageButton.style.display = 'none';
 
+        // Restaurar el ícono del botón de vista previa
         dropdownToggle.innerHTML = '<i class="fas fa-bars"></i>';
         dropdownToggle.onclick = toggleDropdown;
     }
 
-    previewMode = !previewMode;
+    previewMode = !previewMode; // Cambiar el estado de la vista previa
 }
 
-// Función mejorada para descargar tabla como imagen
-function downloadTableImage() {
-    const table = document.getElementById("itemTable");
-    const tableContainer = document.querySelector(".table-container");
 
-    tableContainer.scrollTop = 0;
 
-    setTimeout(() => {
-        const options = {
-            scale: window.devicePixelRatio * 2,
-            useCORS: true,
-            backgroundColor: "#ffffff",
-            logging: false
-        };
 
-        html2canvas(table, options).then(canvas => {
-            canvas.toBlob(function(blob) {
-                // Crear archivo para compartir
-                const file = new File([blob], "Detalle.png", { type: "image/png" });
-                
-                // Verificar si la API de compartir está disponible
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    navigator.share({
-                        files: [file],
-                        title: 'Detalle de Productos',
-                        text: 'Tabla de productos exportada'
-                    }).then(() => {
-                        showMessage("Imagen compartida con éxito.", 'success');
-                    }).catch(error => {
-                        console.error('Error al compartir:', error);
-                        // Fallback: descarga directa
-                        downloadImageDirectly(canvas);
-                    });
-                } else {
-                    // Fallback para navegadores que no soportan compartir archivos
-                    downloadImageDirectly(canvas);
-                }
-            });
-        }).catch(error => {
-            console.error("Error al capturar la tabla:", error);
-            showMessage("Hubo un error al generar la imagen. Inténtalo de nuevo.", 'error');
-        });
-    }, 100);
+// Función para descodificar caracteres HTML
+function decodeHTML(html) {
+    const txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
 }
 
-// Función auxiliar para descarga directa
-function downloadImageDirectly(canvas) {
-    const image = canvas.toDataURL("image/png", 1.0);
-    const link = document.createElement("a");
-    link.href = image;
-    link.download = "Detalle.png";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showMessage("Imagen descargada con éxito.", 'success');
-}
 
-// Resto de las funciones existentes...
-function toggleSelectAll() {
-    document.getElementById("dropdownMenu").classList.remove("show");
-    allChecked = !allChecked;
-    document.querySelectorAll('.itemCheckbox').forEach(checkbox => {
-        checkbox.checked = allChecked;
-    });
-    updateButtonStates();
-    const selectAllButton = document.getElementById("selectAllButton");
-    selectAllButton.innerText = allChecked ? "☐" : "☑";
-}
-
-function toggleEditPrice(index) {
-    document.getElementById("dropdownMenu").classList.remove("show");
-    if (items[index].editingPrice) {
-        const newPrice = parseFloat(document.getElementById(`priceAppInput${index}`).value);
-        if (newPrice !== items[index].priceApp) {
-            items[index].priceApp = newPrice;
-            items[index].priceLempiras = calculatePriceInLempiras(newPrice);
-            showMessage("Precio de App actualizado con éxito.", 'success');
-        }
-    }
-    items[index].editingPrice = !items[index].editingPrice;
-    saveToLocalStorage();
-    updateTable();
-    updateButtonStates();
-}
-
-function deleteSelectedItems() {
-    document.getElementById("dropdownMenu").classList.remove("show");
-    lastDeletedItems = items.filter((_, index) => document.querySelector(`.itemCheckbox[data-index="${index}"]`).checked);
-    items = items.filter((_, index) => !document.querySelector(`.itemCheckbox[data-index="${index}"]`).checked);
-    saveToLocalStorage();
-    updateTable();
-    updateButtonStates();
-    showMessage("Filas eliminadas con éxito.", 'success');
-}
-
-function copySelectedRows() {
-    document.getElementById("dropdownMenu").classList.remove("show");
-    const selectedItems = Array.from(document.querySelectorAll('.itemCheckbox:checked')).map(checkbox => {
-        const index = checkbox.getAttribute('data-index');
-        const item = items[index];
-        const imageFormula = `=IMAGE("${item.image}")`;
-        const detailFormula = `=HYPERLINK("${item.enlace}", "Ver detalle")`;
-        const selectedSize = item.selectedSize || '""';
-        const customPriceInput = document.getElementById(`customPriceInput${index}`);
-        const customPrice = customPriceInput ? customPriceInput.value.trim() : '';
-        const priceToCopy = customPrice !== '' ? customPrice : item.priceApp.toFixed(2);
-        const decodedTitle = decodeHtmlEntities(item.title);
-        const priceLempirasFormula = `=INDIRECT("RC[-2]", 0) * 1.07 * 26.3`;
-        const descuento = item.priceAppDto || 0;
-
-        return [
-            imageFormula,
-            decodedTitle,
-            `${selectedSize}`,
-            item.sku,
-            item.priceApp.toFixed(2),
-            descuento,
-            priceLempirasFormula,
-            detailFormula,
-            '',
-            customPrice
-        ].join('\t');
-    });
-
-    if (selectedItems.length === 0) {
-        alert("Por favor, seleccione al menos un artículo para copiar.");
-        return;
-    }
-
-    const textToCopy = selectedItems.join('\n');
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            showMessage("Datos copiados al portapapeles.", 'success');
-        }).catch(err => {
-            console.error('Error al copiar: ', err);
-            alert("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.");
-            showManualCopyModal(textToCopy);
-        });
-    } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = textToCopy;
-        textArea.style.position = "fixed";
-        textArea.style.opacity = "0";
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-            const successful = document.execCommand('copy');
-            if (successful) {
-                showMessage("Datos copiados al portapapeles.", 'success');
-            } else {
-                showMessage("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.", 'error');
-                showManualCopyModal(textToCopy);
-            }
-        } catch (err) {
-            console.error('Error al copiar (fallback): ', err);
-            showMessage("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.", 'error');
-            showManualCopyModal(textToCopy);
-        }
-        document.body.removeChild(textArea);
-    }
-}
-
-function showManualCopyModal(text) {
-    const modal = document.getElementById('manualCopyModal');
-    const textArea = document.getElementById('manualCopyTextArea');
-    textArea.value = text;
-    modal.style.display = 'block';
-}
-
-function copyTextAreaContent() {
-    const textArea = document.getElementById('manualCopyTextArea');
-    textArea.select();
-    document.execCommand('copy');
-    alert("Texto copiado al portapapeles.");
-}
-
-function closeManualCopyModal() {
-    const modal = document.getElementById('manualCopyModal');
-    modal.style.display = 'none';
-}
-
-function decodeHtmlEntities(str) {
-    const textarea = document.createElement('textarea');
-    textarea.innerHTML = str;
-    return textarea.value;
-}
-
-function updateButtonStates() {
-    const selectedItemsCount = document.querySelectorAll('.itemCheckbox:checked').length;
-    const exportButton = document.querySelector('button[onclick="exportSelectedRows()"]');
-    const colorClientsButton = document.querySelector('button[onclick="showColorClientsModal()"]');
-    const groupByColorButton = document.querySelector('button[onclick="groupByColor()"]');
-    const previewButton = document.querySelector('button[onclick="togglePreview()"]');
-    
-    const hasItems = items.length > 0;
-    exportButton.style.display = selectedItemsCount === 0 ? 'none' : 'flex';
-    colorClientsButton.style.display = hasItems ? 'flex' : 'none';
-    groupByColorButton.style.display = hasItems ? 'flex' : 'none';
-    previewButton.style.display = hasItems ? 'flex' : 'none';
-    
-    document.querySelector('button[onclick="openColorPicker(event)"]').disabled = selectedItemsCount === 0;
-    document.querySelector('button[onclick="copySelectedRows()"]').disabled = selectedItemsCount === 0;
-    document.querySelector('button[onclick="duplicateSelectedRow()"]').disabled = selectedItemsCount === 0;
-    document.querySelector('button[onclick="undoDelete()"]').disabled = lastDeletedItems.length === 0;
-    document.querySelector('button[onclick="deleteSelectedItems()"]').disabled = selectedItemsCount === 0;
-}
-
-function deleteItem(index) {
-	document.getElementById("dropdownMenu").classList.remove("show");
-	lastDeletedItem = items[index];
-	items.splice(index, 1);
-	saveToLocalStorage();
-	updateTable();
-}
-
-function undoDelete() {
-	document.getElementById("dropdownMenu").classList.remove("show");
-	if (lastDeletedItems.length > 0) {
-		items = items.concat(lastDeletedItems);
-        lastDeletedItems = [];
-        saveToLocalStorage();
-        updateTable();
-        updateButtonStates();
-		showMessage("Se recuperó la última eliminación con éxito.", 'success');
-	}
-}
-
-function clearInput() {
-	document.getElementById("enlace").value = "";
-	document.getElementById("resultado").innerText = "";
-}
-
+// Función para duplicar filas seleccionadas
 function duplicateSelectedRow() {
     document.getElementById("dropdownMenu").classList.remove("show");
+
     const selectedCheckbox = document.querySelector('.itemCheckbox:checked');
     if (!selectedCheckbox) {
         showMessage("Por favor, seleccione una fila para duplicar.", 'error');
         return;
     }
+
     const index = parseInt(selectedCheckbox.getAttribute('data-index'));
     const itemToDuplicate = items[index];
+
+    // Crea una copia del item
     const newItem = { ...itemToDuplicate };
+
+    // Inserta la copia justo debajo de la original
     items.splice(index + 1, 0, newItem); 
+
     saveToLocalStorage();
     updateTable();
-    updateButtonStates();
+    setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
     showMessage("Fila duplicada con éxito.", 'success');
 }
 
+
+// Función del menú desplegable 
 function toggleDropdown() {
     const dropdownMenu = document.getElementById("dropdownMenu");
     dropdownMenu.classList.toggle("show");
@@ -1339,28 +1545,46 @@ function toggleDropdown() {
 document.addEventListener("click", function (event) {
     var dropdown = document.querySelector(".floating-dropdown");
     var menu = document.getElementById("dropdownMenu");
+
     if (!dropdown.contains(event.target)) {
         menu.classList.remove("show");
     }
 });
 
+
+function handleMenuClick(action) {
+    action();
+    document.getElementById("dropdownMenu").classList.remove("show");
+}
+// Función del menú desplegable 
+
+
+
+// Función para abrir el selector de colores
 function openColorPicker(event) {
-    event.stopPropagation();
+    event.stopPropagation(); // Evitar que el clic se propague y cierre el menú
     const colorPicker = document.getElementById("colorPicker");
     colorPicker.classList.toggle("show");
 }
 
+
+// Función para aplicar el color seleccionado a las filas
 function applyColorToSelectedRows(color) {
     const selectedCheckboxes = document.querySelectorAll('.itemCheckbox:checked');
     selectedCheckboxes.forEach(checkbox => {
         const index = checkbox.getAttribute('data-index');
         const row = document.querySelector(`#itemTableBody tr:nth-child(${parseInt(index) + 1})`);
         if (row) {
+            // Aplicar el color a toda la fila
             row.style.backgroundColor = color;
+            
+            // Aplicar el color específicamente a la celda de la imagen
             const imageCell = row.querySelector('td:first-child');
             if (imageCell) {
                 imageCell.style.backgroundColor = color;
             }
+            
+            // Guardar el color en el item
             items[index].color = color;
         }
     });
@@ -1368,11 +1592,15 @@ function applyColorToSelectedRows(color) {
     closeColorPicker();
 }
 
+
+// Función para cerrar el selector de colores
 function closeColorPicker() {
     const colorPicker = document.getElementById("colorPicker");
     colorPicker.classList.remove("show");
 }
 
+
+// Cerrar el menú de colores al hacer clic fuera de él
 document.addEventListener("click", function (event) {
     const colorPicker = document.getElementById("colorPicker");
     const colorButton = document.getElementById("colorButton");
@@ -1381,38 +1609,62 @@ document.addEventListener("click", function (event) {
     }
 });
 
+
+// Función para agrupar filas por colores
+// Función para agrupar todas las filas por colores
 function groupByColor() {
     document.getElementById("dropdownMenu").classList.remove("show");
+
+    // Crear un objeto para agrupar los ítems por color
     const groupedItems = {};
+
+    // Recorrer todos los ítems y agruparlos por color
     items.forEach(item => {
-        const color = item.color || '#ffffff';
+        const color = item.color || '#ffffff'; // Si no hay color, usar blanco por defecto
+
         if (!groupedItems[color]) {
             groupedItems[color] = [];
         }
         groupedItems[color].push(item);
     });
+
+    // Reorganizar los ítems en la lista principal
     const newItems = [];
     Object.keys(groupedItems).forEach(color => {
         newItems.push(...groupedItems[color]);
     });
+
+    // Actualizar la lista de ítems
     items = newItems;
+
     saveToLocalStorage();
     updateTable();
-    updateButtonStates();
+    setMode(currentMode, false); // Mantener el modo actual sin mostrar el mensaje
     showMessage("Todas las filas agrupadas por colores con éxito.", 'success');
 }
 
-function openColorPicker2(event) {
-    event.stopPropagation();
-    const colorPicker2 = document.getElementById("colorPicker2");
-    colorPicker2.classList.toggle("show");
-}
 
+
+
+
+
+
+// Función para abrir la segunda paleta de colores
+        function openColorPicker2(event) {
+            event.stopPropagation();
+            const colorPicker2 = document.getElementById("colorPicker2");
+            colorPicker2.classList.toggle("show");
+        }
+
+// Función para filtrar las filas por color
 function filterRowsByColor(color) {
     const rows = document.querySelectorAll("#itemTableBody tr");
     const filteredRows = [];
+
     rows.forEach((row, index) => {
+        // Usar color blanco por defecto si no hay color definido
         const itemColor = items[index].color || '#ffffff';
+        
         if (itemColor.toLowerCase() === color.toLowerCase()) {
             row.style.display = '';
             filteredRows.push(row);
@@ -1420,38 +1672,73 @@ function filterRowsByColor(color) {
             row.style.display = 'none';
         }
     });
+
     const total = calculateTotalPrice(filteredRows);
     showTotalRow(total);
     closeColorPicker2();
 }
 
-function closeColorPicker2() {
-    const colorPicker2 = document.getElementById("colorPicker2");
-    colorPicker2.classList.remove("show");
-}
 
+
+// Función para cerrar la segunda paleta de colores
+        function closeColorPicker2() {
+            const colorPicker2 = document.getElementById("colorPicker2");
+            colorPicker2.classList.remove("show");
+        }
+
+// Cerrar la paleta al hacer clic fuera de ella
 document.addEventListener("click", function (event) {
     const colorPicker2 = document.getElementById("colorPicker2");
     const openColorPicker2Button = document.getElementById("openColorPicker2");
     if (!colorPicker2.contains(event.target) && !openColorPicker2Button.contains(event.target)) {
-        closeColorPicker2();
+        closeColorPicker2(); // Cierra la paleta si se hace clic fuera
     }
 });
 
+
+
+        let originalRowStates = []; // Almacenar el estado original de las filas
+        let isPreviewModeInitialized = false; // Bandera para saber si ya se guardó el estado original
+
+
+
+
 function calculateTotalPrice(filteredRows) {
+    let totalPriceApp = 0;
+    let totalDiscount = 0;
     let totalPrice = 0;
+
     filteredRows.forEach(row => {
-        const priceCell = row.querySelector("td:nth-child(7)");
-        if (priceCell) {
-            const input = priceCell.querySelector("input");
-            if (input) {
-                let priceText = input.value.trim().replace(/\s+/g, "");
+        // Verificar el modo actual
+        if (currentMode === "normal") {
+            const priceCell = row.querySelector("td:nth-child(7)"); // Columna "Precio"
+            if (priceCell) {
+                const input = priceCell.querySelector("input");
+                if (input) {
+                    let priceText = input.value.trim().replace(/\s+/g, "");
+                    const price = parseFloat(priceText) || 0;
+                    totalPrice += price;
+                }
+            }
+        } else if (currentMode === "emprendedor") {
+            const priceAppCell = row.querySelector("td:nth-child(5)"); // Columna "Precio App"
+            const discountCell = row.querySelector("td:nth-child(9)"); // Columna "Descuento"
+
+            if (priceAppCell) {
+                let priceText = priceAppCell.textContent.trim().replace(/[^0-9.-]+/g, "");
                 const price = parseFloat(priceText) || 0;
-                totalPrice += price;
+                totalPriceApp += price;
+            }
+
+            if (discountCell) {
+                let discountText = discountCell.textContent.trim().replace(/[^0-9.-]+/g, "");
+                const discount = parseFloat(discountText) || 0;
+                totalDiscount += discount;
             }
         }
     });
-    return { totalPrice, totalPriceApp: 0, totalDiscount: 0 };
+
+    return { totalPrice, totalPriceApp, totalDiscount };
 }
 
 function showTotalRow(totals) {
@@ -1460,32 +1747,195 @@ function showTotalRow(totals) {
     let isvRow = document.getElementById("isvRow");
     let totalLempirasRow = document.getElementById("totalLempirasRow");
 
-    if (totalRow) totalRow.remove();
-    if (isvRow) isvRow.remove();
-    if (totalLempirasRow) totalLempirasRow.remove();
 
+    // Si la fila de total ya existe, la eliminamos
+    if (totalRow) {
+        totalRow.remove();
+    }
+
+    // Si la fila ISV ya existe, la eliminamos
+    if (isvRow) {
+        isvRow.remove();
+    }
+
+    // Si la fila Total en Lempiras ya existe, la eliminamos
+    if (totalLempirasRow) {
+        totalLempirasRow.remove();
+    }
+
+    // Crear la fila de total
     totalRow = document.createElement("tr");
     totalRow.id = "totalRow";
-    totalRow.innerHTML = `
-        <td colspan="2" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total en Lempiras:</td>
-        <td class="hidden-cell"></td>
-        <td class="hidden-cell"></td>
-        <td class="hidden-cell"></td>
-        <td style="font-weight: bold; background-color: #f4f4f4;">${totals.totalPrice.toFixed(2)}</td>
-        <td class="hidden-cell"></td>
-    `;
+    
+    if (currentMode === "normal") {
+        totalRow.innerHTML = `
+        <td colspan="2" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total en Lempiras:</td> <!-- Combinación de las tres celdas -->
+            <td class="hidden-cell"></td> <!-- Columna del SKU -->
+            <td class="hidden-cell"></td> <!-- Columna "Precio App" -->
+            <td class="hidden-cell"></td> <!-- Columna "Descuento" -->
+            <td style="font-weight: bold; background-color: #f4f4f4;">${totals.totalPrice.toFixed(2)}</td> <!-- Columna "Precio" -->
+            <td class="hidden-cell"></td> <!-- Columna del enlace -->
+        `;
+    } else if (currentMode === "emprendedor") {
+        totalRow.innerHTML = `
+            <td colspan="3" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total ($):</td> <!-- Combinación de las tres celdas -->
+            <td class="hidden-cell"></td> <!-- Columna del SKU -->
+            <td style="font-weight: bold; background-color: #f4f4f4;">${totals.totalDiscount.toFixed(2)}</td> <!-- Columna "Descuento" -->
+            <td class="hidden-cell"></td> <!-- Columna "Precio" -->
+            <td class="hidden-cell"></td> <!-- Columna del enlace -->
+        `;
+    }
 
+    // Crear la fila de ISV
     isvRow = document.createElement("tr");
     isvRow.id = "isvRow";
+    if (currentMode === "emprendedor") {
+        isvRow.innerHTML = `
+            <td colspan="3" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">7% ISV Incluido ($):</td> <!-- Combinación de las tres celdas -->
+            <td class="hidden-cell"></td> <!-- Columna "Precio App" (deja en blanco) -->
+            <td style="font-weight: bold; background-color: #f4f4f4;">${(totals.totalDiscount * 1.07).toFixed(2)}</td> <!-- Columna "Descuento" con 7% incluido -->
+            <td class="hidden-cell"></td> <!-- Columna "Precio" -->
+            <td class="hidden-cell"></td> <!-- Columna del enlace -->
+        `;
+    }
+
+    // Crear la fila de Total en Lempiras
     totalLempirasRow = document.createElement("tr");
     totalLempirasRow.id = "totalLempirasRow";
+    if (currentMode === "emprendedor") {
+        const isvValue = totals.totalDiscount * 1.07; // Obtener el valor de ISV (con 7%)
+        totalLempirasRow.innerHTML = `
+            <td colspan="3" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total en Lempiras:</td> <!-- Combinación de las tres celdas -->
+            <td class="hidden-cell"></td> <!-- Columna "Precio App" (deja en blanco) -->
+            <td style="font-weight: bold; background-color: #f4f4f4;">${(isvValue * 26.3).toFixed(2)}</td> <!-- Columna "Descuento" multiplicado por 26.3 -->
+            <td class="hidden-cell"></td> <!-- Columna "Precio" -->
+            <td class="hidden-cell"></td> <!-- Columna del enlace -->
+        `;
+    }
 
+
+
+    // Agregar la fila ISV al final de la fila total
     tableBody.appendChild(totalRow);
     tableBody.appendChild(isvRow);
     tableBody.appendChild(totalLempirasRow);
+
 }
 
-// Funciones de importación/exportación y gestión de clientes (mantenidas igual)
+
+
+
+
+
+
+
+function downloadTableImage() {
+    const table = document.getElementById("itemTable"); // Seleccionar la tabla
+    const tableContainer = document.querySelector(".table-container"); // Contenedor de la tabla
+
+    // 1. Desplazar la tabla al inicio
+    tableContainer.scrollTop = 0;
+
+    // 2. Esperar un momento para que el encabezado se coloque correctamente
+    setTimeout(() => {
+        // Opciones optimizadas para html2canvas
+        const options = {
+            scale: window.devicePixelRatio * 2, // Mejora la calidad de la imagen
+            useCORS: true, // Permite imágenes externas sin error de CORS
+            backgroundColor: "#ffffff", // Fondo blanco
+            logging: false // Desactiva logs para mejorar rendimiento
+        };
+
+        // Capturar la tabla como imagen
+        html2canvas(table, options).then(canvas => {
+            // Convertir el canvas a una imagen PNG con máxima calidad
+            const image = canvas.toDataURL("image/png", 1.0);
+
+            // Crear un enlace temporal para descargar la imagen
+            const link = document.createElement("a");
+            link.href = image;
+            link.download = "Detalle.png"; // Nombre del archivo
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }).catch(error => {
+            console.error("Error al capturar la tabla:", error);
+            alert("Hubo un error al generar la imagen. Inténtalo de nuevo.");
+        });
+    }, 100); // Pequeño retraso para asegurar que el encabezado esté en su lugar
+}
+
+
+
+
+
+// Función para alternar entre modos
+function setMode(mode, showMessageFlag = true) {
+
+
+    currentMode = mode; // Actualizar el modo actual
+    const columnsToShowNormal = [0, 2, 4, 5, 6]; // Columnas para el modo normal
+    const columnsToShowEmprendedor = [0, 2, 4, 8]; // Columnas para el modo emprendedor (Dto es la columna 8)
+
+    // Ocultar todas las columnas primero
+    const allColumns = document.querySelectorAll("#itemTable th, #itemTable td");
+    allColumns.forEach((col, index) => {
+        col.style.display = "none"; // Ocultar todas las columnas
+    });
+
+    // Mostrar las columnas según el modo seleccionado
+    const columnsToShow = mode === "normal" ? columnsToShowNormal : columnsToShowEmprendedor;
+    columnsToShow.forEach(colIndex => {
+        const headers = document.querySelectorAll(`#itemTable th:nth-child(${colIndex + 1})`);
+        const cells = document.querySelectorAll(`#itemTable td:nth-child(${colIndex + 1})`);
+        headers.forEach(header => {
+            header.style.display = ""; // Mostrar encabezados
+            if (colIndex === 8) {
+                header.classList.remove("hidden-column"); // Eliminar la clase hidden-column para la columna "Dto"
+            }
+        });
+        cells.forEach(cell => {
+            cell.style.display = ""; // Mostrar celdas
+            if (colIndex === 8) {
+                cell.classList.remove("hidden-column"); // Eliminar la clase hidden-column para la columna "Dto"
+            }
+        });
+    });
+
+
+
+    // Mostrar el mensaje solo si showMessageFlag es true
+    if (showMessageFlag) {
+        showMessage(`Modo ${mode} activado.`, 'success');
+
+toggleDropdownTop();
+
+    }
+
+
+}
+
+
+// Función para alternar el menú flotante superior
+function toggleDropdownTop() {
+    const dropdownMenu = document.getElementById("dropdownMenuTop");
+    dropdownMenu.classList.toggle("show");
+}
+
+// Cerrar el menú al hacer clic fuera de él
+document.addEventListener("click", function (event) {
+    const dropdown = document.querySelector(".floating-dropdown-top");
+    const menu = document.getElementById("dropdownMenuTop");
+    if (!dropdown.contains(event.target)) {
+        menu.classList.remove("show");
+    }
+});
+
+
+
+
+
+// Función para exportar filas seleccionadas como texto
 function exportSelectedRows() {
     const selectedItems = Array.from(document.querySelectorAll('.itemCheckbox:checked')).map(checkbox => {
         const index = checkbox.getAttribute('data-index');
@@ -1510,25 +1960,32 @@ function exportSelectedRows() {
     }
 }
 
+// Función para mostrar el modal de importación
 function showImportModal() {
     document.getElementById("importModal").style.display = "block";
     document.getElementById("importDataTextArea").value = "";
     document.getElementById("importDataTextArea").focus();
 }
 
+// Función para cerrar el modal de importación
 function closeImportModal() {
     document.getElementById("importModal").style.display = "none";
 }
 
+// Función para importar datos
 function importData() {
     const importText = document.getElementById("importDataTextArea").value.trim();
     if (!importText) {
         showMessage("No hay datos para importar.", 'error');
         return;
     }
+
     try {
         let importedItems = [];
+        
+        // Verificar si el texto comienza con { (formato JSON)
         if (importText.startsWith('{') || importText.startsWith('[') || importText.includes('---ITEM---')) {
+            // Formato JSON (el actual)
             importedItems = importText.split('\n---ITEM---\n').map(itemStr => {
                 try {
                     return JSON.parse(itemStr);
@@ -1538,23 +1995,31 @@ function importData() {
                 }
             }).filter(item => item !== null);
         } else {
+            // Formato Excel (nuevo)
             importedItems = parseExcelFormat(importText);
         }
+
         if (importedItems.length === 0) {
             showMessage("No se encontraron datos válidos para importar.", 'error');
             return;
         }
+
+        // Procesar los items importados
         importedItems.forEach(item => {
+            // Actualizar colorClients si el item tiene color y clientName
             if (item.color && (item.clientName || item.clientPayment !== undefined)) {
                 colorClients[item.color] = {
                     name: item.clientName || '',
                     payment: item.clientPayment || 0
                 };
             }
+            
+            // Asegurarse de que el precio en lempiras esté calculado
             if (!item.priceLempiras && item.priceApp) {
                 item.priceLempiras = calculatePriceInLempiras(item.priceApp);
             }
         });
+
         items.unshift(...importedItems);
         saveColorClients();
         saveToLocalStorage();
@@ -1567,23 +2032,43 @@ function importData() {
     }
 }
 
+
 function parseExcelFormat(text) {
     const lines = text.split('\n').filter(line => line.trim() !== '');
     const items = [];
+    
     for (const line of lines) {
         try {
             const columns = line.split('\t');
+            
+            // Extraer la URL de la imagen (eliminando la fórmula =IMAGE())
             let imageUrl = columns[0].replace(/^=IMAGE\("|"\)$/g, '');
+            
+            // Extraer el título
             const title = columns[1];
+            
+            // Extraer la talla (puede estar en diferentes columnas según el formato)
             const size = columns[2];
+            
+            // Extraer SKU
             const sku = columns[3];
+            
+            // Extraer precio App
             const priceApp = parseFloat(columns[4]) || 0;
+            
+            // Extraer descuento (si existe)
             const discount = parseFloat(columns[5]) || 0;
+            
+            // Extraer precio personalizado (última columna)
             const customPrice = parseFloat(columns[columns.length - 1]) || '';
+            
+            // Extraer enlace (eliminando la fórmula =HYPERLINK())
             let link = '';
             if (columns[7] && columns[7].includes('HYPERLINK')) {
                 link = columns[7].replace(/^=HYPERLINK\("|".*$/g, '');
             }
+            
+            // Crear el nuevo item
             const newItem = {
                 image: imageUrl,
                 title: title,
@@ -1595,23 +2080,30 @@ function parseExcelFormat(text) {
                 priceLempiras: calculatePriceInLempiras(priceApp),
                 enlace: link || `https://us.shein.com/search?keywords=${sku}`,
                 precioPersonalizado: customPrice,
-                color: '#ffffff'
+                color: '#ffffff' // Color por defecto
             };
+            
             items.push(newItem);
         } catch (e) {
             console.error("Error parsing line:", line, e);
         }
     }
+    
     return items;
 }
 
+
+// Objeto para guardar la asociación de colores con clientes
 let colorClients = {};
 
+// Cargar los clientes desde localStorage al iniciar
 function loadColorClients() {
     const savedColorClients = localStorage.getItem("colorClients");
     if (savedColorClients) {
         try {
             colorClients = JSON.parse(savedColorClients);
+            
+            // Migración: si el valor es string (formato antiguo), convertirlo a objeto
             for (const color in colorClients) {
                 if (typeof colorClients[color] === 'string') {
                     colorClients[color] = {
@@ -1627,17 +2119,24 @@ function loadColorClients() {
     }
 }
 
+
+// Mostrar el modal de gestión de clientes por color
 function showColorClientsModal() {
     const modal = document.getElementById("colorClientsModal");
     const listContainer = document.getElementById("colorClientsList");
+    
+    // Obtener colores únicos
     const colors = items.map(item => item.color).filter(color => color !== undefined);
     const usedColors = [...new Set(colors)];
+    
     if (usedColors.length === 0) {
         listContainer.innerHTML = '<p>No hay colores asignados todavía.</p>';
         modal.style.display = 'block';
         return;
     }
+    
     listContainer.innerHTML = '';
+    
     usedColors.forEach(color => {
         const colorDiv = document.createElement("div");
         colorDiv.style.display = 'flex';
@@ -1646,12 +2145,16 @@ function showColorClientsModal() {
         colorDiv.style.padding = '5px';
         colorDiv.style.borderBottom = '1px solid #eee';
         colorDiv.style.gap = '10px';
+        
+        // Cuadro de color
         const colorBox = document.createElement("div");
         colorBox.style.width = '20px';
         colorBox.style.height = '20px';
         colorBox.style.backgroundColor = color;
         colorBox.style.border = '1px solid #ccc';
         colorBox.style.flexShrink = '0';
+        
+        // Input para el nombre
         const clientNameInput = document.createElement("input");
         clientNameInput.type = 'text';
         clientNameInput.value = (colorClients[color] && colorClients[color].name) || '';
@@ -1659,69 +2162,100 @@ function showColorClientsModal() {
         clientNameInput.style.flex = '1';
         clientNameInput.style.padding = '5px';
         clientNameInput.disabled = true;
+        
+        // Input para el monto (nuevo comportamiento)
         const clientPaymentInput = document.createElement("input");
         clientPaymentInput.type = 'number';
         clientPaymentInput.placeholder = 'Monto';
         clientPaymentInput.style.width = '80px';
         clientPaymentInput.style.padding = '5px';
         clientPaymentInput.disabled = true;
+        
+        // Mostrar el monto guardado (solo si no es 0)
         if (colorClients[color] && colorClients[color].payment !== 0) {
             clientPaymentInput.value = colorClients[color].payment;
         }
+        
+        // Limpiar el campo al hacer clic
         clientPaymentInput.addEventListener('focus', () => {
             if (clientPaymentInput.value === '0') {
                 clientPaymentInput.value = '';
             }
         });
+        
+        // Botón de editar/guardar
         const editButton = document.createElement("button");
         editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
         editButton.style.padding = '5px 10px';
         editButton.style.flexShrink = '0';
+        
         editButton.onclick = function() {
             if (clientNameInput.disabled) {
+                // Modo edición
                 clientNameInput.disabled = false;
                 clientPaymentInput.disabled = false;
                 clientNameInput.focus();
                 editButton.innerHTML = '<i class="fas fa-save"></i>';
             } else {
+                // Modo guardar
                 clientNameInput.disabled = true;
                 clientPaymentInput.disabled = true;
+                
+                // Guardar datos (si el monto está vacío, se guarda como undefined)
                 const paymentValue = clientPaymentInput.value.trim() === '' ? undefined : parseFloat(clientPaymentInput.value);
+                
                 colorClients[color] = {
                     name: clientNameInput.value.trim(),
                     payment: paymentValue
                 };
+                
                 saveColorClients();
+                
+                // Actualizar items
                 items.forEach(item => {
                     if (item.color === color) {
                         item.clientName = colorClients[color].name;
                         item.clientPayment = colorClients[color].payment;
                     }
                 });
+                
                 saveToLocalStorage();
                 editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+                
+                // Forzar actualización visual: mostrar placeholder si no hay monto
                 if (clientPaymentInput.value === '0' || clientPaymentInput.value.trim() === '') {
                     clientPaymentInput.value = '';
                 }
+                
                 showMessage("Datos del cliente guardados.", 'success');
             }
         };
+        
         colorDiv.appendChild(colorBox);
         colorDiv.appendChild(clientNameInput);
         colorDiv.appendChild(clientPaymentInput);
         colorDiv.appendChild(editButton);
+        
         listContainer.appendChild(colorDiv);
     });
+    
     modal.style.display = 'block';
 }
 
+
+// Cerrar el modal de clientes por color
 function closeColorClientsModal() {
     document.getElementById("colorClientsModal").style.display = 'none';
 }
 
+// Guardar los nombres de clientes en localStorage
 function saveColorClients() {
     localStorage.setItem("colorClients", JSON.stringify(colorClients));
 }
+
+
+
+
 
 function confirmClearAllClients() {
     if (confirm("¿Estás seguro de que deseas eliminar todos los nombres de clientes y montos de pago? Esta acción no se puede deshacer.")) {
@@ -1729,157 +2263,223 @@ function confirmClearAllClients() {
     }
 }
 
+
+
+// Función para borrar todos los clientes y montos
 function clearAllClients() {
+    // Limpiar el objeto colorClients (ahora almacenará tanto nombre como pago)
     for (const color in colorClients) {
         colorClients[color] = { name: '', payment: 0 };
     }
+    
+    // Actualizar los items
     items.forEach(item => {
         if (item.color) {
             item.clientName = '';
             item.clientPayment = 0;
         }
     });
+    
     saveColorClients();
     saveToLocalStorage();
-    showColorClientsModal();
+    showColorClientsModal(); // Recargar la vista
     showMessage("Todos los clientes y pagos han sido eliminados.", 'success');
 }
+
+
+
+
+
+
+
 </script>
 
 </head>
 
 <body>
+
+
     <div class="fixed-header">
         <h2>‎ </h2>
+
         <div class="controls">
+            <!-- Casilla de texto más alta y menos ancha -->
             <input type="text" id="enlace" placeholder="Enlace del artículo" style="height: 40px; width: 200px; padding: 5px;">
+
+            <select id="percentageSelect" style="display: none;">
+                <option value="20">20%</option>
+                <option value="25">25%</option>
+                <option value="35">35%</option>
+            </select>
+            <!-- Botones con iconos -->
             <button onclick="obtenerFuente()"><i class="fas fa-plus"></i></button>
             <button onclick="clearInput()"><i class="fas fa-eraser"></i></button>
         </div>
 
+        <!-- Botón flotante que abre el menú -->
         <div class="floating-dropdown">
             <button class="dropdown-toggle with-icon" onclick="toggleDropdown()">
-                <i class="fas fa-bars"></i>
+                <i class="fas fa-bars"></i> <!-- Ícono de menú -->
             </button>
+
+            <!-- Menú de íconos flotantes -->
             <div class="floating-menu" id="dropdownMenu">
                 <button id="groupByColorButton" class="with-icon" onclick="groupByColor()">
-                    <i class="fas fa-sort-amount-down"></i>
+                    <i class="fas fa-sort-amount-down"></i> <!-- Ícono para agrupar por colores -->
                 </button>
                 <button id="colorButton" class="with-icon" onclick="openColorPicker(event)" disabled>
-                    <i class="fas fa-palette"></i>
+                    <i class="fas fa-palette"></i> <!-- Ícono de paleta de colores -->
                </button>
                 <button id="duplicateButton" class="with-icon" onclick="duplicateSelectedRow()" disabled>
-                    <i class="fas fa-layer-group fa-lg"></i>
+                    <i class="fas fa-layer-group fa-lg"></i> <!-- Ícono grande -->
                 </button>
                 <button id="copyButton" class="with-icon" onclick="copySelectedRows()" disabled>
-                    <i class="fas fa-copy"></i>
+                    <i class="fas fa-copy"></i> <!-- Copiar Seleccionados -->
                 </button>
+
                 <button id="deleteButton" class="with-icon" onclick="deleteSelectedItems()" disabled>
-                    <i class="fas fa-trash-alt"></i>
+                    <i class="fas fa-trash-alt"></i> <!-- Eliminar filas marcadas -->
                 </button>
                 <button id="undoButton" class="with-icon" onclick="undoDelete()" disabled>
-                    <i class="fas fa-undo"></i>
+                    <i class="fas fa-undo"></i> <!-- Deshacer Última Eliminación -->
                 </button>
                 <button id="previewButton" class="with-icon" onclick="togglePreview()">
-                    <i class="fas fa-eye"></i>
+                    <i class="fas fa-eye"></i> <!-- Vista Previa -->
                 </button>
-                <button id="exportButton" class="with-icon" onclick="exportSelectedRows()">
-                    <i class="fas fa-file-export"></i>
-                </button>
-                <button id="importButton" class="with-icon" onclick="showImportModal()">
-                    <i class="fas fa-file-import"></i>
-                </button>
-                <button id="colorClientsButton" class="with-icon" onclick="showColorClientsModal()">
-                    <i class="fas fa-address-book"></i>
-                </button>
+
+
+<button id="exportButton" class="with-icon" onclick="exportSelectedRows()">
+    <i class="fas fa-file-export"></i> <!-- Exportar -->
+</button>
+<button id="importButton" class="with-icon" onclick="showImportModal()">
+    <i class="fas fa-file-import"></i> <!-- Importar -->
+</button>
+
+
+<button id="colorClientsButton" class="with-icon" onclick="showColorClientsModal()">
+    <i class="fas fa-address-book"></i> <!-- Ícono de clientes -->
+</button>
+
+
+
             </div>
         </div>
 
         <div id="resultado"></div>
 
-        <div class="table-container">
-            <table id="itemTable">
-                <thead>
-                    <tr>
-                        <th class="preview-hidden"><button onclick="toggleSelectAll()" id="selectAllButton">☑</button></th>
-                        <th>Título</th>
-                        <th>Talla</th>
-                        <th>SKU</th>
-                        <th class="preview-hidden">Precio App</th>
-                        <th class="preview-hidden">Precio Lempiras</th>
-                        <th>Precio</th>
-                        <th>Enlace</th>
-                        <th class="hidden-column">Descuento</th>
-                    </tr>
-                </thead>
-                <tbody id="itemTableBody"></tbody>
-            </table>
-        </div>
+<div class="table-container">
+    <table id="itemTable">
+        <thead>
+            <tr>
+                <th class="preview-hidden"><button onclick="toggleSelectAll()" id="selectAllButton">☑</button></th>
+                <th>Título</th>
+                <th>Talla</th>
+                <th>SKU</th>
+                <th class="preview-hidden">Precio App</th>
+                <th class="preview-hidden">Precio Lempiras</th>
+                <th>Precio</th>
+                <th>Enlace</th>
+                <th class="hidden-column">Descuento</th>
+            </tr>
+        </thead>
+        <tbody id="itemTableBody"></tbody>
+    </table>
+</div>
 
+        <!-- HTML para el cuadro modal -->
         <div id="manualCopyModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000;">
             <p>Texto para copiar:</p>
             <textarea id="manualCopyTextArea" style="width: 100%; height: 100px;" readonly></textarea>
             <button onclick="copyTextAreaContent()">Copiar manualmente</button>
             <button onclick="closeManualCopyModal()">Cerrar</button>
         </div>
+
     </div>
 
-    <div class="color-picker" id="colorPicker">
-        <div class="color-option" style="background-color: #ffffff;" onclick="applyColorToSelectedRows('#ffffff')"></div>
-        <div class="color-option" style="background-color: #D32F2F;" onclick="applyColorToSelectedRows('#D32F2F')"></div>
-        <div class="color-option" style="background-color: #F57C00;" onclick="applyColorToSelectedRows('#F57C00')"></div>
-        <div class="color-option" style="background-color: #FBC02D;" onclick="applyColorToSelectedRows('#FBC02D')"></div>
-        <div class="color-option" style="background-color: #388E3C;" onclick="applyColorToSelectedRows('#388E3C')"></div>
-        <div class="color-option" style="background-color: #00897B;" onclick="applyColorToSelectedRows('#00897B')"></div>
-        <div class="color-option" style="background-color: #1976D2;" onclick="applyColorToSelectedRows('#1976D2')"></div>
-        <div class="color-option" style="background-color: #512DA8;" onclick="applyColorToSelectedRows('#512DA8')"></div>
-        <div class="color-option" style="background-color: #7B1FA2;" onclick="applyColorToSelectedRows('#7B1FA2')"></div>
-        <div class="color-option" style="background-color: #C2185B;" onclick="applyColorToSelectedRows('#C2185B')"></div>
-        <div class="color-option" style="background-color: #795548;" onclick="applyColorToSelectedRows('#795548')"></div>
-        <div class="color-option" style="background-color: #616161;" onclick="applyColorToSelectedRows('#616161')"></div>
-    </div>
 
-    <button id="openColorPicker2" class="with-icon" onclick="openColorPicker2(event)" style="display: none; position: fixed; bottom: 20px; left: 70px;">
-        <i class="fas fa-filter"></i>
+<div class="color-picker" id="colorPicker">
+    <div class="color-option" style="background-color: #ffffff;" onclick="applyColorToSelectedRows('#ffffff')"></div> <!-- Blanco -->
+    <div class="color-option" style="background-color: #D32F2F;" onclick="applyColorToSelectedRows('#D32F2F')"></div> <!-- Rojo oscuro -->
+    <div class="color-option" style="background-color: #F57C00;" onclick="applyColorToSelectedRows('#F57C00')"></div> <!-- Naranja -->
+    <div class="color-option" style="background-color: #FBC02D;" onclick="applyColorToSelectedRows('#FBC02D')"></div> <!-- Amarillo fuerte -->
+    <div class="color-option" style="background-color: #388E3C;" onclick="applyColorToSelectedRows('#388E3C')"></div> <!-- Verde intenso -->
+    <div class="color-option" style="background-color: #00897B;" onclick="applyColorToSelectedRows('#00897B')"></div> <!-- Verde azulado -->
+    <div class="color-option" style="background-color: #1976D2;" onclick="applyColorToSelectedRows('#1976D2')"></div> <!-- Azul medio -->
+    <div class="color-option" style="background-color: #512DA8;" onclick="applyColorToSelectedRows('#512DA8')"></div> <!-- Morado fuerte -->
+    <div class="color-option" style="background-color: #7B1FA2;" onclick="applyColorToSelectedRows('#7B1FA2')"></div> <!-- Violeta oscuro -->
+    <div class="color-option" style="background-color: #C2185B;" onclick="applyColorToSelectedRows('#C2185B')"></div> <!-- Rosa fuerte -->
+    <div class="color-option" style="background-color: #795548;" onclick="applyColorToSelectedRows('#795548')"></div> <!-- Café -->
+    <div class="color-option" style="background-color: #616161;" onclick="applyColorToSelectedRows('#616161')"></div> <!-- Gris oscuro -->
+</div>
+
+<!-- Botón para abrir la segunda paleta de colores -->
+<button id="openColorPicker2" class="with-icon" onclick="openColorPicker2(event)" style="display: none; position: fixed; bottom: 20px; left: 70px;">
+    <i class="fas fa-filter"></i> <!-- Ícono de filtro -->
+</button>
+
+<!-- Segunda paleta de colores -->
+<div class="color-picker" id="colorPicker2">
+    <div class="color-option" style="background-color: #ffffff;" onclick="filterRowsByColor('#ffffff')"></div>
+    <div class="color-option" style="background-color: #D32F2F;" onclick="filterRowsByColor('#D32F2F')"></div>
+    <div class="color-option" style="background-color: #F57C00;" onclick="filterRowsByColor('#F57C00')"></div>
+    <div class="color-option" style="background-color: #FBC02D;" onclick="filterRowsByColor('#FBC02D')"></div>
+    <div class="color-option" style="background-color: #388E3C;" onclick="filterRowsByColor('#388E3C')"></div>
+    <div class="color-option" style="background-color: #00897B;" onclick="filterRowsByColor('#00897B')"></div>
+    <div class="color-option" style="background-color: #1976D2;" onclick="filterRowsByColor('#1976D2')"></div>
+    <div class="color-option" style="background-color: #512DA8;" onclick="filterRowsByColor('#512DA8')"></div>
+    <div class="color-option" style="background-color: #7B1FA2;" onclick="filterRowsByColor('#7B1FA2')"></div>
+    <div class="color-option" style="background-color: #C2185B;" onclick="filterRowsByColor('#C2185B')"></div>
+    <div class="color-option" style="background-color: #795548;" onclick="filterRowsByColor('#795548')"></div>
+    <div class="color-option" style="background-color: #616161;" onclick="filterRowsByColor('#616161')"></div>
+</div>
+
+<button id="downloadTableImage" class="with-icon" onclick="downloadTableImage()" style="display: none; position: fixed; bottom: 20px; left: 120px;">
+    <i class="fas fa-download"></i> <!-- Ícono de descarga -->
+</button>
+
+
+<!-- Botón flotante superior izquierdo -->
+<div class="floating-dropdown-top">
+    <button class="dropdown-toggle with-icon" onclick="toggleDropdownTop()">
+        <i class="fa-solid fa-star"></i> <!-- Ícono de menú -->
     </button>
 
-    <div class="color-picker" id="colorPicker2">
-        <div class="color-option" style="background-color: #ffffff;" onclick="filterRowsByColor('#ffffff')"></div>
-        <div class="color-option" style="background-color: #D32F2F;" onclick="filterRowsByColor('#D32F2F')"></div>
-        <div class="color-option" style="background-color: #F57C00;" onclick="filterRowsByColor('#F57C00')"></div>
-        <div class="color-option" style="background-color: #FBC02D;" onclick="filterRowsByColor('#FBC02D')"></div>
-        <div class="color-option" style="background-color: #388E3C;" onclick="filterRowsByColor('#388E3C')"></div>
-        <div class="color-option" style="background-color: #00897B;" onclick="filterRowsByColor('#00897B')"></div>
-        <div class="color-option" style="background-color: #1976D2;" onclick="filterRowsByColor('#1976D2')"></div>
-        <div class="color-option" style="background-color: #512DA8;" onclick="filterRowsByColor('#512DA8')"></div>
-        <div class="color-option" style="background-color: #7B1FA2;" onclick="filterRowsByColor('#7B1FA2')"></div>
-        <div class="color-option" style="background-color: #C2185B;" onclick="filterRowsByColor('#C2185B')"></div>
-        <div class="color-option" style="background-color: #795548;" onclick="filterRowsByColor('#795548')"></div>
-        <div class="color-option" style="background-color: #616161;" onclick="filterRowsByColor('#616161')"></div>
-    </div>
-
-    <button id="downloadTableImage" class="with-icon" onclick="downloadTableImage()" style="display: none; position: fixed; bottom: 20px; left: 120px;">
-        <i class="fas fa-download"></i>
-    </button>
-
-    <div id="importModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000; width: 80%; max-width: 500px;">
-        <h3>Importar Datos</h3>
-        <p>Pega aquí los datos copiados de otra instancia:</p>
-        <textarea id="importDataTextArea" style="width: 100%; height: 200px; margin-bottom: 10px;"></textarea>
-        <div style="display: flex; gap: 10px;">
-            <button onclick="importData()" style="flex: 1;">Importar</button>
-            <button onclick="closeImportModal()" style="flex: 1;">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="colorClientsModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000; width: 80%; max-width: 500px;">
-        <h3>Asociar Clientes a Colores</h3>
-        <button onclick="confirmClearAllClients()" style="margin-bottom: 15px; background-color: #ff4444; color: white;">
-            <i class="fas fa-trash-alt"></i> Eliminar Todos los Clientes
+    <!-- Menú de íconos flotantes -->
+    <div class="floating-menu-top" id="dropdownMenuTop">
+        <button class="with-icon" onclick="setMode('normal')">
+            <i class="fa-solid fa-users"></i>
         </button>
-        <div id="colorClientsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
-        </div>
-        <button onclick="closeColorClientsModal()" style="width: 100%;">Cerrar</button>
+        <button class="with-icon" onclick="setMode('emprendedor')">
+            <i class="fa-solid fa-user"></i>
+        </button>
     </div>
+</div>
+
+
+<div id="importModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000; width: 80%; max-width: 500px;">
+    <h3>Importar Datos</h3>
+    <p>Pega aquí los datos copiados de otra instancia:</p>
+    <textarea id="importDataTextArea" style="width: 100%; height: 200px; margin-bottom: 10px;"></textarea>
+    <div style="display: flex; gap: 10px;">
+        <button onclick="importData()" style="flex: 1;">Importar</button>
+        <button onclick="closeImportModal()" style="flex: 1;">Cancelar</button>
+    </div>
+</div>
+
+
+
+<div id="colorClientsModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000; width: 80%; max-width: 500px;">
+    <h3>Asociar Clientes a Colores</h3>
+    <button onclick="confirmClearAllClients()" style="margin-bottom: 15px; background-color: #ff4444; color: white;">
+        <i class="fas fa-trash-alt"></i> Eliminar Todos los Clientes
+    </button>
+    <div id="colorClientsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+        <!-- Aquí se generará la lista de colores y clientes -->
+    </div>
+    <button onclick="closeColorClientsModal()" style="width: 100%;">Cerrar</button>
+</div>
+
+
 </body>
+
 </html>
