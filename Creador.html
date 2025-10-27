@@ -649,7 +649,7 @@ function saveToLocalStorage() {
 }
 
 
-// Obtener datos del enlace (MODIFICADO para Request 1 y 2)
+// Obtener datos del enlace (MODIFICADO para apuntar a m.shein.com)
 function obtenerFuente() {
     let enlace = document.getElementById("enlace").value.trim();
     const porcentajeSeleccionado = parseFloat(document.getElementById("percentageSelect").value) / 100;
@@ -659,50 +659,47 @@ function obtenerFuente() {
         return;
     }
     
-    const baseURL = "https://us.shein.com/";
+    // --- ¡CAMBIO 1 AQUÍ! ---
+    const baseURL = "https://m.shein.com/us/";
     
-    // --- INICIO: Lógica de Normalización de URL (Request 2) ---
-    // Esta regex limpia cualquier dominio de shein (o nada) y se queda solo con el path
-    const cleanPath = enlace.replace(/^(https?:\/\/)?([a-zA-Z0-9.-]+\.)?shein\.com\//i, "");
+    // --- ¡CAMBIO 2 AQUÍ! (para limpiar 'us/' si ya viene en el enlace) ---
+    const cleanPath = enlace.replace(/^(https?:\/\/)?([a-zA-Z0-9.-]+\.)?shein\.com\/(us\/)?/i, "");
     const finalEnlace = baseURL + cleanPath;
-    // --- FIN: Lógica de Normalización ---
+    // --- FIN DE LOS CAMBIOS ---
 
     // Actualiza el valor en la caja de texto
     document.getElementById("enlace").value = finalEnlace;
     
-    // --- INICIO: Lógica de UI (Request 1 y 3) ---
+    // (El resto de la lógica de UI de carga es idéntica)
     const enlaceInput = document.getElementById("enlace");
     const clearButton = document.querySelector("button[onclick='clearInput()']");
-    const addButton = document.querySelector("button[onclick='obtenerFuente()']"); // (Req 1)
+    const addButton = document.querySelector("button[onclick='obtenerFuente()']"); 
     
-    // 1. Iniciar estado de carga
     enlaceInput.disabled = true;
     enlaceInput.style.animation = "pulse 1.5s infinite";
     
-    if (addButton) { // (Req 1)
-        addButton.style.display = 'none'; // Ocultar botón "+"
+    if (addButton) { 
+        addButton.style.display = 'none'; 
     }
 
     if (clearButton) {
         clearButton.innerHTML = '<i class="fas fa-times"></i> Cancelar';
-        clearButton.classList.add('cancel-button'); // (Req 3)
+        clearButton.classList.add('cancel-button'); 
         
-        // 2. Modificar la función del botón para "Cancelar"
         clearButton.onclick = function() {
             if (currentFetchController) {
-                currentFetchController.abort(); // Cancelar el fetch en curso
+                currentFetchController.abort(); 
             }
-            resetUI(); // Restaurar la UI
+            resetUI(); 
             showMessage("Proceso cancelado.", 'error');
         };
     }
-    // --- FIN: Lógica de UI ---
 
     showMessage("Procesando, por favor espere...", 'processing');
     
-    // Iniciar el fetch
-    fetchWithRetry(finalEnlace, porcentajeSeleccionado, 5); // 5 reintentos
+    fetchWithRetry(finalEnlace, porcentajeSeleccionado, 5);
 }
+
 
 // FUNCIÓN: Fetch con reintentos (MODIFICADA para Cancelación y Reset)
 function fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft) {
@@ -774,7 +771,7 @@ function findMatch(data, patterns) {
 // Extraer datos del HTML (MODIFICADO para nuevo precio y tallas)
 function extractData(data, porcentajeSeleccionado, enlace) {
     
-    // --- Patrones (Títulos, SKU, Imagen - Sin cambios) ---
+    // --- Patrones (Títulos, SKU, Imagen, Precio - Sin cambios) ---
 
     const titlePatterns = [
         /"goods_name"\s*:\s*"(.*?)"/i, // Prioridad 1: JSON gbRawData
@@ -801,50 +798,67 @@ function extractData(data, porcentajeSeleccionado, enlace) {
         /<div class="crop-image-container" data-before-crop-src="(.*?)"/i // Fallback: HTML (Cualquier thumbnail)
     ];
 
-    // --- Patrones de Precio (MODIFICADO) ---
-    // Solamente busca 'retailPrice' (21.59). Si no lo encuentra,
-    // la función fallará y 'fetchWithRetry' volverá a intentarlo.
-    const priceAppPatterns = [ 
-        /"retailPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i, // Prioridad 1: gbRawData (Precio Original)
-        /"originalPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i // Añadido para extraer 22.49
-    ];
+    const priceAppPatterns = [ 
+        /"retailPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i, 
+        /"originalPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i 
+    ];
 
-    // --- Extracción ---
+    // --- Extracción (Sin cambios) ---
     
     let image = findMatch(data, imagePatterns);
     const sku = findMatch(data, skuPatterns);
-    const priceAppStr = findMatch(data, priceAppPatterns); // <-- Solo buscará retailPrice
+    const priceAppStr = findMatch(data, priceAppPatterns); 
     const title = findMatch(data, titlePatterns);
 
-    // --- Lógica de Tallas (MODIFICADA para emparejar "0 (S)") ---
+    // --- Lógica de Tallas (¡MODIFICADA!) ---
     let sizes = [];
-    const sizeBlockMatch = data.match(/"attr_name":"Talla".*?"attr_value_list":(\[.*?\])/);
     
-    if (sizeBlockMatch && sizeBlockMatch[1]) {
+    // INTENTO 1: Usar la sugerencia del usuario (base_size_sort), es más fiable
+    // Busca: "base_size_sort":{"0XL":0,"1XL":1,"2XL":2,"3XL":3,"4XL":4}
+    const baseSizeSortMatch = data.match(/"base_size_sort":(\{.*?\})/);
+    
+    if (baseSizeSortMatch && baseSizeSortMatch[1]) {
         try {
-            // El bloque de tallas es un JSON, vamos a interpretarlo
-            const sizeList = JSON.parse(sizeBlockMatch[1]);
-            
-            sizeList.forEach(item => {
-                if (item.attr_value_name) {
-                    let sizeLabel = item.attr_value_name; // "S"
-                    
-                    // Si existe un valor local (como "0") y es diferente al nombre ("S"), los combinamos
-                    if (item.attr_local_size_value && item.attr_local_size_value !== item.attr_value_name) {
-                        sizeLabel = `${item.attr_local_size_value} (${item.attr_value_name})`; // "0 (S)"
-                    }
-                    sizes.push(sizeLabel);
-                }
-            });
+            const sizeObject = JSON.parse(baseSizeSortMatch[1]);
+            sizes = Object.keys(sizeObject); // Extrae ["0XL", "1XL", "2XL", "3XL", "4XL"]
         } catch (e) {
-            console.error("Fallo al parsear JSON de tallas, usando regex fallback:", e);
-            // Fallback si JSON.parse falla (extrae solo los nombres "S", "M", "L")
-            const fallbackPattern = /"attr_value_name":"(.*?)"/g;
-            sizes.push(...[...sizeBlockMatch[1].matchAll(fallbackPattern)].map(match => match[1]));
+            console.error("Fallo al parsear JSON de base_size_sort:", e);
+            sizes = []; // Asegurarse de que sizes esté vacío si JSON.parse falla
         }
     }
 
-    // Si el bloque JSON no se encontró O no dio resultados, usar los patrones HTML
+    // INTENTO 2: Fallback a la lógica anterior (attr_value_list), pero MEJORADA
+    if (sizes.length === 0) {
+        // Añadimos la 's' al final para que '.' incluya saltos de línea (para m.shein.com)
+        const sizeBlockMatch = data.match(/"attr_name":"Talla".*?"attr_value_list":(\[.*?\])/s);
+        
+        if (sizeBlockMatch && sizeBlockMatch[1]) {
+            try {
+                const sizeList = JSON.parse(sizeBlockMatch[1]);
+                
+                sizeList.forEach(item => {
+                    // Filtro: Asegurarse que sea una talla real (tenga attr_value_id) y un nombre
+                    if (item.attr_value_name && item.attr_value_id) {
+                        let sizeLabel = item.attr_value_name; // "0XL"
+                        
+                        // Lógica mejorada: Solo combinar si el nombre es SOLO letras (S, M, L)
+                        // y tiene un valor local (como "0", "2", "4")
+                        if (item.attr_local_size_value && /^[a-zA-Z]+$/.test(item.attr_value_name)) {
+                            sizeLabel = `${item.attr_local_size_value} (${item.attr_value_name})`; // "0 (S)"
+                        }
+                        sizes.push(sizeLabel);
+                    }
+                });
+            } catch (e) {
+                console.error("Fallo al parsear JSON de tallas (attr_value_list), usando regex fallback:", e);
+                // Fallback de Regex (por si JSON.parse falla)
+                const fallbackPattern = /"attr_value_name":"(.*?)"/g;
+                sizes.push(...[...sizeBlockMatch[1].matchAll(fallbackPattern)].map(match => match[1]));
+            }
+        }
+    }
+
+    // INTENTO 3: Fallback a HTML (si los JSON fallan)
     if (sizes.length === 0) {
         const htmlSizePatterns = [
             /data-attr_id="87".*?data-attr_value_name="(.*?)"/g, 
@@ -857,7 +871,8 @@ function extractData(data, porcentajeSeleccionado, enlace) {
         sizes.push(...htmlSizes);
     }
 
-    const finalSizes = [...new Set(sizes.filter(s => s && s.trim() !== ''))];
+    // Limpieza final: Quita duplicados, vacíos y rangos como "S-XL"
+    const finalSizes = [...new Set(sizes.filter(s => s && s.trim() !== '' && !s.includes('-')))];
     // --- Fin Lógica de Tallas ---
 
 
@@ -878,7 +893,7 @@ function extractData(data, porcentajeSeleccionado, enlace) {
             priceApp: priceApp,
             priceLempiras: calculatePriceInLempiras(parseFloat(priceApp)), 
             percentage: porcentajeSeleccionado,
-            sizes: finalSizes, // <-- Ahora tendrá ["0 (S)", "2 (M)", "4 (L)"]
+            sizes: finalSizes, // <-- Ahora tendrá ["0XL", "1XL", "2XL", "3XL", "4XL"]
             selectedSize: "",
             enlace: enlace,
             color: '#ffffff' 
@@ -894,13 +909,14 @@ function extractData(data, porcentajeSeleccionado, enlace) {
          console.log("Faltaron datos clave:", { 
              image: !!image, 
              sku: !!sku, 
-             priceAppStr: !!priceAppStr, // <-- Si esto es 'false', es porque no encontró 'retailPrice'
+             priceAppStr: !!priceAppStr, 
              title: !!title 
          });
 
          return false; // <--- DEVOLVER FRACASO (para que fetchWithRetry reintente)
     }
 }
+
 
 // Calcular precio en lempiras
 function calculatePriceInLempiras(priceApp) {
