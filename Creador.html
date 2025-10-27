@@ -813,7 +813,7 @@ function extractData(data, porcentajeSeleccionado, enlace) {
     // --- Lógica de Tallas (¡MODIFICADA!) ---
     let sizes = [];
     
-    // INTENTO 1: Usar la sugerencia del usuario (base_size_sort), es más fiable
+    // INTENTO 1: Usar "base_size_sort" (El más fiable, sugerido por ti)
     // Busca: "base_size_sort":{"0XL":0,"1XL":1,"2XL":2,"3XL":3,"4XL":4}
     const baseSizeSortMatch = data.match(/"base_size_sort":(\{.*?\})/);
     
@@ -827,7 +827,7 @@ function extractData(data, porcentajeSeleccionado, enlace) {
         }
     }
 
-    // INTENTO 2: Fallback a la lógica anterior (attr_value_list), pero MEJORADA
+    // INTENTO 2: Usar "attr_value_list" (Para casos como "0 (S)")
     if (sizes.length === 0) {
         // Añadimos la 's' al final para que '.' incluya saltos de línea (para m.shein.com)
         const sizeBlockMatch = data.match(/"attr_name":"Talla".*?"attr_value_list":(\[.*?\])/s);
@@ -835,7 +835,6 @@ function extractData(data, porcentajeSeleccionado, enlace) {
         if (sizeBlockMatch && sizeBlockMatch[1]) {
             try {
                 const sizeList = JSON.parse(sizeBlockMatch[1]);
-                
                 sizeList.forEach(item => {
                     // Filtro: Asegurarse que sea una talla real (tenga attr_value_id) y un nombre
                     if (item.attr_value_name && item.attr_value_id) {
@@ -850,16 +849,23 @@ function extractData(data, porcentajeSeleccionado, enlace) {
                     }
                 });
             } catch (e) {
-                console.error("Fallo al parsear JSON de tallas (attr_value_list), usando regex fallback:", e);
-                // Fallback de Regex (por si JSON.parse falla)
-                const fallbackPattern = /"attr_value_name":"(.*?)"/g;
-                sizes.push(...[...sizeBlockMatch[1].matchAll(fallbackPattern)].map(match => match[1]));
+                console.error("Fallo al parsear JSON de tallas (attr_value_list):", e);
             }
         }
     }
 
-    // INTENTO 3: Fallback a HTML (si los JSON fallan)
+    // INTENTO 3: Fallback a JSON genérico (Tu segunda sugerencia)
+    // Busca "attr_value_name":"S" en todo el documento
     if (sizes.length === 0) {
+        console.log("Intentando fallback de JSON genérico para tallas...");
+        const jsonPattern = /"attr_value_name":"(.*?)"/g;
+        const jsonSizes = [...data.matchAll(jsonPattern)].map(match => match[1]);
+        sizes.push(...jsonSizes);
+    }
+
+    // INTENTO 4: Fallback a HTML 
+    if (sizes.length === 0) {
+        console.log("Intentando fallback de HTML para tallas...");
         const htmlSizePatterns = [
             /data-attr_id="87".*?data-attr_value_name="(.*?)"/g, 
             /<p class="product-intro__size-radio-inner.*?>(.*?)<\/p>/g
@@ -893,7 +899,7 @@ function extractData(data, porcentajeSeleccionado, enlace) {
             priceApp: priceApp,
             priceLempiras: calculatePriceInLempiras(parseFloat(priceApp)), 
             percentage: porcentajeSeleccionado,
-            sizes: finalSizes, // <-- Ahora tendrá ["0XL", "1XL", "2XL", "3XL", "4XL"]
+            sizes: finalSizes, // <-- Ahora tendrá las tallas correctas
             selectedSize: "",
             enlace: enlace,
             color: '#ffffff' 
@@ -916,6 +922,7 @@ function extractData(data, porcentajeSeleccionado, enlace) {
          return false; // <--- DEVOLVER FRACASO (para que fetchWithRetry reintente)
     }
 }
+
 
 
 // Calcular precio en lempiras
