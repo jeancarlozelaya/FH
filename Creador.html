@@ -9,12 +9,11 @@
 
 <style>
 
-/* --- NUEVO SPINNER DE CARGA --- */
-/* Contenedor del spinner */
+/* --- SPINNER DE CARGA (Punto 1) --- */
 #resultado .loader {
     width: 20px;
     height: 20px;
-    border: 3px solid #ffffff;
+    border: 3px solid #007bff; /* Color azul de la app */
     border-bottom-color: transparent;
     border-radius: 50%;
     display: inline-block;
@@ -22,20 +21,18 @@
     animation: spin 1s linear infinite; /* Animación de giro */
 }
 
-/* Animación de giro (reemplaza la de @keyframes anterior) */
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
-
-/* --- FIN DEL NUEVO SPINNER --- */
+/* --- FIN DEL SPINNER --- */
 
 
 /* Estilos de botones de vista previa (filtro y descarga) */
 #downloadTableImage {
     position: fixed;
-    bottom: 20px; /* Distancia desde la parte inferior */
-    left: 90px; /* Distancia desde la izquierda (ajusta según sea necesario) */
+    bottom: 20px; 
+    left: 90px; 
     background-color: #007bff;
     color: white;
     border: none;
@@ -45,9 +42,9 @@
     border-radius: 50%;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s ease;
-    z-index: 1000; /* Asegura que esté por encima de otros elementos */
-    width: 40px; /* Mismo ancho que los otros botones */
-    height: 40px; /* Misma altura que los otros botones */
+    z-index: 1000; 
+    width: 40px; 
+    height: 40px; 
     display: flex;
     align-items: center;
     justify-content: center;
@@ -63,8 +60,8 @@
 
 #openColorPicker2 {
     position: fixed;
-    bottom: 20px; /* Distancia desde la parte inferior */
-    left: 20px; /* Distancia desde la izquierda */
+    bottom: 20px; 
+    left: 20px; 
     background-color: #007bff;
     color: white;
     border: none;
@@ -74,9 +71,9 @@
     border-radius: 50%;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s ease;
-    z-index: 1000; /* Asegura que esté por encima de otros elementos */
-    width: 40px; /* Mismo ancho que el botón de menú desplegable */
-    height: 40px; /* Misma altura que el botón de menú desplegable */
+    z-index: 1000; 
+    width: 40px; 
+    height: 40px; 
     display: flex;
     align-items: center;
     justify-content: center;
@@ -90,7 +87,7 @@
 #colorPicker2 {
     display: none;
     position: fixed;
-    bottom: 70px; /* Ajusta según sea necesario para que no se superponga con el botón */
+    bottom: 70px; 
     left: 20px;
     background-color: white;
     border-radius: 10px;
@@ -99,7 +96,7 @@
     flex-wrap: wrap;
     gap: 5px;
     width: 120px;
-    z-index: 1001; /* Asegura que esté por encima del botón */
+    z-index: 1001; 
 }
 
 #colorPicker2.show {
@@ -123,16 +120,16 @@ td input[type="checkbox"] {
 .color-picker {
     display: none;
     position: fixed;
-    bottom: 20px; /* Posición encima del botón de color */
-    left: 90px; /* Mover a la derecha del botón principal */
-    background-color: white; /* Fondo sólido */
+    bottom: 20px; 
+    left: 90px; 
+    background-color: white; 
     border-radius: 10px;
     padding: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     flex-wrap: wrap;
     gap: 5px;
-    width: 120px; /* Ajustar el ancho */
-    z-index: 1001; /* Asegurar que esté por encima de otros elementos */
+    width: 120px; 
+    z-index: 1001; 
 }
 
 .color-picker.show {
@@ -149,7 +146,7 @@ td input[type="checkbox"] {
 }
 
 .color-option:hover {
-    transform: scale(1.2); /* Efecto de escala al pasar el mouse */
+    transform: scale(1.2); 
     border-color: #007bff;
 }
 
@@ -183,9 +180,8 @@ td input[type="checkbox"] {
         background-color: #0056b3;
     }
 
-    /* Menú de íconos flotantes */
+    /* --- MENÚ DINÁMICO (Punto 3) --- */
     .floating-menu {
-        display: none; /* Oculto por defecto */
         position: absolute;
         bottom: 60px; /* Posición encima del botón */
         left: 0;
@@ -195,12 +191,23 @@ td input[type="checkbox"] {
         border-radius: 10px;
         padding: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        
+        /* Animación */
+        visibility: hidden; 
+        opacity: 0; 
+        transform: scale(0.9) translateY(10px);
+        transition: visibility 0.2s, opacity 0.2s, transform 0.2s ease-out;
+        transform-origin: bottom left; 
     }
 
-    /* Mostrar el menú cuando está activo */
     .floating-menu.show {
         display: flex;
+        visibility: visible; 
+        opacity: 1; 
+        transform: scale(1) translateY(0);
     }
+    /* --- FIN MENÚ DINÁMICO --- */
+
 
     /* Estilo para los botones del menú flotante */
     .floating-menu button.with-icon {
@@ -260,7 +267,7 @@ td input[type="checkbox"] {
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
-        table-layout: auto; /* Permite que las columnas se ajusten al contenido */
+        table-layout: auto; 
     }
 
     th, td {
@@ -268,64 +275,64 @@ td input[type="checkbox"] {
         padding: 8px;
         text-align: center;
         vertical-align: middle;
-        font-size: 14px; /* Tamaño de fuente más pequeño */
+        font-size: 14px; 
     }
 
     th {
         background-color: #f4f4f4;
         position: sticky;
-        top: 0; /* Asegura que los encabezados se queden fijos en la parte superior */
-        z-index: 2; /* Asegura que los encabezados estén por encima del contenido de la tabla */
+        top: 0; 
+        z-index: 2; 
     }
 
     /* Ajustar el ancho de las columnas */
     th:nth-child(1), td:nth-child(1) { /* Columna del checkbox */
-        width: 40px; /* Más estrecha */
+        width: 40px; 
     }
 
     th:nth-child(2), td:nth-child(2) { /* Columna del título */
-        width: 150px; /* Ancho reducido */
-        white-space: nowrap; /* Evita que el texto se divida en varias líneas */
-        overflow: hidden; /* Oculta el texto que no cabe */
-        text-overflow: ellipsis; /* Muestra "..." si el texto es demasiado largo */
+        width: 150px; 
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis; 
     }
 
     th:nth-child(3), td:nth-child(3) { /* Columna de la talla */
-        width: 120px; /* Ancho reducido */
+        width: 120px; 
     }
 
     th:nth-child(4), td:nth-child(4) { /* Columna del SKU */
-        width: 80px; /* Más estrecha */
+        width: 80px; 
     }
 
     th:nth-child(5), td:nth-child(5) { /* Columna del precio App */
-        width: 80px; /* Más estrecha */
+        width: 80px; 
     }
 
     th:nth-child(6), td:nth-child(6) { /* Columna del precio en Lempiras */
-        width: 80px; /* Más estrecha */
+        width: 80px; 
     }
 
     th:nth-child(7), td:nth-child(7) { /* Columna del precio personalizado */
-        width: 80px; /* Más estrecha */
+        width: 80px; 
     }
 
     th:nth-child(8), td:nth-child(8) { /* Columna del enlace */
-        width: 80px; /* Más estrecha */
+        width: 80px; 
     }
 
     /* Asegurar que el select dentro de la columna de talla ocupe todo el ancho */
     td:nth-child(3) select {
         width: 100%;
         box-sizing: border-box;
-        font-size: 14px; /* Tamaño de fuente más pequeño */
+        font-size: 14px; 
     }
 
     /* Estilos para pantallas pequeñas (móviles) */
     @media (max-width: 767px) {
         th, td {
-            padding: 6px; /* Menos padding para ahorrar espacio */
-            font-size: 12px; /* Tamaño de fuente más pequeño */
+            padding: 6px; 
+            font-size: 12px; 
         }
 
         th:nth-child(1), td:nth-child(1) { /* Columna del checkbox */
@@ -333,11 +340,11 @@ td input[type="checkbox"] {
         }
 
         th:nth-child(2), td:nth-child(2) { /* Columna del título */
-            width: 100px; /* Más estrecha en móviles */
+            width: 100px; 
         }
 
         th:nth-child(3), td:nth-child(3) { /* Columna de la talla */
-            width: 80px; /* Más estrecha en móviles */
+            width: 80px; 
         }
 
         th:nth-child(4), td:nth-child(4) { /* Columna del SKU */
@@ -364,23 +371,23 @@ td input[type="checkbox"] {
         input[type="text"],
         input[type="number"],
         select {
-            font-size: 12px; /* Tamaño de fuente más pequeño */
-            padding: 4px; /* Menos padding */
+            font-size: 12px; 
+            padding: 4px; 
         }
 
         td:nth-child(7) input {
-            height: 17px; /* Altura total (15px + 8px de padding superior e inferior) */
+            height: 17px; 
             padding: 8px;
             font-size: 14px;
-            text-align: center; /* Centrar el texto horizontalmente */
-            line-height: 15px; /* Centrar el texto verticalmente */
+            text-align: center; 
+            line-height: 15px; 
         }
 
     }
 
     /* Contenedor de la tabla con desplazamiento vertical */
     .table-container {
-        height: calc(100vh - 210px); /* Altura dinámica basada en la pantalla */
+        height: calc(100vh - 210px); 
         overflow-y: auto;
     }
 
@@ -463,30 +470,16 @@ td input[type="checkbox"] {
         display: none;
     }
 
-/* Estilos para el contenedor de mensajes */
+/* --- ESTILO SPINNER (Punto 1) --- */
+/* Quitado el fondo, padding, etc., del contenedor */
 #resultado {
     position: fixed;
     top: 5px;
     right: 20px;
     z-index: 1000;
     display: none;
-    background-color: rgba(0, 0, 0, 0.8); /* Fondo oscuro semi-transparente */
-    color: white;
-    padding: 10px 15px;
-    border-radius: 5px;
     font-size: 14px;
-    
-    /* Centrar el nuevo spinner */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-/* Estilos para el ícono de carga (Obsoleto, pero la anim
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    border-radius: 5px;
 }
 
     /* Media queries para dispositivos móviles */
@@ -558,55 +551,55 @@ td input[type="checkbox"] {
 
     /* Estilo base para los botones con íconos */
     button {
-        background-color: #007bff; /* Color de fondo azul */
-        color: white; /* Texto blanco */
-        border: none; /* Sin borde */
-        padding: 5px 10px; /* Espaciado interno */
-        font-size: 14px; /* Tamaño de fuente */
-        cursor: pointer; /* Cursor de tipo puntero */
-        border-radius: 5px; /* Bordes redondeados */
-        display: inline-flex; /* Usar Flexbox para alinear íconos y texto */
-        align-items: center; /* Centrar verticalmente */
-        justify-content: center; /* Centrar horizontalmente */
-        gap: 8px; /* Espacio entre ícono y texto */
-        transition: background-color 0.3s ease, transform 0.2s ease; /* Transiciones suaves */
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
+        background-color: #007bff; 
+        color: white; 
+        border: none; 
+        padding: 5px 10px; 
+        font-size: 14px; 
+        cursor: pointer; 
+        border-radius: 5px; 
+        display: inline-flex; 
+        align-items: center; 
+        justify-content: center; 
+        gap: 8px; 
+        transition: background-color 0.3s ease, transform 0.2s ease; 
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
     }
 
     /* Efecto hover para los botones */
     button:hover {
-        background-color: #0056b3; /* Color de fondo más oscuro al pasar el mouse */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+        background-color: #0056b3; 
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
     }
 
     /* Efecto active (cuando se hace clic) */
     button:active {
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
     }
 
     /* Estilo para los íconos dentro de los botones */
     button i {
-        font-size: 16px; /* Tamaño del ícono */
+        font-size: 16px; 
     }
 
     /* Estilo específico para el botón de editar */
     button .fa-pencil-alt {
-        color: #ffffff; /* Color del ícono de editar */
+        color: #ffffff; 
     }
 
     /* Estilo específico para el botón de guardar */
     button .fa-save {
-        color: #ffffff; /* Color del ícono de guardar */
+        color: #ffffff; 
     }
 </style>
 
 <script>
 
 let items = [];
-let lastDeletedItem = null; // Usado por deleteSelectedItems, pero guardado para posible uso futuro
-let messageTimeout;  // Variable global para almacenar el timeout
+let lastDeletedItem = null; 
+let messageTimeout;  
 let allChecked = false;
-let lastDeletedItems = []; // Usado por undoDelete
+let lastDeletedItems = []; 
 let previewMode = false;
 
 // Inicialización al cargar la página
@@ -631,40 +624,78 @@ function saveToLocalStorage() {
 function obtenerFuente() {
     let enlace = document.getElementById("enlace").value.trim();
     const porcentajeSeleccionado = parseFloat(document.getElementById("percentageSelect").value) / 100;
+    
     if (!enlace) {
         showMessage("Por favor, ingrese un enlace válido.", 'error');
         return;
     }
-    // Si el enlace no comienza con "https://us.shein.com/", modificarlo
+    
     const baseURL = "https://us.shein.com/";
     if (!enlace.startsWith(baseURL)) {
-        // Reemplazar el inicio de la URL hasta el primer '/' después de "shein.com/"
-        const newEnlace = baseURL + enlace.replace(/^https?:\/\/(www\.)?(m\.)?(es\.)?shein\.com\//, "");
+        const newEnlace = baseURL + enlace.replace(/^https?:\/\/(www\.)?(m\.)?es\.shein\.com\//, "");
         document.getElementById("enlace").value = newEnlace;      
-        // Volver a ejecutar la función con la URL corregida
-        obtenerFuente();
-        return; // Salir para evitar que se ejecute con el enlace incorrecto
+        obtenerFuente(); // Llama a la versión corregida de sí mismo
+        return; 
     }
+    
     showMessage("Procesando, por favor espere...", 'processing');
-    const url = `https://script.google.com/macros/s/AKfycbwq82FHIL2RGyh_6pl9jluP2sKltOXzqMHzeMHTPq2ITbM5GHA8uhFLupRDHVA8zhWS/exec?url=${encodeURIComponent(enlace)}`;
-    fetch(url)
-        .then(response => response.text())
-        .then(data => extractData(data, porcentajeSeleccionado, enlace))
+    
+    // Iniciar el fetch con lógica de reintentos
+    fetchWithRetry(enlace, porcentajeSeleccionado, 5); // 5 reintentos
 }
+
+// NUEVA FUNCIÓN: Fetch con reintentos
+function fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft) {
+    if (retriesLeft <= 0) {
+        showMessage("No se extrajo información. Se alcanzó el número máximo de reintentos.", 'error');
+        return;
+    }
+
+    const url = `https://script.google.com/macros/s/AKfycbwq82FHIL2RGyh_6pl9jluP2sKltOXzqMHzeMHTPq2ITbM5GHA8uhFLupRDHVA8zhWS/exec?url=${encodeURIComponent(enlace)}`;
+    
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error de red: ${response.statusText}`);
+            }
+            return response.text();
+        })
+        .then(data => {
+            // Llamar a extractData. Ahora devuelve true/false
+            const success = extractData(data, porcentajeSeleccionado, enlace);
+            
+            if (!success) {
+                // Si la extracción falló, reintentar el fetch
+                console.log(`Datos clave faltantes. Reintentando... ${retriesLeft - 1} intentos restantes.`);
+                showMessage("Reintentando obtener datos...", 'processing');
+                
+                // Usar setTimeout para dar un respiro entre reintentos
+                setTimeout(() => {
+                    fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft - 1);
+                }, 500); // 500ms de espera
+            }
+            // Si success es true, extractData ya mostró el mensaje de éxito.
+        })
+        .catch(error => {
+            console.error("Error en fetch:", error);
+            // Reintentar en caso de error de red
+            setTimeout(() => {
+                fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft - 1);
+            }, 500);
+        });
+}
+
 
 
 /**
  * Intenta encontrar una coincidencia en los datos usando una lista de patrones regex.
  * Devuelve el primer grupo de captura de la primera coincidencia exitosa.
- * @param {string} data El texto HTML/JSON donde buscar.
- * @param {RegExp[]} patterns Un array de expresiones regulares a probar.
- * @returns {string|null} El valor coincidente o null.
  */
 function findMatch(data, patterns) {
     for (const pattern of patterns) {
         const match = data.match(pattern);
         if (match && match[1]) {
-            return match[1]; // Devuelve el primer grupo de captura
+            return match[1]; 
         }
     }
     return null;
@@ -672,52 +703,61 @@ function findMatch(data, patterns) {
 
 
 // Extraer datos del HTML    
-function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
+function extractData(data, porcentajeSeleccionado, enlace) {
     
-    // --- Definición de Patrones (Títulos, SKU, Imagen, Precios) ---
+    // --- Patrones Mejorados ---
+
     const titlePatterns = [
-        /"goods_name":"(.*?)"/i, 
+        /"goods_name"\s*:\s*"(.*?)"/i, // Prioridad 1: JSON gbRawData
+        /<meta property="og:title" content="(.*?)"/i, // Fallback: Meta Tag
         /<h1 class="product-intro__head-name".*?<span class="fsp-element">(.*?)<\/span>/i, 
         /<title>(.*?) \| SHEIN USA<\/title>/i, 
-        /<title>(.*?) \| SHEIN<\/title>/i,     
-        /<meta property="og:title" content="(.*?)"/i 
+        /<title>(.*?) \| SHEIN<\/title>/i
     ];
-
+    
+    // Patrones de SKU mejorados (más flexibles y con fallbacks)
     const skuPatterns = [
-        /"goods_sn":"(s[wz][a-zA-Z0-9]*)"/i,         
-        /<span class="product-intro__head-sku-text">\s*SKU:\s*(s[wz][a-zA-Z0-9]*)<\/span>/i, 
-        /"skc_name":"(s[wz][a-zA-Z0-9]*)"/i,        
-        /data-clipboard-text="(s[wz][a-zA-Z0-9]*)"/i, 
-        /&skc=(s[wz][a-zA-Z0-9]*)&/i                 
+        /"goods_sn"\s*:\s*"(s[a-zA-Z0-9]{5,})"/i,  // Prioridad 1: JSON gbRawData (SPU)
+        /<span class="product-intro__head-sku-text">\s*SKU:\s*(s[a-zA-Z0-9]{5,})<\/span>/i, // HTML
+        `/data-clipboard-text="(s[a-zA-Z0-9]{5,})"/i`, // HTML Botón Copiar
+        /"skc_name"\s*:\s*"(s[a-zA-Z0-9]{5,})"/i,  // Fallback JSON (SPU)
+        /"sku":"(s[a-zA-Z0-9]{5,})"/i, // Fallback ld+json (SPU)
+        /"sku":"(I[a-zA-Z0-9]{5,})"/i // Fallback ld+json (SKU de variante)
     ];
 
+    // Patrones de Imagen mejorados (priorizando JSON y <head>)
     const imagePatterns = [
-        /<div class="crop-image-container" data-before-crop-src="(.*?)"/i,
-        /<link rel="preload".*?href="(\/\/img\.ltwebstatic\.com\/[^"]*)"/i,
-        /data-before-crop-src="(\/\/img\.ltwebstatic\.com\/[^"]*)"/i,
-        /data-src="(\/\/img\.ltwebstatic\.com\/[^"]*)"/i,
-        /<img .*?src="(\/\/img\.ltwebstatic\.com\/[^"]*)"/i
+        /"skcImages"\s*:\s*\[\s*"(.*?)"/i, // Prioridad 1: JSON gbRawData (Galería)
+        /<link rel="preload" as="image" href="(.*_900x\.webp)"/i, // <head> preload
+        /<div class="crop-image-container fsp-element" data-before-crop-src="(.*?)"/i, // HTML <body> (Imagen principal)
+        /"image":"(.*?)"/i, // Fallback: ld+json
+        /<div class="crop-image-container" data-before-crop-src="(.*?)"/i // Fallback: HTML (Cualquier thumbnail)
     ];
 
-    const priceAppPatterns = [ /"retailPrice":{"amount":"([\d.]+)"/i ];
+    // Patrones de Precio mejorados (priorizando retailPrice de gbRawData)
+    // El usuario quiere 21.19 (retailPrice), no 13.12 (salePrice)
+    const priceAppPatterns = [ 
+        /"retailPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i, // Prioridad 1: gbRawData (Precio Original)
+        /"salePrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i, // Fallback 1: gbRawData (Precio de Oferta)
+        /"price":"([\d.]+)",/i // Fallback 2: ld+json (Suele ser el precio de oferta)
+    ];
 
-    // --- Búsqueda de Datos (Campos Únicos) ---
+    // --- Extracción ---
+    
     let image = findMatch(data, imagePatterns);
     const sku = findMatch(data, skuPatterns);
     const priceAppStr = findMatch(data, priceAppPatterns);
     const title = findMatch(data, titlePatterns);
 
-    // --- Lógica de Tallas (Mejorada) ---
+    // --- Lógica de Tallas (Sin cambios, ya era robusta) ---
     let sizes = [];
-    
-    // 1. Intentar extraer del bloque JSON (la forma más confiable)
     const sizeBlockMatch = data.match(/"attr_name":"Talla".*?"attr_value_list":(\[.*?\])/);
     if (sizeBlockMatch && sizeBlockMatch[1]) {
         const sizeBlock = sizeBlockMatch[1]; 
         
         const jsonSizePatterns = [
-            /"attr_local_size_value":"(.*?)"/g, // Para '2', '4', '6', '8/10'
-            /"attr_value_name":"(.*?)"/g       // Para 'XS', 'S', 'M'
+            /"attr_local_size_value":"(.*?)"/g, 
+            /"attr_value_name":"(.*?)"/g       
         ];
 
         const jsonSizes = jsonSizePatterns.flatMap(pattern => 
@@ -726,7 +766,6 @@ function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
         sizes.push(...jsonSizes);
     }
 
-    // 2. Patrones de "fallback" para el HTML (si el JSON falla o cambia)
     const htmlSizePatterns = [
         /data-attr_id="87".*?data-attr_value_name="(.*?)"/g, 
         /<p class="product-intro__size-radio-inner.*?>(.*?)<\/p>/g
@@ -737,17 +776,21 @@ function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
     );
     sizes.push(...htmlSizes);
 
-    // 3. Limpiar y unificar la lista (eliminar duplicados y vacíos)
     const finalSizes = [...new Set(sizes.filter(s => s && s.trim() !== ''))];
+    // --- Fin Lógica de Tallas ---
 
 
-    // --- Validación y Creación del Objeto ---
+    // --- Verificación y guardado (MODIFICADO) ---
     if (image && sku && priceAppStr && title) {
         if (!image.startsWith("http")) {
             image = "https:" + image;
         }
+        
+        // Limpiar imagen de parámetros de thumbnail si es necesario
+        image = image.replace(/_thumbnail_\d+x\d+\.webp/i, '_thumbnail_900x.webp');
 
-        const priceApp = parseFloat(priceAppStr); // Precio Regular
+
+        const priceApp = parseFloat(priceAppStr); 
 
         const item = {
             image: image,
@@ -767,8 +810,9 @@ function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
         updateTable();
 
         showMessage("Datos cargados con éxito.", 'success');
+        return true; // <--- DEVOLVER ÉXITO
     } else {
-        // --- Lógica de Reintento (Original) ---
+         // Esta es la línea que ves en la consola
          console.log("Faltaron datos clave:", { 
              image: !!image, 
              sku: !!sku, 
@@ -776,22 +820,17 @@ function extractData(data, porcentajeSeleccionado, enlace, retryCount = 0) {
              title: !!title 
          });
 
-        if (retryCount < 5) { // Límite de reintentos
-            setTimeout(() => {
-                showMessage("Reintentando obtener datos...", 'processing');
-                obtenerFuente(); // Vuelve a intentar obtener la fuente
-            }, 0); 
-        } else {
-            showMessage("No se extrajo información. Se alcanzó el número máximo de reintentos.", 'error');
-        }
+         // La lógica de reintento ahora está en 'fetchWithRetry'
+         return false; // <--- DEVOLVER FRACASO
     }
 }
 
 
+
 // Calcular precio en lempiras
 function calculatePriceInLempiras(priceApp) {
-    const priceWithISV = priceApp * 1.07; // Suma el 7%
-    return (priceWithISV * 26.3).toFixed(2); // Convierte a lempiras
+    const priceWithISV = priceApp * 1.07; 
+    return (priceWithISV * 26.3).toFixed(2); 
 }
 
 
@@ -807,6 +846,17 @@ function generateSizeSelect(index, item) {
 }
 
 
+// --- IMAGEN CLICKEABLE (Punto 2) ---
+// Nueva función para ser llamada desde la imagen
+function toggleCheckbox(index) {
+    const checkbox = document.querySelector(`.itemCheckbox[data-index="${index}"]`);
+    if (checkbox) {
+        checkbox.checked = !checkbox.checked; // Invierte el estado del check
+        updateButtonStates(); // Actualiza los botones
+    }
+}
+
+
 // Actualizar la tabla
 function updateTable() {
     const tableBody = document.getElementById("itemTableBody");
@@ -814,22 +864,22 @@ function updateTable() {
     items.forEach((item, index) => {
         const row = document.createElement("tr");
         
-        // Aplicar el color de fondo si existe
         if (item.color) {
             row.style.backgroundColor = item.color;
         }
         
-        // Determinar el estilo para el precio personalizado
         const precioPersonalizado = item.precioPersonalizado || 0;
         const priceLempiras = parseFloat(item.priceLempiras) || 0;
         const precioStyle = precioPersonalizado < priceLempiras ? 
             'style="background-color: #ff0000; color: white;"' : 
             'style="background-color: white; color: black;"';
         
+        // --- IMAGEN CLICKEABLE (Punto 2) ---
+        // Se añadió onclick="toggleCheckbox(${index})" y style="... cursor: pointer;" a la <img>
         row.innerHTML = 
             `<td>
                 <div style="position: relative; display: inline-block;">
-                    <img src="${item.image}" alt="${item.title}" style="width:50px;">
+                    <img src="${item.image}" alt="${item.title}" style="width:50px; cursor: pointer;" onclick="toggleCheckbox(${index})">
                     <input type="checkbox" class="itemCheckbox" data-index="${index}" onchange="updateButtonStates()" style="position: absolute; top: 0; right: 0;">
                 </div>
             </td>
@@ -907,7 +957,7 @@ function copySelectedRows() {
 
         const porcentaje = item.percentage !== undefined ? item.percentage : 0;
         
-        // --- ¡CAMBIO AQUÍ! De -2 a -1 ---
+        // Fórmula corregida a RC[-1]
         const priceLempirasFormula = `=INDIRECT("RC[-1]", 0) * 1.07 * 26.3`;
         
         return [
@@ -935,7 +985,7 @@ function copySelectedRows() {
             showMessage("Datos copiados al portapapeles.", 'success');
         }).catch(err => {
             console.error('Error al copiar: ', err);
-            alert("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.");
+            alert("No se pudo copiar automáticamente. Prueba de nuevo o copia manually.");
             showManualCopyModal(textToCopy);
         });
     } else {
@@ -951,12 +1001,12 @@ function copySelectedRows() {
             if (successful) {
             showMessage("Datos copiados al portapapeles.", 'success');
             } else {
-                showMessage("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.", 'error');
+                showMessage("No se pudo copiar automáticamente. Prueba de nuevo o copia manually.", 'error');
                 showManualCopyModal(textToCopy);
             }
         } catch (err) {
             console.error('Error al copiar (fallback): ', err);
-            showMessage("No se pudo copiar automáticamente. Prueba de nuevo o copia manualmente.", 'error');
+            showMessage("No se pudo copiar automáticamente. Prueba de nuevo o copia manually.", 'error');
             showManualCopyModal(textToCopy);
         }
 
@@ -1006,18 +1056,14 @@ function updateButtonStates() {
     const groupByColorButton = document.querySelector('button[onclick="groupByColor()"]');
     const previewButton = document.querySelector('button[onclick="togglePreview()"]');
     
-    // Ocultar/mostrar botones según si hay filas
     const hasItems = items.length > 0;
     
-    // Botón de exportar (solo visible si hay filas seleccionadas)
     exportButton.style.display = selectedItemsCount === 0 ? 'none' : 'flex';
     
-    // Botones que deben aparecer solo si hay filas en la tabla
     colorClientsButton.style.display = hasItems ? 'flex' : 'none';
     groupByColorButton.style.display = hasItems ? 'flex' : 'none';
     previewButton.style.display = hasItems ? 'flex' : 'none';
     
-    // Deshabilitar otros botones como antes
     document.querySelector('button[onclick="openColorPicker(event)"]').disabled = selectedItemsCount === 0;
     document.querySelector('button[onclick="copySelectedRows()"]').disabled = selectedItemsCount === 0;
     document.querySelector('button[onclick="duplicateSelectedRow()"]').disabled = selectedItemsCount === 0;
@@ -1027,41 +1073,35 @@ function updateButtonStates() {
 
 
      
-// Función para mostrar los Mensajes de Estado
+// --- FUNCIÓN DE MENSAJE (Punto 1) ---
+// Actualizada para manejar el spinner sin caja
 function showMessage(message, type) {
     const resultDiv = document.getElementById("resultado");
+    resultDiv.innerHTML = ""; // Limpiar
 
-    // Limpiar el contenido anterior
-    resultDiv.innerHTML = "";
-
-    // Crear un nuevo elemento para el mensaje
-    const messageElement = document.createElement("div");
-    messageElement.className = `message ${type}`;
-
-    // --- ¡CAMBIO AQUÍ! Usa el nuevo spinner ---
     if (type === "processing") {
-        messageElement.innerHTML = `<div class="loader"></div>`; // Nuevo spinner
+        // Sin fondo, sin padding, solo el spinner
+        resultDiv.style.backgroundColor = 'transparent';
+        resultDiv.style.padding = '10px 15px'; // Padding para mantener la posición
+        resultDiv.style.color = 'white'; // Oculta texto residual
+        resultDiv.innerHTML = `<div class="loader"></div>`; 
     } else {
-        messageElement.textContent = message; // Mensaje de texto normal
+        // Con fondo y padding para mensajes
+        resultDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        resultDiv.style.padding = '10px 15px';
+        resultDiv.style.color = 'white';
+        resultDiv.textContent = message; 
     }
 
-    // Agregar el mensaje al contenedor
-    resultDiv.appendChild(messageElement);
+    resultDiv.style.display = 'block'; // Mostrarlo
 
-    // Mostrar el mensaje
-    resultDiv.style.display = 'flex';
-
-    // Ocultar el mensaje después de 3 segundos (excepto para "processing")
     if (type !== "processing") {
-        if (messageTimeout) {
-            clearTimeout(messageTimeout);
-
-        }
+        // Ocultar mensajes de éxito/error
+        if (messageTimeout) clearTimeout(messageTimeout);
         messageTimeout = setTimeout(() => {
-            resultDiv.style.display = 'none'; // Ocultar el div
+            resultDiv.style.display = 'none';
         }, 2000);
     }
-
 }
 
 
@@ -1086,20 +1126,14 @@ function toggleEditPrice(index) {
     document.getElementById("dropdownMenu").classList.remove("show");
 
     if (items[index].editingPrice) {
-        // Guardar el precio editado
         const newPrice = parseFloat(document.getElementById(`priceAppInput${index}`).value);
-
-        // Verificar si el nuevo precio es diferente al precio actual
         if (newPrice !== items[index].priceApp) {
             items[index].priceApp = newPrice;
             items[index].priceLempiras = calculatePriceInLempiras(newPrice, items[index].percentage);
-
-            // Mostrar el mensaje solo si hubo un cambio
             showMessage("Precio de App actualizado con éxito.", 'success');
         }
     }
 
-    // Cambiar el estado de edición
     items[index].editingPrice = !items[index].editingPrice;
     saveToLocalStorage();
     updateTable();
@@ -1126,7 +1160,6 @@ function updateCustomPrice(index) {
     const customPrice = customPriceInput.value;
     items[index].precioPersonalizado = customPrice;
     
-    // Actualizar el estilo según el valor
     const priceLempiras = parseFloat(items[index].priceLempiras) || 0;
     const precioPersonalizado = parseFloat(customPrice) || 0;
     
@@ -1151,10 +1184,8 @@ function togglePreview() {
     const body = document.body;
     const tableHeaders = document.querySelectorAll("#itemTable thead th");
 
-    // Columnas a ocultar (Índices 0-based): 4 (Precio App), 5 (Precio Lempiras)
     const columnsToHide = [4, 5]; 
 
-    // Elementos adicionales a ocultar
     const title = document.querySelector("h2");
     const enlaceInput = document.getElementById("enlace");
     const addButton = document.querySelector("button[onclick='obtenerFuente()']");
@@ -1162,14 +1193,11 @@ function togglePreview() {
     const openColorPicker2Button = document.getElementById("openColorPicker2");
     const downloadTableImageButton = document.getElementById("downloadTableImage");
     
-    // Fila del total
     const totalRow = document.getElementById("totalRow");
 
     if (!previewMode) {
-        // Activar el modo de vista previa
         body.classList.add("preview-mode");
         
-        // Ocultar las columnas
         Array.from(tableBody.rows).forEach(row => {
             columnsToHide.forEach(index => {
                 if (row.cells[index]) {
@@ -1178,36 +1206,29 @@ function togglePreview() {
             });
         });
 
-        // Ocultar los encabezados
         tableHeaders.forEach((header, index) => {
             if (columnsToHide.includes(index)) {
                 header.classList.add("header-hidden");
             }
         });
 
-        // Ocultar elementos adicionales
         if (title) title.style.display = 'none';
         if (enlaceInput) enlaceInput.style.display = 'none';
         if (addButton) addButton.style.display = 'none';
         if (clearButton) clearButton.style.display = 'none';
         
-        // Ocultar la fila del total
         if (totalRow) {
             totalRow.style.display = 'none';
         }
 
-        // Mostrar botones de vista previa
         openColorPicker2Button.style.display = 'inline-block';
         downloadTableImageButton.style.display = 'inline-block';
 
-        // Cambiar el ícono del botón de vista previa
         dropdownToggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
         dropdownToggle.onclick = togglePreview;
     } else {
-        // Desactivar el modo de vista previa
         body.classList.remove("preview-mode");
 
-        // Mostrar todas las columnas
         Array.from(tableBody.rows).forEach(row => {
             columnsToHide.forEach(index => {
                 if (row.cells[index]) {
@@ -1216,39 +1237,33 @@ function togglePreview() {
             });
         });
 
-        // Mostrar los encabezados
         tableHeaders.forEach((header, index) => {
             if (columnsToHide.includes(index)) {
                 header.classList.remove("header-hidden");
             }
         });
 
-        // Mostrar todas las filas de la tabla
         Array.from(tableBody.rows).forEach(row => {
-            row.style.display = ''; // Asegurarse de mostrar todas las filas
+            row.style.display = ''; 
         });
 
-        // Mostrar elementos adicionales
         if (title) title.style.display = '';
         if (enlaceInput) enlaceInput.style.display = '';
         if (addButton) addButton.style.display = '';
         if (clearButton) clearButton.style.display = '';
 
-        // Asegurarse de que la fila del total siga oculta
         if (totalRow) {
             totalRow.style.display = 'none';
         }
 
-        // Ocultar botones de vista previa
         openColorPicker2Button.style.display = 'none';
         downloadTableImageButton.style.display = 'none';
 
-        // Restaurar el ícono del botón de vista previa
         dropdownToggle.innerHTML = '<i class="fas fa-bars"></i>';
         dropdownToggle.onclick = toggleDropdown;
     }
 
-    previewMode = !previewMode; // Cambiar el estado de la vista previa
+    previewMode = !previewMode; 
 }
 
 
@@ -1264,11 +1279,7 @@ function duplicateSelectedRow() {
 
     const index = parseInt(selectedCheckbox.getAttribute('data-index'));
     const itemToDuplicate = items[index];
-
-    // Crea una copia del item
     const newItem = { ...itemToDuplicate };
-
-    // Inserta la copia justo debajo de la original
     items.splice(index + 1, 0, newItem); 
 
     saveToLocalStorage();
@@ -1302,7 +1313,7 @@ function handleMenuClick(action) {
 
 // Función para abrir el selector de colores
 function openColorPicker(event) {
-    event.stopPropagation(); // Evitar que el clic se propague y cierre el menú
+    event.stopPropagation(); 
     const colorPicker = document.getElementById("colorPicker");
     colorPicker.classList.toggle("show");
 }
@@ -1315,16 +1326,11 @@ function applyColorToSelectedRows(color) {
         const index = checkbox.getAttribute('data-index');
         const row = document.querySelector(`#itemTableBody tr:nth-child(${parseInt(index) + 1})`);
         if (row) {
-            // Aplicar el color a toda la fila
             row.style.backgroundColor = color;
-            
-            // Aplicar el color específicamente a la celda de la imagen
             const imageCell = row.querySelector('td:first-child');
             if (imageCell) {
                 imageCell.style.backgroundColor = color;
             }
-            
-            // Guardar el color en el item
             items[index].color = color;
         }
     });
@@ -1354,26 +1360,20 @@ document.addEventListener("click", function (event) {
 function groupByColor() {
     document.getElementById("dropdownMenu").classList.remove("show");
 
-    // Crear un objeto para agrupar los ítems por color
     const groupedItems = {};
-
-    // Recorrer todos los ítems y agruparlos por color
     items.forEach(item => {
-        const color = item.color || '#ffffff'; // Si no hay color, usar blanco por defecto
-
+        const color = item.color || '#ffffff'; 
         if (!groupedItems[color]) {
             groupedItems[color] = [];
         }
         groupedItems[color].push(item);
     });
 
-    // Reorganizar los ítems en la lista principal
     const newItems = [];
     Object.keys(groupedItems).forEach(color => {
         newItems.push(...groupedItems[color]);
     });
 
-    // Actualizar la lista de ítems
     items = newItems;
 
     saveToLocalStorage();
@@ -1395,7 +1395,6 @@ function filterRowsByColor(color) {
     const filteredRows = [];
 
     rows.forEach((row, index) => {
-        // Usar color blanco por defecto si no hay color definido
         const itemColor = items[index].color || '#ffffff';
         
         if (itemColor.toLowerCase() === color.toLowerCase()) {
@@ -1423,7 +1422,7 @@ document.addEventListener("click", function (event) {
     const colorPicker2 = document.getElementById("colorPicker2");
     const openColorPicker2Button = document.getElementById("openColorPicker2");
     if (!colorPicker2.contains(event.target) && !openColorPicker2Button.contains(event.target)) {
-        closeColorPicker2(); // Cierra la paleta si se hace clic fuera
+        closeColorPicker2(); 
     }
 });
 
@@ -1432,8 +1431,7 @@ function calculateTotalPrice(filteredRows) {
     let totalPrice = 0;
 
     filteredRows.forEach(row => {
-        // Lógica de modo "normal" ahora es la única lógica
-        const priceCell = row.querySelector("td:nth-child(7)"); // Columna "Precio"
+        const priceCell = row.querySelector("td:nth-child(7)"); 
         if (priceCell) {
             const input = priceCell.querySelector("input");
             if (input) {
@@ -1451,23 +1449,28 @@ function showTotalRow(totals) {
     const tableBody = document.getElementById("itemTableBody");
     let totalRow = document.getElementById("totalRow");
 
-    // Si la fila de total ya existe, la eliminamos
     if (totalRow) {
         totalRow.remove();
     }
 
-    // Crear la fila de total
     totalRow = document.createElement("tr");
     totalRow.id = "totalRow";
     
     totalRow.innerHTML = `
-        <td colspan="2" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total en Lempiras:</td> <td class="hidden-cell"></td> <td class="hidden-cell"></td> <td class="hidden-cell"></td> <td class="hidden-cell"></td> <td style="font-weight: bold; background-color: #f4f4f4;">${totals.totalPrice.toFixed(2)}</td> <td class="hidden-cell"></td> `;
+        <td colspan="2" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total en Lempiras:</td> 
+        <td class="hidden-cell"></td> 
+        <td class="hidden-cell"></td> 
+        <td class="hidden-cell"></td> 
+        <td class="hidden-cell"></td> 
+        <td style="font-weight: bold; background-color: #f4f4f4;">${totals.totalPrice.toFixed(2)}</td> 
+        <td class="hidden-cell"></td> 
+    `;
 
     tableBody.appendChild(totalRow);
 }
 
 
-// --- ¡NUEVA FUNCIÓN DE RESPALDO PARA DESCARGAR! ---
+// --- FUNCIÓN DE RESPALDO PARA DESCARGAR ---
 function downloadFallback(canvas) {
     const image = canvas.toDataURL("image/png", 1.0);
     const link = document.createElement("a");
@@ -1479,7 +1482,7 @@ function downloadFallback(canvas) {
 }
 
 
-// --- ¡FUNCIÓN DE DESCARGA ACTUALIZADA PARA COMPARTIR! ---
+// --- FUNCIÓN DE DESCARGA ACTUALIZADA PARA COMPARTIR (Punto 2) ---
 function downloadTableImage() {
     const table = document.getElementById("itemTable");
     const tableContainer = document.querySelector(".table-container");
@@ -1519,7 +1522,7 @@ function downloadTableImage() {
                     console.log('API de compartir no soportada, usando descarga directa.');
                     downloadFallback(canvas);
                 }
-            }, 'image/png'); // Especifica el tipo de imagen
+            }, 'image/png'); 
             
         }).catch(error => {
             console.error("Error al capturar la tabla:", error);
@@ -1577,7 +1580,6 @@ function importData() {
     try {
         let importedItems = [];
         
-        // Verificar si el texto comienza con { (formato JSON)
         if (importText.startsWith('{') || importText.startsWith('[') || importText.includes('---ITEM---')) {
             // Formato JSON (el actual)
             importedItems = importText.split('\n---ITEM---\n').map(itemStr => {
@@ -1598,9 +1600,7 @@ function importData() {
             return;
         }
 
-        // Procesar los items importados
         importedItems.forEach(item => {
-            // Actualizar colorClients si el item tiene color y clientName
             if (item.color && (item.clientName || item.clientPayment !== undefined)) {
                 colorClients[item.color] = {
                     name: item.clientName || '',
@@ -1608,7 +1608,6 @@ function importData() {
                 };
             }
             
-            // Asegurarse de que el precio en lempiras esté calculado
             if (!item.priceLempiras && item.priceApp) {
                 item.priceLempiras = calculatePriceInLempiras(item.priceApp);
             }
@@ -1635,33 +1634,19 @@ function parseExcelFormat(text) {
         try {
             const columns = line.split('\t');
             
-            // Extraer la URL de la imagen (eliminando la fórmula =IMAGE())
             let imageUrl = columns[0].replace(/^=IMAGE\("|"\)$/g, '');
-            
-            // Extraer el título
             const title = columns[1];
-            
-            // Extraer la talla (puede estar en diferentes columnas según el formato)
             const size = columns[2];
-            
-            // Extraer SKU
             const sku = columns[3];
-            
-            // Extraer precio App
             const priceApp = parseFloat(columns[4]) || 0;
-            
-            // Extraer precio personalizado (última columna)
             const customPrice = parseFloat(columns[columns.length - 1]) || '';
             
-            // Extraer enlace (eliminando la fórmula =HYPERLINK())
             let link = '';
-            // El índice del enlace cambia porque eliminamos la columna de descuento
-            const linkColumnIndex = 7; // Asumiendo que el formato de copia era fijo
+            const linkColumnIndex = 7; 
             if (columns[linkColumnIndex] && columns[linkColumnIndex].includes('HYPERLINK')) {
                 link = columns[linkColumnIndex].replace(/^=HYPERLINK\("|".*$/g, '');
             }
             
-            // Crear el nuevo item
             const newItem = {
                 image: imageUrl,
                 title: title,
@@ -1672,7 +1657,7 @@ function parseExcelFormat(text) {
                 priceLempiras: calculatePriceInLempiras(priceApp),
                 enlace: link || `https://us.shein.com/search?keywords=${sku}`,
                 precioPersonalizado: customPrice,
-                color: '#ffffff' // Color por defecto
+                color: '#ffffff' 
             };
             
             items.push(newItem);
@@ -1695,7 +1680,6 @@ function loadColorClients() {
         try {
             colorClients = JSON.parse(savedColorClients);
             
-            // Migración: si el valor es string (formato antiguo), convertirlo a objeto
             for (const color in colorClients) {
                 if (typeof colorClients[color] === 'string') {
                     colorClients[color] = {
@@ -1717,7 +1701,6 @@ function showColorClientsModal() {
     const modal = document.getElementById("colorClientsModal");
     const listContainer = document.getElementById("colorClientsList");
     
-    // Obtener colores únicos
     const colors = items.map(item => item.color).filter(color => color !== undefined);
     const usedColors = [...new Set(colors)];
     
@@ -1738,7 +1721,6 @@ function showColorClientsModal() {
         colorDiv.style.borderBottom = '1px solid #eee';
         colorDiv.style.gap = '10px';
         
-        // Cuadro de color
         const colorBox = document.createElement("div");
         colorBox.style.width = '20px';
         colorBox.style.height = '20px';
@@ -1746,7 +1728,6 @@ function showColorClientsModal() {
         colorBox.style.border = '1px solid #ccc';
         colorBox.style.flexShrink = '0';
         
-        // Input para el nombre
         const clientNameInput = document.createElement("input");
         clientNameInput.type = 'text';
         clientNameInput.value = (colorClients[color] && colorClients[color].name) || '';
@@ -1755,7 +1736,6 @@ function showColorClientsModal() {
         clientNameInput.style.padding = '5px';
         clientNameInput.disabled = true;
         
-        // Input para el monto (nuevo comportamiento)
         const clientPaymentInput = document.createElement("input");
         clientPaymentInput.type = 'number';
         clientPaymentInput.placeholder = 'Monto';
@@ -1763,19 +1743,16 @@ function showColorClientsModal() {
         clientPaymentInput.style.padding = '5px';
         clientPaymentInput.disabled = true;
         
-        // Mostrar el monto guardado (solo si no es 0)
         if (colorClients[color] && colorClients[color].payment !== 0) {
             clientPaymentInput.value = colorClients[color].payment;
         }
         
-        // Limpiar el campo al hacer clic
         clientPaymentInput.addEventListener('focus', () => {
             if (clientPaymentInput.value === '0') {
                 clientPaymentInput.value = '';
             }
         });
         
-        // Botón de editar/guardar
         const editButton = document.createElement("button");
         editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
         editButton.style.padding = '5px 10px';
@@ -1783,17 +1760,14 @@ function showColorClientsModal() {
         
         editButton.onclick = function() {
             if (clientNameInput.disabled) {
-                // Modo edición
                 clientNameInput.disabled = false;
                 clientPaymentInput.disabled = false;
-                clientNameMinput.focus();
+                clientNameInput.focus();
                 editButton.innerHTML = '<i class="fas fa-save"></i>';
             } else {
-                // Modo guardar
                 clientNameInput.disabled = true;
                 clientPaymentInput.disabled = true;
                 
-                // Guardar datos (si el monto está vacío, se guarda como undefined)
                 const paymentValue = clientPaymentInput.value.trim() === '' ? undefined : parseFloat(clientPaymentInput.value);
                 
                 colorClients[color] = {
@@ -1803,7 +1777,6 @@ function showColorClientsModal() {
                 
                 saveColorClients();
                 
-                // Actualizar items
                 items.forEach(item => {
                     if (item.color === color) {
                         item.clientName = colorClients[color].name;
@@ -1814,7 +1787,6 @@ function showColorClientsModal() {
                 saveToLocalStorage();
                 editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
                 
-                // Forzar actualización visual: mostrar placeholder si no hay monto
                 if (clientPaymentInput.value === '0' || clientPaymentInput.value.trim() === '') {
                     clientPaymentInput.value = '';
                 }
@@ -1854,12 +1826,10 @@ function confirmClearAllClients() {
 
 // Función para borrar todos los clientes y montos
 function clearAllClients() {
-    // Limpiar el objeto colorClients (ahora almacenará tanto nombre como pago)
     for (const color in colorClients) {
         colorClients[color] = { name: '', payment: 0 };
     }
     
-    // Actualizar los items
     items.forEach(item => {
         if (item.color) {
             item.clientName = '';
@@ -1869,7 +1839,7 @@ function clearAllClients() {
     
     saveColorClients();
     saveToLocalStorage();
-    showColorClientsModal(); // Recargar la vista
+    showColorClientsModal(); 
     showMessage("Todos los clientes y pagos han sido eliminados.", 'success');
 }
 </script>
@@ -1895,37 +1865,40 @@ function clearAllClients() {
 
         <div class="floating-dropdown">
             <button class="dropdown-toggle with-icon" onclick="toggleDropdown()">
-                <i class="fas fa-bars"></i> </button>
+                <i class="fas fa-bars"></i> 
+            </button>
 
             <div class="floating-menu" id="dropdownMenu">
-                <button id="groupByColorButton" class="with-icon" onclick="groupByColor()">
-                    <i class="fas fa-sort-amount-down"></i> </button>
-                <button id="colorButton" class="with-icon" onclick="openColorPicker(event)" disabled>
-                    <i class="fas fa-palette"></i> </button>
-                <button id="duplicateButton" class="with-icon" onclick="duplicateSelectedRow()" disabled>
-                    <i class="fas fa-layer-group fa-lg"></i> </button>
-                <button id="copyButton" class="with-icon" onclick="copySelectedRows()" disabled>
-                    <i class="fas fa-copy"></i> </button>
-
-                <button id="deleteButton" class="with-icon" onclick="deleteSelectedItems()" disabled>
-                    <i class="fas fa-trash-alt"></i> </button>
-                <button id="undoButton" class="with-icon" onclick="undoDelete()" disabled>
-                    <i class="fas fa-undo"></i> </button>
-                <button id="previewButton" class="with-icon" onclick="togglePreview()">
-                    <i class="fas fa-eye"></i> </button>
-
-
-<button id="exportButton" class="with-icon" onclick="exportSelectedRows()">
-    <i class="fas fa-file-export"></i> </button>
-<button id="importButton" class="with-icon" onclick="showImportModal()">
-    <i class="fas fa-file-import"></i> </button>
-
-
-<button id="colorClientsButton" class="with-icon" onclick="showColorClientsModal()">
-    <i class="fas fa-address-book"></i> </button>
-
-
-
+                <button id="groupByColorButton" class="with-icon" onclick="groupByColor()" title="Agrupar por Color">
+                    <i class="fas fa-sort-amount-down"></i> 
+                </button>
+                <button id="colorButton" class="with-icon" onclick="openColorPicker(event)" disabled title="Asignar Color">
+                    <i class="fas fa-palette"></i> 
+               </button>
+                <button id="duplicateButton" class="with-icon" onclick="duplicateSelectedRow()" disabled title="Duplicar Fila">
+                    <i class="fas fa-layer-group fa-lg"></i> 
+                </button>
+                <button id="copyButton" class="with-icon" onclick="copySelectedRows()" disabled title="Copiar Filas">
+                    <i class="fas fa-copy"></i> 
+                </button>
+                <button id="deleteButton" class="with-icon" onclick="deleteSelectedItems()" disabled title="Eliminar Filas">
+                    <i class="fas fa-trash-alt"></i> 
+                </button>
+                <button id="undoButton" class="with-icon" onclick="undoDelete()" disabled title="Deshacer">
+                    <i class="fas fa-undo"></i> 
+                </button>
+                <button id="previewButton" class="with-icon" onclick="togglePreview()" title="Vista Previa">
+                    <i class="fas fa-eye"></i> 
+                </button>
+                <button id="exportButton" class="with-icon" onclick="exportSelectedRows()" title="Exportar Datos">
+                    <i class="fas fa-file-export"></i> 
+                </button>
+                <button id="importButton" class="with-icon" onclick="showImportModal()" title="Importar Datos">
+                    <i class="fas fa-file-import"></i> 
+                </button>
+                <button id="colorClientsButton" class="with-icon" onclick="showColorClientsModal()" title="Gestionar Clientes">
+                    <i class="fas fa-address-book"></i> 
+                </button>
             </div>
         </div>
 
@@ -1960,10 +1933,23 @@ function clearAllClients() {
 
 
 <div class="color-picker" id="colorPicker">
-    <div class="color-option" style="background-color: #ffffff;" onclick="applyColorToSelectedRows('#ffffff')"></div> <div class="color-option" style="background-color: #D32F2F;" onclick="applyColorToSelectedRows('#D32F2F')"></div> <div class="color-option" style="background-color: #F57C00;" onclick="applyColorToSelectedRows('#F57C00')"></div> <div class="color-option" style="background-color: #FBC02D;" onclick="applyColorToSelectedRows('#FBC02D')"></div> <div class="color-option" style="background-color: #388E3C;" onclick="applyColorToSelectedRows('#388E3C')"></div> <div class="color-option" style="background-color: #00897B;" onclick="applyColorToSelectedRows('#00897B')"></div> <div class="color-option" style="background-color: #1976D2;" onclick="applyColorToSelectedRows('#1976D2')"></div> <div class="color-option" style="background-color: #512DA8;" onclick="applyColorToSelectedRows('#512DA8')"></div> <div class="color-option" style="background-color: #7B1FA2;" onclick="applyColorToSelectedRows('#7B1FA2')"></div> <div class="color-option" style="background-color: #C2185B;" onclick="applyColorToSelectedRows('#C2185B')"></div> <div class="color-option" style="background-color: #795548;" onclick="applyColorToSelectedRows('#795548')"></div> <div class="color-option" style="background-color: #616161;" onclick="applyColorToSelectedRows('#616161')"></div> </div>
+    <div class="color-option" style="background-color: #ffffff;" onclick="applyColorToSelectedRows('#ffffff')"></div>
+    <div class="color-option" style="background-color: #D32F2F;" onclick="applyColorToSelectedRows('#D32F2F')"></div>
+    <div class="color-option" style="background-color: #F57C00;" onclick="applyColorToSelectedRows('#F57C00')"></div>
+    <div class="color-option" style="background-color: #FBC02D;" onclick="applyColorToSelectedRows('#FBC02D')"></div>
+    <div class="color-option" style="background-color: #388E3C;" onclick="applyColorToSelectedRows('#388E3C')"></div>
+    <div class="color-option" style="background-color: #00897B;" onclick="applyColorToSelectedRows('#00897B')"></div>
+    <div class="color-option" style="background-color: #1976D2;" onclick="applyColorToSelectedRows('#1976D2')"></div>
+    <div class="color-option" style="background-color: #512DA8;" onclick="applyColorToSelectedRows('#512DA8')"></div>
+    <div class="color-option" style="background-color: #7B1FA2;" onclick="applyColorToSelectedRows('#7B1FA2')"></div>
+    <div class="color-option" style="background-color: #C2185B;" onclick="applyColorToSelectedRows('#C2185B')"></div>
+    <div class="color-option" style="background-color: #795548;" onclick="applyColorToSelectedRows('#795548')"></div>
+    <div class="color-option" style="background-color: #616161;" onclick="applyColorToSelectedRows('#616161')"></div>
+</div>
 
 <button id="openColorPicker2" class="with-icon" onclick="openColorPicker2(event)" style="display: none; position: fixed; bottom: 20px; left: 70px;">
-    <i class="fas fa-filter"></i> </button>
+    <i class="fas fa-filter"></i>
+</button>
 
 <div class="color-picker" id="colorPicker2">
     <div class="color-option" style="background-color: #ffffff;" onclick="filterRowsByColor('#ffffff')"></div>
@@ -1980,9 +1966,8 @@ function clearAllClients() {
     <div class="color-option" style="background-color: #616161;" onclick="filterRowsByColor('#616161')"></div>
 </div>
 
-<button id="downloadTableImage" class="with-icon" onclick="downloadTableImage()" style="display: none; position: fixed; bottom: 20px; left: 120px;">
-    <i class="fas fa-share-alt"></i>
-</button>
+<button id="downloadTableImage" class="with-icon" onclick="downloadTableImage()" style="display: none; position: fixed; bottom: 20px; left: 120px;" title="Compartir/Descargar Imagen">
+    <i class="fas fa-share-alt"></i> </button>
 
 
 <div id="importModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000; width: 80%; max-width: 500px;">
