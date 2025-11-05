@@ -489,15 +489,23 @@
 		}
 
 		/* --- ESTILO SPINNER (Punto 1) --- */
-		/* Quitado el fondo, padding, etc., del contenedor */
+		/* --- MODIFICADO: Posición inferior central (Req 2) --- */
 		#resultado {
 			position: fixed;
-			top: 5px;
-			right: 20px;
+			bottom: 20px;
+			left: 50%;
+			transform: translateX(-50%);
+			top: auto;
 			z-index: 1000;
 			display: none;
 			font-size: 14px;
 			border-radius: 5px;
+			width: auto;
+			/* Auto-ancho */
+			max-width: 400px;
+			/* Ancho máximo */
+			text-align: center;
+			/* Texto centrado */
 		}
 
 		/* Media queries para dispositivos móviles */
@@ -514,8 +522,11 @@
 
 			/* LIMPIEZA 2: Eliminado .dropdown-menu */
 
+			/* --- MODIFICADO: Posición inferior (Req 2) --- */
 			#resultado {
-				max-width: 250px;
+				width: 90%;
+				/* Ancho en móvil */
+				max-width: 400px;
 				padding: 8px;
 				font-size: 10px;
 			}
@@ -1462,6 +1473,7 @@
 
 				// --- IMAGEN CLICKEABLE (Punto 2) ---
 				// Se añadió onclick="toggleCheckbox(${index})" y style="... cursor: pointer;" a la <img>
+				// --- REQUERIDO 1: Añadido ondblclick a la celda de Precio Lempiras ---
 				row.innerHTML =
 					`<td>
 						<div style="position: relative; display: inline-block;">
@@ -1480,7 +1492,7 @@
 							${item.editingPrice ? `<input type="number" id="priceAppInput${index}" value="${item.priceApp.toFixed(2)}" class="small-input editable">` : item.priceApp.toFixed(2)}
 						</div>
 					</td>
-					<td class="preview-hidden">${item.priceLempiras}</td>
+					<td class="preview-hidden" style="cursor: pointer;" title="Doble-clic para abrir enlace" ondblclick="window.open('${item.enlace}', '_blank')">${item.priceLempiras}</td>
 					<td><input type="number" id="customPriceInput${index}" class="small-input" value="${item.precioPersonalizado}" placeholder="Precio" oninput="updateCustomPrice(${index})" ${precioStyle}></td>
 					<td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>`;
 
@@ -2204,6 +2216,7 @@
 			}
 		}
 
+		// --- CORRECCIÓN DEL BUG ---
 		function parseExcelFormat(text) {
 			const lines = text.split('\n').filter(line => line.trim() !== '');
 			const items = [];
@@ -2220,7 +2233,8 @@
 					const customPrice = parseFloat(columns[columns.length - 1]) || '';
 
 					let link = '';
-					const linkColumnIndex = 7;
+					// --- ¡CORREGIDO! El índice era 7, debe ser 6 (la 7ª columna) ---
+					const linkColumnIndex = 6;
 					if (columns[linkColumnIndex] && columns[linkColumnIndex].includes('HYPERLINK')) {
 						link = columns[linkColumnIndex].replace(/^=HYPERLINK\("|".*$/g, '');
 					}
@@ -2246,6 +2260,8 @@
 
 			return items;
 		}
+		// --- FIN DE LA CORRECCIÓN ---
+
 
 		// Objeto para guardar la asociación de colores con clientes
 		let colorClients = {};
