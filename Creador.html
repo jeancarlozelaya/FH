@@ -253,6 +253,7 @@
 
 		/* --- FIN MENÚ DINÁMICO --- */
 
+
 		/* Estilo para los botones del menú flotante */
 		.floating-menu button.with-icon {
 			background-color: #007bff;
@@ -1182,7 +1183,7 @@
 
 		// --- MODIFICADO: window.onload ---
 		// Ahora carga el perfil primero
-		window.onload = function () {
+		window.onload = function() {
 			loadProfileNames(); // <--- NUEVO
 			const savedProfile = localStorage.getItem("currentProfile");
 			if (savedProfile) {
@@ -1257,7 +1258,7 @@
 				clearButton.innerHTML = '<i class="fas fa-times"></i> Cancelar';
 				clearButton.classList.add('cancel-button');
 
-				clearButton.onclick = function () {
+				clearButton.onclick = function() {
 					if (currentFetchController) {
 						currentFetchController.abort();
 					}
@@ -1570,7 +1571,7 @@
 
 		// Deshacer eliminación
 		function undoDelete() {
-			document.getElementById("dropdownMenu").classList.remove("show");
+			// document.getElementById("dropdownMenu").classList.remove("show"); // <- Eliminado de aquí
 			if (lastDeletedItems.length > 0) {
 				items = items.concat(lastDeletedItems);
 				lastDeletedItems = [];
@@ -1617,7 +1618,7 @@
 
 		// Copiar Filas Seleccionadas Para Exportar
 		function copySelectedRows() {
-			document.getElementById("dropdownMenu").classList.remove("show");
+			// document.getElementById("dropdownMenu").classList.remove("show"); // <- Eliminado de aquí
 			const selectedItems = Array.from(document.querySelectorAll('.itemCheckbox:checked')).map(checkbox => {
 				const index = checkbox.getAttribute('data-index');
 				const item = items[index];
@@ -1955,7 +1956,13 @@
 			dropdownMenu.classList.toggle("show");
 		}
 
-		document.addEventListener("click", function (event) {
+		// --- ¡NUEVA FUNCIÓN PARA CERRAR EL MENÚ! ---
+		function closeDropdownMenu() {
+			document.getElementById("dropdownMenu").classList.remove("show");
+		}
+		// --- FIN ---
+
+		document.addEventListener("click", function(event) {
 			var dropdown = document.querySelector(".floating-dropdown");
 			var menu = document.getElementById("dropdownMenu");
 
@@ -1999,7 +2006,7 @@
 		}
 
 		// Cerrar el menú de colores al hacer clic fuera de él
-		document.addEventListener("click", function (event) {
+		document.addEventListener("click", function(event) {
 			const colorPicker = document.getElementById("colorPicker");
 			const colorButton = document.getElementById("colorButton");
 			if (!colorPicker.contains(event.target) && !colorButton.contains(event.target)) {
@@ -2067,7 +2074,7 @@
 		}
 
 		// Cerrar la paleta al hacer clic fuera de ella
-		document.addEventListener("click", function (event) {
+		document.addEventListener("click", function(event) {
 			const colorPicker2 = document.getElementById("colorPicker2");
 			const openColorPicker2Button = document.getElementById("openColorPicker2");
 			if (!colorPicker2.contains(event.target) && !openColorPicker2Button.contains(event.target)) {
@@ -2094,6 +2101,8 @@
 				totalPrice
 			};
 		}
+
+
 
 		function showTotalRow(totals) {
 			const tableBody = document.getElementById("itemTableBody");
@@ -2409,7 +2418,7 @@
 				editButton.title = 'Editar'; // Tooltip
 
 				// Lógica del botón (sin cambios, solo se actualiza el ícono y el title)
-				editButton.onclick = function () {
+				editButton.onclick = function() {
 					if (clientNameInput.disabled) {
 						clientNameInput.disabled = false;
 						clientPaymentInput.disabled = false;
@@ -2583,7 +2592,7 @@
 				infoDiv.appendChild(countSpan);
 
 				// Clic para cargar (Req 1)
-				infoDiv.onclick = function () {
+				infoDiv.onclick = function() {
 					if (nameInput.disabled && i !== currentProfile) {
 						switchProfile(i);
 					}
@@ -2620,7 +2629,7 @@
 				cancelBtn.style.display = 'none';
 
 				// --- Lógica de botones ---
-				editBtn.onclick = function (e) {
+				editBtn.onclick = function(e) {
 					e.stopPropagation(); // Evitar que el clic active el infoDiv.onclick
 					if (nameInput.disabled) {
 						// Modo Editar
@@ -2649,7 +2658,7 @@
 					}
 				};
 
-				deleteBtn.onclick = function (e) {
+				deleteBtn.onclick = function(e) {
 					e.stopPropagation(); // Evitar que el clic active el infoDiv.onclick
 					// Ocultar info y acciones (Req 3)
 					infoDiv.style.display = 'none';
@@ -2659,7 +2668,7 @@
 					cancelBtn.style.display = 'inline-flex';
 				};
 
-				cancelBtn.onclick = function (e) {
+				cancelBtn.onclick = function(e) {
 					e.stopPropagation();
 					// Mostrar info y acciones (Req 3)
 					infoDiv.style.display = 'flex';
@@ -2669,7 +2678,7 @@
 					cancelBtn.style.display = 'none';
 				};
 
-				confirmBtn.onclick = function (e) {
+				confirmBtn.onclick = function(e) {
 					e.stopPropagation();
 					deleteProfile(i);
 				};
