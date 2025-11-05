@@ -810,76 +810,78 @@ function extractData(data, porcentajeSeleccionado, enlace) {
     const priceAppStr = findMatch(data, priceAppPatterns); 
     const title = findMatch(data, titlePatterns);
 
-    // --- Lógica de Tallas (¡MODIFICADA!) ---
-    let sizes = [];
+// --- Lógica de Tallas (¡MODIFICADA!) ---
+let sizes = [];
+
+// INTENTO 1: Usar "base_size_sort" (El más fiable, sugerido por ti)
+// Busca: "base_size_sort":{"0XL":0,"1XL":1,"2XL":2,"3XL":3,"4XL":4}
+// O: "base_size_sort":{"9-12M":4,"6-9M":3,"18-24M":6,"3-6M":2,"12-18M":5}
+const baseSizeSortMatch = data.match(/"base_size_sort":(\{.*?\})/);
+
+if (baseSizeSortMatch && baseSizeSortMatch[1]) {
+    try {
+        const sizeObject = JSON.parse(baseSizeSortMatch[1]);
+        sizes = Object.keys(sizeObject); // Extrae ["0XL", "1XL", "2XL", "3XL", "4XL"] o ["9-12M", "6-9M", etc.]
+    } catch (e) {
+        console.error("Fallo al parsear JSON de base_size_sort:", e);
+        sizes = []; // Asegurarse de que sizes esté vacío si JSON.parse falla
+    }
+}
+
+// INTENTO 2: Usar "attr_value_list" (Para casos como "0 (S)")
+if (sizes.length === 0) {
+    // Añadimos la 's' al final para que '.' incluya saltos de línea (para m.shein.com)
+    const sizeBlockMatch = data.match(/"attr_name":"Talla".*?"attr_value_list":(\[.*?\])/s);
     
-    // INTENTO 1: Usar "base_size_sort" (El más fiable, sugerido por ti)
-    // Busca: "base_size_sort":{"0XL":0,"1XL":1,"2XL":2,"3XL":3,"4XL":4}
-    const baseSizeSortMatch = data.match(/"base_size_sort":(\{.*?\})/);
-    
-    if (baseSizeSortMatch && baseSizeSortMatch[1]) {
+    if (sizeBlockMatch && sizeBlockMatch[1]) {
         try {
-            const sizeObject = JSON.parse(baseSizeSortMatch[1]);
-            sizes = Object.keys(sizeObject); // Extrae ["0XL", "1XL", "2XL", "3XL", "4XL"]
-        } catch (e) {
-            console.error("Fallo al parsear JSON de base_size_sort:", e);
-            sizes = []; // Asegurarse de que sizes esté vacío si JSON.parse falla
-        }
-    }
-
-    // INTENTO 2: Usar "attr_value_list" (Para casos como "0 (S)")
-    if (sizes.length === 0) {
-        // Añadimos la 's' al final para que '.' incluya saltos de línea (para m.shein.com)
-        const sizeBlockMatch = data.match(/"attr_name":"Talla".*?"attr_value_list":(\[.*?\])/s);
-        
-        if (sizeBlockMatch && sizeBlockMatch[1]) {
-            try {
-                const sizeList = JSON.parse(sizeBlockMatch[1]);
-                sizeList.forEach(item => {
-                    // Filtro: Asegurarse que sea una talla real (tenga attr_value_id) y un nombre
-                    if (item.attr_value_name && item.attr_value_id) {
-                        let sizeLabel = item.attr_value_name; // "0XL"
-                        
-                        // Lógica mejorada: Solo combinar si el nombre es SOLO letras (S, M, L)
-                        // y tiene un valor local (como "0", "2", "4")
-                        if (item.attr_local_size_value && /^[a-zA-Z]+$/.test(item.attr_value_name)) {
-                            sizeLabel = `${item.attr_local_size_value} (${item.attr_value_name})`; // "0 (S)"
-                        }
-                        sizes.push(sizeLabel);
+            const sizeList = JSON.parse(sizeBlockMatch[1]);
+            sizeList.forEach(item => {
+                // Filtro: Asegurarse que sea una talla real (tenga attr_value_id) y un nombre
+                if (item.attr_value_name && item.attr_value_id) {
+                    let sizeLabel = item.attr_value_name; // "0XL"
+                    
+                    // Lógica mejorada: Solo combinar si el nombre es SOLO letras (S, M, L)
+                    // y tiene un valor local (como "0", "2", "4")
+                    if (item.attr_local_size_value && /^[a-zA-Z]+$/.test(item.attr_value_name)) {
+                        sizeLabel = `${item.attr_local_size_value} (${item.attr_value_name})`; // "0 (S)"
                     }
-                });
-            } catch (e) {
-                console.error("Fallo al parsear JSON de tallas (attr_value_list):", e);
-            }
+                    sizes.push(sizeLabel);
+                }
+            });
+        } catch (e) {
+            console.error("Fallo al parsear JSON de tallas (attr_value_list):", e);
         }
     }
+}
 
-    // INTENTO 3: Fallback a JSON genérico (Tu segunda sugerencia)
-    // Busca "attr_value_name":"S" en todo el documento
-    if (sizes.length === 0) {
-        console.log("Intentando fallback de JSON genérico para tallas...");
-        const jsonPattern = /"attr_value_name":"(.*?)"/g;
-        const jsonSizes = [...data.matchAll(jsonPattern)].map(match => match[1]);
-        sizes.push(...jsonSizes);
-    }
+// INTENTO 3: Fallback a JSON genérico (Tu segunda sugerencia)
+// Busca "attr_value_name":"S" en todo el documento
+if (sizes.length === 0) {
+    console.log("Intentando fallback de JSON genérico para tallas...");
+    const jsonPattern = /"attr_value_name":"(.*?)"/g;
+    const jsonSizes = [...data.matchAll(jsonPattern)].map(match => match[1]);
+    sizes.push(...jsonSizes);
+}
 
-    // INTENTO 4: Fallback a HTML 
-    if (sizes.length === 0) {
-        console.log("Intentando fallback de HTML para tallas...");
-        const htmlSizePatterns = [
-            /data-attr_id="87".*?data-attr_value_name="(.*?)"/g, 
-            /<p class="product-intro__size-radio-inner.*?>(.*?)<\/p>/g
-        ];
-        
-        const htmlSizes = htmlSizePatterns.flatMap(pattern => 
-            [...data.matchAll(pattern)].map(match => match[1])
-        );
-        sizes.push(...htmlSizes);
-    }
+// INTENTO 4: Fallback a HTML 
+if (sizes.length === 0) {
+    console.log("Intentando fallback de HTML para tallas...");
+    const htmlSizePatterns = [
+        /data-attr_id="87".*?data-attr_value_name="(.*?)"/g, 
+        /<p class="product-intro__size-radio-inner.*?>(.*?)<\/p>/g
+    ];
+    
+    const htmlSizes = htmlSizePatterns.flatMap(pattern => 
+        [...data.matchAll(pattern)].map(match => match[1])
+    );
+    sizes.push(...htmlSizes);
+}
 
-    // Limpieza final: Quita duplicados, vacíos y rangos como "S-XL"
-    const finalSizes = [...new Set(sizes.filter(s => s && s.trim() !== '' && !s.includes('-')))];
-    // --- Fin Lógica de Tallas ---
+// Limpieza final: Quita duplicados, vacíos, pero MANTIENE rangos como "9-12M"
+const finalSizes = [...new Set(sizes.filter(s => s && s.trim() !== ''))];
+// --- Fin Lógica de Tallas ---
+
 
 
     // --- Verificación y guardado (Sin cambios) ---
