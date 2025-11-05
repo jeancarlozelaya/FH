@@ -925,7 +925,7 @@
 			font-weight: 600;
 		}
 
-		/* --- NUEVO: Estilos Modal Perfiles --- */
+		/* --- INICIO: Estilos Modal Perfiles (Diseño Compacto) --- */
 		#profileModal {
 			border-radius: 10px !important;
 			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
@@ -936,32 +936,139 @@
 		}
 
 		.profile-list {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			/* Dos columnas */
-			gap: 12px;
-			max-height: 300px;
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			max-height: 350px;
 			overflow-y: auto;
+			padding-right: 5px;
 		}
 
-		.profile-btn {
-			padding: 15px;
+		.profile-row {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 5px;
+			background-color: #ffffff;
+			border-radius: 8px;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+			border: 2px solid transparent;
+			/* Borde para el perfil activo */
+			transition: border-color 0.3s ease;
+			min-height: 54px; /* Altura mínima para la fila */
+		}
+
+		/* Perfil activo (Req 3) */
+		.profile-row.active {
+			border-color: #28a745;
+			/* Verde */
+			box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+		}
+
+		/* --- NUEVO: Contenedor para Nombre y Conteo (Req 2) --- */
+		.profile-info {
+			flex-grow: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			gap: 2px;
+			/* Pequeño espacio entre nombre y conteo */
+			cursor: pointer;
+			/* Clickeable (Req 1) */
+		}
+		
+		/* --- NUEVO: Hover para el área de info (Req 1) --- */
+		.profile-info:hover .profile-name-input:disabled {
+			color: #007bff;
+			/* Azul al pasar el mouse */
+		}
+		.profile-row.active .profile-info:hover .profile-name-input:disabled {
+			 color: #28a745; /* Verde si está activo */
+		}
+
+		.profile-name-input {
+			flex-grow: 0; /* Ya no crece */
+			border: none;
+			background-color: transparent;
 			font-size: 16px;
 			font-weight: 600;
-			text-align: center;
-			/* Hereda el azul de 'button' */
+			padding: 5px 8px 0 8px; /* Padding ajustado (Req 2) */
+			border-radius: 5px;
+			transition: all 0.2s ease;
+			cursor: pointer; /* Clickeable (Req 1) */
 		}
 
-		.profile-btn.active {
-			background-color: #28a745;
-			/* Verde para el perfil activo */
-			color: white;
+		.profile-name-input:disabled {
+			color: #333;
+		}
+		
+		.profile-row.active .profile-name-input:disabled {
+			color: #28a745;
+			/* Verde si está activo */
 			cursor: not-allowed;
 		}
 
-		.profile-btn.active:hover {
-			background-color: #218838;
-			/* Verde oscuro */
+		.profile-name-input:not(:disabled) {
+			border: 1px solid #007bff;
+			background-color: #fff;
+			box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+			cursor: text; /* Cursor normal al editar */
+		}
+
+		.profile-count {
+			width: auto; /* Ancho automático (Req 2) */
+			text-align: left; /* Alineado a la izq (Req 2) */
+			padding: 0 8px 5px 8px; /* Padding ajustado (Req 2) */
+			font-size: 11px; /* Más pequeño (Req 2) */
+			color: #888; /* Más sutil (Req 2) */
+			flex-shrink: 0;
+		}
+
+		/* Contenedor para botones de acción */
+		.profile-actions {
+			display: flex;
+			gap: 5px;
+			flex-shrink: 0;
+			padding-right: 5px;
+		}
+
+		/* Botones de acción (Editar, Eliminar) */
+		.profile-edit-btn,
+		.profile-delete-btn {
+			padding: 8px;
+			width: 40px;
+			/* Botones cuadrados */
+			height: 38px;
+			font-size: 14px;
+		}
+
+		/* Botón Eliminar (Req 4) */
+		.profile-delete-btn {
+			background-color: #D32F2F;
+		}
+
+		.profile-delete-btn:hover {
+			background-color: #b71c1c;
+		}
+
+		/* --- NUEVO: Botones de Confirmación (Req 3 y 5) --- */
+		/* Ocupan toda la fila */
+		.profile-row .profile-confirm-btn,
+		.profile-row .profile-cancel-btn {
+			flex-grow: 1; /* Hacen que los botones llenen la fila */
+			justify-content: center;
+			height: 40px; /* Altura de los botones */
+			font-weight: 600;
+			font-size: 14px;
+			margin: 0 2px;
+		}
+		
+		.profile-confirm-btn {
+			background-color: #D32F2F; /* Rojo */
+		}
+		
+		.profile-cancel-btn {
+			background-color: #6c757d; /* Gris */
 		}
 
 		/* --- FIN Estilos Modal Perfiles --- */
@@ -979,11 +1086,13 @@
 		// --- NUEVO: Variables de Perfil ---
 		let currentProfile = 0;
 		const totalProfiles = 10;
+		let profileNames = []; // <--- NUEVO
 		// --- FIN Variables de Perfil ---
 
 		// --- MODIFICADO: window.onload ---
 		// Ahora carga el perfil primero
 		window.onload = function () {
+			loadProfileNames(); // <--- NUEVO
 			const savedProfile = localStorage.getItem("currentProfile");
 			if (savedProfile) {
 				currentProfile = parseInt(savedProfile, 10);
@@ -1008,7 +1117,7 @@
 
 		// --- NUEVO: Actualiza el título de la página ---
 		function updateProfileTitle() {
-			document.title = `Creador v4.0 - Perfil ${currentProfile + 1}`;
+			document.title = `Creador v4.0 - ${profileNames[currentProfile]}`; // <-- MODIFICADO
 		}
 
 		// --- MODIFICADO: saveToLocalStorage ---
@@ -2308,32 +2417,199 @@
 
 		// --- NUEVO: Funciones del Modal de Perfiles ---
 
-		// Mostrar el modal de gestión de perfiles
+		// --- NUEVO: Cargar Nombres de Perfil ---
+		function loadProfileNames() {
+			const savedNames = localStorage.getItem("profileNames");
+			if (savedNames) {
+				profileNames = JSON.parse(savedNames);
+				// Asegurarse de que tenga la longitud correcta si se actualizó totalProfiles
+				if (profileNames.length < totalProfiles) {
+					for (let i = profileNames.length; i < totalProfiles; i++) {
+						profileNames.push(`Perfil ${i + 1}`);
+					}
+					saveProfileNames();
+				} else if (profileNames.length > totalProfiles) {
+					profileNames = profileNames.slice(0, totalProfiles);
+					saveProfileNames();
+				}
+			} else {
+				// Inicializar si no existe
+				profileNames = Array(totalProfiles).fill(null).map((_, i) => `Perfil ${i + 1}`);
+				saveProfileNames();
+			}
+		}
+
+		// --- NUEVO: Guardar Nombres de Perfil ---
+		function saveProfileNames() {
+			localStorage.setItem("profileNames", JSON.stringify(profileNames));
+		}
+
+		// --- INICIO: FUNCIÓN DE PERFILES MODIFICADA ---
+		// Mostrar el modal de gestión de perfiles (Diseño Compacto)
 		function showProfileModal() {
 			const modal = document.getElementById("profileModal");
 			const listContainer = document.getElementById("profileList");
 			listContainer.innerHTML = ''; // Limpiar lista
 
 			for (let i = 0; i < totalProfiles; i++) {
-				const profileButton = document.createElement("button");
-				profileButton.innerText = `Perfil ${i + 1}`;
-				profileButton.className = 'profile-btn';
-
+				const row = document.createElement("div");
+				row.className = 'profile-row';
 				if (i === currentProfile) {
-					profileButton.classList.add('active');
-					profileButton.disabled = true;
+					row.classList.add('active'); // Perfil activo (Req 3)
 				}
 
-				// Asignar la función de cambio de perfil
-				profileButton.onclick = function () {
-					switchProfile(i);
+				// --- INICIO: GRUPO INFO (Req 1 y 2) ---
+				const infoDiv = document.createElement("div");
+				infoDiv.className = 'profile-info';
+
+				// 1. Input de Nombre
+				const nameInput = document.createElement("input");
+				nameInput.type = 'text';
+				nameInput.value = profileNames[i];
+				if (i === currentProfile) {
+					nameInput.value = `${profileNames[i]} (Actual)`;
+				}
+				nameInput.className = 'profile-name-input';
+				nameInput.disabled = true;
+
+				// 2. Conteo de Registros (Req 2)
+				const itemsData = localStorage.getItem(`items_profile_${i}`);
+				const count = itemsData ? JSON.parse(itemsData).length : 0;
+				const countSpan = document.createElement("span");
+				countSpan.className = 'profile-count';
+				countSpan.innerText = `${count} reg.`;
+
+				infoDiv.appendChild(nameInput);
+				infoDiv.appendChild(countSpan);
+
+				// Clic para cargar (Req 1)
+				infoDiv.onclick = function () {
+					if (nameInput.disabled && i !== currentProfile) {
+						switchProfile(i);
+					}
+				};
+				// --- FIN: GRUPO INFO ---
+
+				// 3. Contenedor de Acciones
+				const actionsDiv = document.createElement("div");
+				actionsDiv.className = 'profile-actions';
+				actionsDiv.style.display = 'flex'; // Asegurarse que esté visible
+
+				// 4. Botón de Editar/Guardar
+				const editBtn = document.createElement("button");
+				editBtn.className = 'profile-edit-btn';
+				editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+				editBtn.title = 'Editar nombre';
+
+				// 5. Botón de Eliminar (Req 4)
+				const deleteBtn = document.createElement("button");
+				deleteBtn.className = 'profile-delete-btn';
+				deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+				deleteBtn.title = 'Eliminar perfil';
+
+				// 6. Botón Confirmar Eliminación (Oculto) (Req 3 y 5)
+				const confirmBtn = document.createElement("button");
+				confirmBtn.className = 'profile-confirm-btn';
+				confirmBtn.innerText = 'Confirmar';
+				confirmBtn.style.display = 'none';
+
+				// 7. Botón Cancelar Eliminación (Oculto) (Req 3 y 5)
+				const cancelBtn = document.createElement("button");
+				cancelBtn.className = 'profile-cancel-btn';
+				cancelBtn.innerText = 'Cancelar';
+				cancelBtn.style.display = 'none';
+
+				// --- Lógica de botones ---
+				editBtn.onclick = function () {
+					if (nameInput.disabled) {
+						// Modo Editar
+						if (i === currentProfile) { // Quitar "(Actual)" al editar
+							nameInput.value = profileNames[i];
+						}
+						nameInput.disabled = false;
+						nameInput.focus();
+						nameInput.select();
+						infoDiv.style.cursor = 'default'; // No mostrar cursor de clic
+						editBtn.innerHTML = '<i class="fas fa-save"></i>';
+						deleteBtn.style.display = 'none'; // Ocultar eliminar mientras edita
+					} else {
+						// Modo Guardar
+						nameInput.disabled = true;
+						profileNames[i] = nameInput.value;
+						if (i === currentProfile) { // Añadir "(Actual)"
+							nameInput.value = `${profileNames[i]} (Actual)`;
+							updateProfileTitle(); // Actualizar título si es el perfil actual
+						}
+						infoDiv.style.cursor = 'pointer';
+						saveProfileNames();
+						editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+						deleteBtn.style.display = 'inline-flex'; // Mostrar eliminar
+						showMessage("Nombre de perfil guardado.", 'success');
+					}
 				};
 
-				listContainer.appendChild(profileButton);
+				deleteBtn.onclick = function () {
+					// Ocultar info y acciones (Req 3)
+					infoDiv.style.display = 'none';
+					actionsDiv.style.display = 'none';
+					// Mostrar confirm/cancel (Req 3)
+					confirmBtn.style.display = 'inline-flex';
+					cancelBtn.style.display = 'inline-flex';
+				};
+
+				cancelBtn.onclick = function () {
+					// Mostrar info y acciones (Req 3)
+					infoDiv.style.display = 'flex';
+					actionsDiv.style.display = 'flex';
+					// Ocultar confirm/cancel (Req 3)
+					confirmBtn.style.display = 'none';
+					cancelBtn.style.display = 'none';
+				};
+
+				confirmBtn.onclick = function () {
+					deleteProfile(i);
+				};
+
+				// --- Armar Fila ---
+				actionsDiv.appendChild(editBtn);
+				actionsDiv.appendChild(deleteBtn);
+
+				row.appendChild(infoDiv);
+				row.appendChild(actionsDiv);
+				// Añadir botones de confirmación ocultos a la fila (Req 3)
+				row.appendChild(confirmBtn);
+				row.appendChild(cancelBtn);
+
+				listContainer.appendChild(row);
 			}
 
 			modal.style.display = 'block';
 		}
+		// --- FIN: FUNCIÓN DE PERFILES MODIFICADA ---
+
+		// --- NUEVA: Función para Eliminar Perfil ---
+		function deleteProfile(index) {
+			if (index === currentProfile) {
+				showMessage("No puedes eliminar el perfil que estás usando actualmente.", "error");
+				// Refrescar la lista del modal para restaurar los botones
+				showProfileModal();
+				return;
+			}
+
+			// Eliminar datos del localStorage
+			localStorage.removeItem(`items_profile_${index}`);
+			localStorage.removeItem(`colorClients_profile_${index}`);
+
+			// Resetear nombre
+			profileNames[index] = `Perfil ${index + 1}`;
+			saveProfileNames();
+
+			// Refrescar la lista del modal
+			showProfileModal();
+
+			showMessage(`Perfil ${index + 1} ha sido eliminado.`, 'success');
+		}
+
 
 		// Cerrar el modal de perfiles
 		function closeProfileModal() {
@@ -2354,7 +2630,8 @@
 			// Cerrar el modal
 			closeProfileModal();
 
-			showMessage(`Cargado Perfil ${currentProfile + 1}`, 'success');
+			// Mostrar mensaje con el nombre del perfil
+			showMessage(`Cargado: ${profileNames[currentProfile]}`, 'success');
 		}
 		// --- FIN Funciones Modal Perfiles ---
 	</script>
