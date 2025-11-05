@@ -1174,8 +1174,10 @@
 			const enlaceInput = document.getElementById("enlace");
 			const clearButton = document.querySelector("button[onclick='clearInput()']");
 			const addButton = document.querySelector("button[onclick='obtenerFuente()']");
+			const menuButton = document.getElementById("menuToggleButton"); // <-- REQUERIDO 1
 
 			enlaceInput.disabled = true;
+			menuButton.disabled = true; // <-- REQUERIDO 1: Deshabilitar menú
 			enlaceInput.style.animation = "pulse 1.5s infinite";
 
 			if (addButton) {
@@ -1521,8 +1523,10 @@
 			// Busca el botón, ya sea que diga "Borrar" o "Cancelar"
 			const clearButton = document.querySelector("button[onclick='clearInput()'], button[onclick*='currentFetchController']");
 			const addButton = document.querySelector("button[onclick='obtenerFuente()']"); // (Req 1)
+			const menuButton = document.getElementById("menuToggleButton"); // <-- REQUERIDO 1
 
 			enlaceInput.disabled = false;
+			menuButton.disabled = false; // <-- REQUERIDO 1: Habilitar menú
 			enlaceInput.style.animation = "none";
 
 			if (clearButton) {
@@ -2678,7 +2682,8 @@
 		</div>
 
 		<div class="floating-dropdown">
-			<button class="dropdown-toggle with-icon" onclick="toggleDropdown()">
+			<!-- REQUERIDO 1: Añadido ID -->
+			<button id="menuToggleButton" class="dropdown-toggle with-icon" onclick="toggleDropdown()">
 				<i class="fas fa-bars"></i>
 			</button>
 
