@@ -358,12 +358,14 @@
 		.hidden-column {
 			display: none;
 		}
+
 		/* Oculta Título, SKU, Enlace por defecto */
 		th:nth-child(2),
 		th:nth-child(4),
 		th:nth-child(8) {
 			display: none;
 		}
+
 		/* FIN LIMPIEZA 4 */
 
 		/* Estilos para pantallas pequeñas (móviles) */
@@ -641,7 +643,8 @@
 
 		/* Título del modal (Genérico) */
 		#colorClientsModal h3,
-		#importModal h3 {
+		#importModal h3,
+		#profileModal h3 {
 			margin-top: 0;
 			margin-bottom: 20px;
 			text-align: center;
@@ -815,7 +818,8 @@
 
 		/* 2. Contenedor del modal (Genérico) */
 		#colorClientsModal .modal-content,
-		#importModal .modal-content {
+		#importModal .modal-content,
+		#profileModal .modal-content {
 			position: relative;
 			padding: 20px;
 			/* Añadimos padding para que el título no choque con la 'X' */
@@ -920,6 +924,47 @@
 			font-size: 16px;
 			font-weight: 600;
 		}
+
+		/* --- NUEVO: Estilos Modal Perfiles --- */
+		#profileModal {
+			border-radius: 10px !important;
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+			border: none !important;
+			width: 90% !important;
+			max-width: 500px !important;
+			background-color: #f9f9f9 !important;
+		}
+
+		.profile-list {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			/* Dos columnas */
+			gap: 12px;
+			max-height: 300px;
+			overflow-y: auto;
+		}
+
+		.profile-btn {
+			padding: 15px;
+			font-size: 16px;
+			font-weight: 600;
+			text-align: center;
+			/* Hereda el azul de 'button' */
+		}
+
+		.profile-btn.active {
+			background-color: #28a745;
+			/* Verde para el perfil activo */
+			color: white;
+			cursor: not-allowed;
+		}
+
+		.profile-btn.active:hover {
+			background-color: #218838;
+			/* Verde oscuro */
+		}
+
+		/* --- FIN Estilos Modal Perfiles --- */
 	</style>
 
 	<script>
@@ -931,20 +976,45 @@
 		let previewMode = false;
 		let currentFetchController = null; // (NUEVO) Para controlar la cancelación
 
-		// Inicialización al cargar la página
+		// --- NUEVO: Variables de Perfil ---
+		let currentProfile = 0;
+		const totalProfiles = 10;
+		// --- FIN Variables de Perfil ---
+
+		// --- MODIFICADO: window.onload ---
+		// Ahora carga el perfil primero
 		window.onload = function () {
-			const savedItems = localStorage.getItem("items");
-			if (savedItems) {
-				items = JSON.parse(savedItems);
-				updateTable();
+			const savedProfile = localStorage.getItem("currentProfile");
+			if (savedProfile) {
+				currentProfile = parseInt(savedProfile, 10);
 			}
-			loadColorClients();
-			updateButtonStates();
+			loadDataForProfile(); // Carga los datos del perfil actual
 		};
 
-		// Guardar en localStorage
+		// --- NUEVO: Carga los datos para el perfil actual ---
+		function loadDataForProfile() {
+			const savedItems = localStorage.getItem(`items_profile_${currentProfile}`);
+			if (savedItems) {
+				items = JSON.parse(savedItems);
+			} else {
+				items = []; // Inicia vacío si no hay datos guardados
+			}
+
+			loadColorClients(); // Carga los clientes del perfil actual
+			updateTable();
+			updateButtonStates();
+			updateProfileTitle();
+		}
+
+		// --- NUEVO: Actualiza el título de la página ---
+		function updateProfileTitle() {
+			document.title = `Creador v4.0 - Perfil ${currentProfile + 1}`;
+		}
+
+		// --- MODIFICADO: saveToLocalStorage ---
+		// Guardar en localStorage (ahora con prefijo de perfil)
 		function saveToLocalStorage() {
-			localStorage.setItem("items", JSON.stringify(items));
+			localStorage.setItem(`items_profile_${currentProfile}`, JSON.stringify(items));
 		}
 
 		// Obtener datos del enlace (MODIFICADO para apuntar a m.shein.com)
@@ -1355,7 +1425,7 @@
 				const decodedTitle = decodeHtmlEntities(item.title);
 
 				// LIMPIEZA 6: 'porcentaje' eliminado
-				
+
 				// Fórmula corregida a RC[-1]
 				const priceLempirasFormula = `=INDIRECT("RC[-1]", 0) * 1.07 * 26.3`;
 
@@ -1413,7 +1483,7 @@
 			}
 		}
 
-		// Función para mostrar el modal con el texto a copiar manually
+		// Función para mostrar el modal con el texto a copiar manualmente
 		function showManualCopyModal(text) {
 			const modal = document.getElementById('manualCopyModal');
 			const textArea = document.getElementById('manualCopyTextArea');
@@ -2045,9 +2115,10 @@
 		// Objeto para guardar la asociación de colores con clientes
 		let colorClients = {};
 
-		// Cargar los clientes desde localStorage al iniciar
+		// --- MODIFICADO: loadColorClients ---
+		// Cargar los clientes desde localStorage (ahora con prefijo de perfil)
 		function loadColorClients() {
-			const savedColorClients = localStorage.getItem("colorClients");
+			const savedColorClients = localStorage.getItem(`colorClients_profile_${currentProfile}`);
 			if (savedColorClients) {
 				try {
 					colorClients = JSON.parse(savedColorClients);
@@ -2064,6 +2135,8 @@
 					console.error("Error parsing colorClients:", e);
 					colorClients = {};
 				}
+			} else {
+				colorClients = {}; // Asegurarse de limpiar los clientes al cambiar de perfil
 			}
 		}
 
@@ -2185,9 +2258,10 @@
 			document.getElementById("colorClientsModal").style.display = 'none';
 		}
 
-		// Guardar los nombres de clientes en localStorage
+		// --- MODIFICADO: saveColorClients ---
+		// Guardar los nombres de clientes en localStorage (ahora con prefijo de perfil)
 		function saveColorClients() {
-			localStorage.setItem("colorClients", JSON.stringify(colorClients));
+			localStorage.setItem(`colorClients_profile_${currentProfile}`, JSON.stringify(colorClients));
 		}
 
 		// Reemplaza la función original
@@ -2231,6 +2305,58 @@
 			document.getElementById('confirmClearBox').style.display = 'none';
 			document.getElementById('clearAllClientsBtn').style.display = 'block';
 		}
+
+		// --- NUEVO: Funciones del Modal de Perfiles ---
+
+		// Mostrar el modal de gestión de perfiles
+		function showProfileModal() {
+			const modal = document.getElementById("profileModal");
+			const listContainer = document.getElementById("profileList");
+			listContainer.innerHTML = ''; // Limpiar lista
+
+			for (let i = 0; i < totalProfiles; i++) {
+				const profileButton = document.createElement("button");
+				profileButton.innerText = `Perfil ${i + 1}`;
+				profileButton.className = 'profile-btn';
+
+				if (i === currentProfile) {
+					profileButton.classList.add('active');
+					profileButton.disabled = true;
+				}
+
+				// Asignar la función de cambio de perfil
+				profileButton.onclick = function () {
+					switchProfile(i);
+				};
+
+				listContainer.appendChild(profileButton);
+			}
+
+			modal.style.display = 'block';
+		}
+
+		// Cerrar el modal de perfiles
+		function closeProfileModal() {
+			document.getElementById("profileModal").style.display = 'none';
+		}
+
+		// Cambiar al perfil seleccionado
+		function switchProfile(profileIndex) {
+			if (profileIndex === currentProfile) return; // No hacer nada si es el mismo perfil
+
+			// Guardar el perfil seleccionado
+			currentProfile = profileIndex;
+			localStorage.setItem("currentProfile", currentProfile);
+
+			// Recargar los datos del nuevo perfil
+			loadDataForProfile();
+
+			// Cerrar el modal
+			closeProfileModal();
+
+			showMessage(`Cargado Perfil ${currentProfile + 1}`, 'success');
+		}
+		// --- FIN Funciones Modal Perfiles ---
 	</script>
 
 </head>
@@ -2293,6 +2419,11 @@
 				<button id="colorClientsButton" class="with-icon" onclick="showColorClientsModal()" title="Gestionar Clientes">
 					<i class="fas fa-address-book"></i>
 					<span>Clientes</span>
+				</button>
+				<!-- --- NUEVO: Botón de Perfiles --- -->
+				<button id="profileButton" class="with-icon" onclick="showProfileModal()" title="Cambiar Perfil">
+					<i class="fas fa-users"></i>
+					<span>Perfiles</span>
 				</button>
 			</div>
 		</div>
@@ -2412,6 +2543,18 @@
 		</div>
 
 	</div>
+
+	<!-- --- NUEVO: Modal de Perfiles --- -->
+	<div id="profileModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;">
+		<div class="modal-content">
+			<button class="modal-close-btn" onclick="closeProfileModal()" title="Cerrar">&times;</button>
+			<h3>Seleccionar Perfil</h3>
+			<div id="profileList" class="profile-list">
+				<!-- Los botones se generan dinámicamente con JS -->
+			</div>
+		</div>
+	</div>
+	<!-- --- FIN Modal Perfiles --- -->
 
 </body>
 
