@@ -9,31 +9,77 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 	<style>
-		/* --- SPINNER DE CARGA (Punto 1) --- */
+		/* --- SPINNER DE CARGA (Reemplazado por Barras) --- */
 		#resultado .loader {
-			width: 20px;
-			height: 20px;
-			border: 3px solid #007bff;
-			/* Color azul de la app */
-			border-bottom-color: transparent;
-			border-radius: 50%;
+			/* Reemplaza el spinner circular */
+			width: 6px;
+			height: 25px;
+			/* Más alto */
+			background-color: #007bff;
+			border-radius: 3px;
+			border: none;
+			/* Quita el borde del spinner */
 			display: inline-block;
 			box-sizing: border-box;
-			animation: spin 1s linear infinite;
-			/* Animación de giro */
+			position: relative;
+			/* Para los pseudo-elementos */
+
+			/* Reemplaza 'spin' por 'bar-wave' */
+			animation: bar-wave 1s ease-in-out infinite;
+			animation-delay: 0.2s;
+			/* Retraso para la barra del medio */
 		}
 
-		@keyframes spin {
-			0% {
-				transform: rotate(0deg);
+		/* Barras laterales (antes y después) */
+		#resultado .loader::before,
+		#resultado .loader::after {
+			content: '';
+			position: absolute;
+			top: 0;
+			width: 6px;
+			height: 25px;
+			background-color: #007bff;
+			border-radius: 3px;
+
+			/* Animación idéntica */
+			animation: bar-wave 1s ease-in-out infinite;
+		}
+
+		/* Posición de la barra izquierda */
+		#resultado .loader::before {
+			left: -12px;
+			/* 6px de barra + 6px de espacio */
+			animation-delay: 0s;
+			/* Inicia primero */
+		}
+
+		/* Posición de la barra derecha */
+		#resultado .loader::after {
+			left: 12px;
+			animation-delay: 0.4s;
+			/* Inicia al final */
+		}
+
+
+		/* --- NUEVA ANIMACIÓN: Barras Verticales --- */
+		@keyframes bar-wave {
+
+			0%,
+			100% {
+				transform: scaleY(0.4);
+				/* Corto */
+				opacity: 0.5;
 			}
 
-			100% {
-				transform: rotate(360deg);
+			50% {
+				transform: scaleY(1.0);
+				/* Alto */
+				opacity: 1;
 			}
 		}
 
 		/* --- FIN DEL SPINNER --- */
+
 
 		/* Estilos de botones de vista previa (filtro y descarga) */
 		#downloadTableImage {
