@@ -1,2473 +1,2417 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta charset="UTF-8">
-<title>Creador v4.0</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-<style>
-
-/* --- SPINNER DE CARGA (Punto 1) --- */
-#resultado .loader {
-    width: 20px;
-    height: 20px;
-    border: 3px solid #007bff; /* Color azul de la app */
-    border-bottom-color: transparent;
-    border-radius: 50%;
-    display: inline-block;
-    box-sizing: border-box;
-    animation: spin 1s linear infinite; /* Animación de giro */
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-/* --- FIN DEL SPINNER --- */
-
-
-/* Estilos de botones de vista previa (filtro y descarga) */
-#downloadTableImage {
-    position: fixed;
-    bottom: 20px; 
-    left: 90px; 
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 12px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 50%;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease;
-    z-index: 1000; 
-    width: 40px; 
-    height: 40px; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#downloadTableImage:hover {
-    background-color: #0056b3;
-}
-
-.hidden-cell {
-    display: none;
-}
-
-#openColorPicker2 {
-    position: fixed;
-    bottom: 20px; 
-    left: 20px; 
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 12px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 50%;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease;
-    z-index: 1000; 
-    width: 40px; 
-    height: 40px; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#openColorPicker2:hover {
-    background-color: #0056b3;
-}
-
-/* Paleta de colores 2 (Filtro) */
-#colorPicker2 {
-    display: none;
-    position: fixed;
-    bottom: 70px; 
-    left: 20px;
-    background-color: white;
-    border-radius: 10px;
-    padding: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    flex-wrap: wrap;
-    gap: 5px;
-    width: 120px;
-    z-index: 1001; 
-}
-
-#colorPicker2.show {
-    display: flex;
-}
-
-/* Estilo para el checkbox sobre la imagen */
-td div {
-    position: relative;
-    display: inline-block;
-}
-
-td input[type="checkbox"] {
-    position: absolute;
-    top: 0;
-    right: 0;
-    z-index: 1; /* Asegura que el checkbox esté por encima de la imagen */
-}
-
-/* Paleta de colores 1 (Asignar color) */
-.color-picker {
-    display: none;
-    position: fixed;
-    bottom: 20px; 
-    left: 90px; 
-    background-color: white; 
-    border-radius: 10px;
-    padding: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    flex-wrap: wrap;
-    gap: 5px;
-    width: 120px; 
-    z-index: 1001; 
-}
-
-.color-picker.show {
-    display: flex;
-}
-
-.color-option {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid #ccc;
-    transition: transform 0.2s ease;
-}
-
-.color-option:hover {
-    transform: scale(1.2); 
-    border-color: #007bff;
-}
-
-    /* Ocultar botones deshabilitados en el menú flotante */
-    .floating-menu button.with-icon:disabled {
-        display: none;
-    }
-
-    /* Contenedor del botón flotante y el menú */
-    .floating-dropdown {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        z-index: 1000;
-    }
-
-    /* Botón que abre el menú */
-    .dropdown-toggle.with-icon {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        padding: 12px;
-        font-size: 16px;
-        cursor: pointer;
-        border-radius: 50%;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        transition: background-color 0.3s ease;
-    }
-
-    .dropdown-toggle.with-icon:hover {
-        background-color: #0056b3;
-    }
-
-    /* --- MENÚ DINÁMICO (Punto 3) --- */
-    .floating-menu {
-        position: absolute;
-        bottom: 60px; /* Posición encima del botón */
-        left: 0;
-        flex-direction: column; /* Íconos en columna */
-        gap: 10px; /* Espacio entre íconos */
-        background-color: rgba(255, 255, 255, 0.9); /* Fondo semi-transparente */
-        border-radius: 10px;
-        padding: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        
-        /* Animación */
-        visibility: hidden; 
-        opacity: 0; 
-        transform: scale(0.9) translateY(10px);
-        transition: visibility 0.2s, opacity 0.2s, transform 0.2s ease-out;
-        transform-origin: bottom left; 
-    }
-
-    .floating-menu.show {
-        display: flex;
-        visibility: visible; 
-        opacity: 1; 
-        transform: scale(1) translateY(0);
-    }
-    /* --- FIN MENÚ DINÁMICO --- */
-
-
-    /* Estilo para los botones del menú flotante */
-/* Estilo para los botones del menú flotante */
-    .floating-menu button.with-icon {
-        background-color: #007bff;
-        display: flex;
-        align-items: center;
-        
-        /* --- MODIFICADO --- */
-        /* Cambiamos de círculo a píldora */
-        width: auto; /* Ancho automático según el contenido */
-        height: auto; /* Altura automática */
-        padding: 8px 14px; /* Relleno interno */
-        border-radius: 20px; /* Bordes redondeados */
-        gap: 10px; /* Espacio entre el icono y el texto */
-    }
-
-/* Estilo para el texto (span) dentro de los botones del menú */
-    .floating-menu button.with-icon span {
-        font-size: 14px;
-        color: white;
-        font-weight: 500;
-        white-space: nowrap; /* Evita que el texto se parta en dos líneas */
-    }
-
-
-    .floating-menu button.with-icon:hover {
-        background-color: #0056b3;
-    }
-
-    /* Estilo para los íconos dentro del menú flotante */
-    .floating-menu button.with-icon i {
-        font-size: 16px;
-    }
-
-    /* Estilos base */
-    body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-    }
-
-    h2 {
-        position: sticky;
-        top: 0;
-        background-color: white;
-        z-index: 3;
-        padding: 10px;
-        margin: 0;
-    }
-
-    .controls {
-        position: sticky;
-        top: 40px;
-        background-color: white;
-        z-index: 3;
-        padding: 10px;
-        margin-bottom: 10px;
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .controls input, .controls select, .controls button {
-        flex: 1 1 auto;
-        max-width: 100%;
-    }
-
-    /* Estilos base para la tabla */
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        table-layout: auto; 
-    }
-
-    th, td {
-        border: 1px solid #ccc;
-        padding: 8px;
-        text-align: center;
-        vertical-align: middle;
-        font-size: 14px; 
-    }
-
-    th {
-        background-color: #f4f4f4;
-        position: sticky;
-        top: 0; 
-        z-index: 2; 
-    }
-
-    /* Ajustar el ancho de las columnas */
-    th:nth-child(1), td:nth-child(1) { /* Columna del checkbox */
-        width: 40px; 
-    }
-
-    th:nth-child(2), td:nth-child(2) { /* Columna del título */
-        width: 150px; 
-        white-space: nowrap; 
-        overflow: hidden; 
-        text-overflow: ellipsis; 
-    }
-
-    th:nth-child(3), td:nth-child(3) { /* Columna de la talla */
-        width: 120px; 
-    }
-
-    th:nth-child(4), td:nth-child(4) { /* Columna del SKU */
-        width: 80px; 
-    }
-
-    th:nth-child(5), td:nth-child(5) { /* Columna del precio App */
-        width: 80px; 
-    }
-
-    th:nth-child(6), td:nth-child(6) { /* Columna del precio en Lempiras */
-        width: 80px; 
-    }
-
-    th:nth-child(7), td:nth-child(7) { /* Columna del precio personalizado */
-        width: 80px; 
-    }
-
-    th:nth-child(8), td:nth-child(8) { /* Columna del enlace */
-        width: 80px; 
-    }
-
-    /* Asegurar que el select dentro de la columna de talla ocupe todo el ancho */
-    td:nth-child(3) select {
-        width: 100%;
-        box-sizing: border-box;
-        font-size: 14px; 
-    }
-
-    /* Estilos para pantallas pequeñas (móviles) */
-    @media (max-width: 767px) {
-        th, td {
-            padding: 6px; 
-            font-size: 12px; 
-        }
-
-        th:nth-child(1), td:nth-child(1) { /* Columna del checkbox */
-            width: 30px;
-        }
-
-        th:nth-child(2), td:nth-child(2) { /* Columna del título */
-            width: 100px; 
-        }
-
-        th:nth-child(3), td:nth-child(3) { /* Columna de la talla */
-            width: 80px; 
-        }
-
-        th:nth-child(4), td:nth-child(4) { /* Columna del SKU */
-            width: 60px;
-        }
-
-        th:nth-child(5), td:nth-child(5) { /* Columna del precio App */
-            width: 60px;
-        }
-
-        th:nth-child(6), td:nth-child(6) { /* Columna del precio en Lempiras */
-            width: 60px;
-        }
-
-        th:nth-child(7), td:nth-child(7) { /* Columna del precio personalizado */
-            width: 60px;
-        }
-
-        th:nth-child(8), td:nth-child(8) { /* Columna del enlace */
-            width: 60px;
-        }
-
-        /* Ajustar el tamaño de los inputs y selects en móviles */
-        input[type="text"],
-        input[type="number"],
-        select {
-            font-size: 12px; 
-            padding: 4px; 
-        }
-
-        td:nth-child(7) input {
-            height: 17px; 
-            padding: 8px;
-            font-size: 14px;
-            text-align: center; 
-            line-height: 15px; 
-        }
-
-    }
-
-    /* Contenedor de la tabla con desplazamiento vertical */
-    .table-container {
-        height: calc(100vh - 210px); 
-        overflow-y: auto;
-    }
-
-    /* Estilos para el encabezado y controles */
-    .fixed-header {
-        position: sticky;
-        top: 0;
-        background-color: white;
-        z-index: 3;
-        padding: 10px;
-    }
-
-    .controls {
-        margin-bottom: 10px;
-    }
-
-    .error {
-        color: red;
-    }
-
-    .processing {
-        color: green;
-    }
-
-    button:disabled {
-        background-color: #ccc;
-        cursor: not-allowed;
-    }
-
-    input[type="text"],
-    input[type="number"],
-    select {
-        text-align: center;
-    }
-
-    .small-input, .small-select {
-        width: 60px;
-        padding: 5px;
-        font-size: 14px;
-    }
-
-    /* Estilos del menú desplegable */
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        bottom: 50px;
-        left: 0;
-        background-color: white;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        padding: 8px;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        min-width: 150px;
-    }
-
-    .dropdown-menu.show {
-        display: block;
-    }
-
-    .dropdown-menu button {
-        display: block;
-        width: 100%;
-        border: none;
-        text-align: left;
-        padding: 8px;
-        font-size: 12px;
-        cursor: pointer;
-        transition: background 0.3s, color 0.3s;
-        border-radius: 3px;
-        background: none;
-        color: #333;
-    }
-
-    .dropdown-menu button:hover {
-        background: #007bff;
-        color: white;
-    }
-
-    .dropdown-menu button:disabled {
-        display: none;
-    }
-
-/* --- ESTILO SPINNER (Punto 1) --- */
-/* Quitado el fondo, padding, etc., del contenedor */
-#resultado {
-    position: fixed;
-    top: 5px;
-    right: 20px;
-    z-index: 1000;
-    display: none;
-    font-size: 14px;
-    border-radius: 5px;
-}
-
-    /* Media queries para dispositivos móviles */
-    @media (max-width: 768px) {
-        body {
-            margin: 10px;
-        }
-
-        .controls {
-            top: 30px;
-            padding: 8px;
-        }
-
-        .dropdown-menu {
-            min-width: 120px;
-            padding: 6px;
-        }
-
-        .dropdown-menu button {
-            padding: 6px;
-            font-size: 10px;
-        }
-
-        #resultado {
-            max-width: 250px;
-            padding: 8px;
-            font-size: 10px;
-        }
-
-        #resultado p {
-            font-size: 12px;
-        }
-
-        #resultado h3 {
-            font-size: 14px;
-        }
-
-        #resultado button {
-            padding: 6px 10px;
-            font-size: 10px;
-        }
-
-        table {
-            font-size: 12px;
-        }
-
-        th, td {
-            padding: 6px;
-        }
-
-        .small-input, .small-select {
-            width: 50px;
-            padding: 4px;
-            font-size: 12px;
-        }
-    }
-
-    .preview-hidden {
-        display: table-cell;
-    }
-
-    .col-hidden {
-        display: none !important;
-    }
-
-    .header-hidden {
-        display: none !important;
-    }
-
-    /* Estilo base para los botones con íconos */
-    button {
-        background-color: #007bff; 
-        color: white; 
-        border: none; 
-        padding: 5px 10px; 
-        font-size: 14px; 
-        cursor: pointer; 
-        border-radius: 5px; 
-        display: inline-flex; 
-        align-items: center; 
-        justify-content: center; 
-        gap: 8px; 
-        transition: background-color 0.3s ease, transform 0.2s ease; 
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
-    }
-
-    /* Efecto hover para los botones */
-    button:hover {
-        background-color: #0056b3; 
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
-    }
-
-    /* Efecto active (cuando se hace clic) */
-    button:active {
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
-    }
-
-    /* Estilo para los íconos dentro de los botones */
-    button i {
-        font-size: 16px; 
-    }
-
-    /* Estilo específico para el botón de editar */
-    button .fa-pencil-alt {
-        color: #ffffff; 
-    }
-
-    /* Estilo específico para el botón de guardar */
-    button .fa-save {
-        color: #ffffff; 
-    }
-
-/* --- Efecto de Carga para Input (Request 1) --- */
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
-    }
-}
-
-#enlace:disabled {
-    background-color: #f8f9fa; /* Un fondo leggermente gris */
-}
-/* --- Fin Efecto Carga --- */
-
-/* --- Estilo Botón Cancelar (Request 3) --- */
-.cancel-button {
-    background-color: #D32F2F !important; /* Rojo */
-    color: white !important;
-}
-.cancel-button:hover {
-    background-color: #C2185B !important; /* Rojo más oscuro al pasar el mouse */
-}
-/* --- Fin Estilo Botón Cancelar --- */
-
-/* --- Estilos Modal Clientes (Mejorado) --- */
-#colorClientsModal {
-    /* Sombra y bordes redondeados para el contenedor principal */
-    border-radius: 10px !important;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    border: none !important; 
-    width: 90% !important; 
-    max-width: 500px !important;
-    background-color: #f9f9f9 !important;
-}
-
-#colorClientsModal .modal-content {
-    padding: 20px;
-}
-
-/* Título del modal (Genérico) */
-#colorClientsModal h3,
-#importModal h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    text-align: center; /* Título centrado */
-    color: #333;
-    font-weight: 600;
-}
-
-/* Nuevo encabezado flexible */
-
-
-/* Botón de "Eliminar Todos" */
-#clearAllClientsBtn {
-    background-color: #D32F2F; /* Rojo */
-    color: white;
-    width: 100%;
-    margin-bottom: 20px;
-    padding: 10px;
-    font-size: 14px;
-    font-weight: 500;
-}
-#clearAllClientsBtn:hover {
-    background-color: #b71c1c; /* Rojo más oscuro */
-}
-
-/* Contenedor de la lista */
-#colorClientsList {
-    max-height: 300px; 
-    overflow-y: auto; 
-    margin-bottom: 20px;
-    background-color: #ffffff;
-    border: 1px solid #ddd; /* Borde sutil alrededor de la lista */
-    border-radius: 8px;
-    /* padding: 5px; */ /* Eliminado */
-    overflow: hidden; /* Añadido: para cortar las filas con el borde redondeado */
-}
-
-/* Fila individual de cliente/color */
-.client-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    /* border-bottom: 1px solid #f0f0f0; */ /* Eliminado */
-}
-
-
-/* --- NUEVO: Estilo "Cebra" para filas pares --- */
-.client-row:nth-child(even) {
-    background-color: #e9ecef; /* Un gris más notorio y limpio */
-}
-
-/* Evitar doble borde en la última fila */
-.client-row:last-child {
-    border-bottom: none;
-}
-
-/* Caja de color */
-.client-color-box {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%; /* Círculo */
-    border: 2px solid #fff; /* Borde blanco para separarlo */
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2); /* Sombra suave */
-    flex-shrink: 0;
-}
-
-/* Contenedor para los dos inputs (nombre y monto) */
-.client-inputs {
-    flex-grow: 1; /* Ocupa el espacio disponible */
-    display: flex;
-    flex-direction: column; /* Apila nombre y monto */
-    gap: 6px;
-}
-
-/* Estilo de los inputs dentro del modal */
-.client-inputs input {
-    width: 100%;
-    padding: 9px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
-    box-sizing: border-box; /* Importante para que el padding no rompa el ancho */
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.client-inputs input:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
-    outline: none;
-}
-
-.client-inputs input:disabled {
-    background-color: #f8f9fa; /* Fondo gris claro al estar deshabilitado */
-    color: #555;
-    border-color: #eee;
-}
-
-/* Botón de Editar/Guardar de la fila */
-.client-edit-btn {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 50%; /* Círculo */
-    width: 40px;
-    height: 40px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.client-edit-btn:hover {
-    background-color: #0056b3;
-}
-
-/* Botón de Cerrar Modal */
-#closeColorClientsBtn {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: 600;
-}
-/* --- Fin Estilos Modal Clientes --- */
-
-/* --- Mejoras Modal Clientes (Confirmación y 'X') --- */
-
-/* 1. Botón 'X' para cerrar (Estilo Flotante sin borde) */
-.modal-close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none; 
-    border: none; 
-    outline: none; 
-    font-size: 2.2rem; 
-    color: #aaa;
-    cursor: pointer;
-    line-height: 1;
-    font-weight: 300; 
-    transition: color 0.2s ease;
-    z-index: 10;
-    
-    /* --- LÍNEAS AÑADIDAS/MODIFICADAS --- */
-    padding: 0; /* Elimina cualquier padding que le dé forma de cuadro */
-    box-shadow: none; /* Elimina la sombra heredada de 'button' */
-}
-.modal-close-btn:hover {
-    color: #D32F2F; /* 1. La X se pone Roja */
-    
-    /* --- LÍNEAS AÑADIDAS --- */
-    /* 2. Forzamos que el fondo sea transparente y sin sombra */
-    background-color: transparent !important; 
-    box-shadow: none !important;
-}
-
-/* 2. Contenedor del modal (Genérico) */
-#colorClientsModal .modal-content,
-#importModal .modal-content {
-    position: relative;
-    padding: 20px;
-    /* Añadimos padding para que el título no choque con la 'X' */
-    padding-top: 45px; 
-}
-
-/* 3. Contenedor de botones de Confirmación/Cancelación */
-#confirmClearBox {
-    /* Usamos flex para que los botones se alineen */
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    width: 100%;
-}
-
-#confirmClearBox button {
-    flex: 1; /* Hacemos que ambos botones ocupen 50% del espacio */
-    padding: 10px;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-/* Botón de Confirmar (Rojo) */
-#confirmClearBtn {
-    background-color: #D32F2F; 
-    color: white;
-}
-#confirmClearBtn:hover {
-    background-color: #b71c1c;
-}
-
-/* Botón de Cancelar (Gris) */
-#cancelClearBtn {
-    background-color: #6c757d; 
-    color: white;
-}
-#cancelClearBtn:hover {
-    background-color: #5a6268;
-}
-
-
-/* --- Estilos Modal Importar (Mejorado) --- */
-
-/* 1. Contenedor principal (copia el estilo del otro modal) */
-#importModal {
-    border-radius: 10px !important;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    border: none !important; 
-    width: 90% !important; 
-    max-width: 500px !important;
-    background-color: #f9f9f9 !important;
-    /* JS maneja position y display */
-}
-
-/* 2. Párrafo de descripción */
-#importModal p {
-    text-align: center;
-    color: #555;
-    font-size: 15px;
-    margin-top: 0;
-    margin-bottom: 20px;
-}
-
-/* 3. Área de texto */
-#importDataTextArea {
-    width: 100%;
-    height: 200px;
-    margin-bottom: 20px; 
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 14px;
-    box-sizing: border-box; 
-    resize: vertical; /* Permitir al usuario agrandar verticalmente */
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* 4. Efecto de Foco para el área de texto */
-#importDataTextArea:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
-    outline: none;
-}
-
-/* 5. Contenedor de botones de acción (Centrado) */
-.modal-actions {
-    width: 100%;
-    text-align: center; /* Centra el botón hijo */
-    margin-top: 10px; /* Pequeño espacio extra arriba */
-}
-
-/* 6. Estilo de botones (Primario) */
-.modal-actions button {
-    /* Ya no usa flex: 1 */
-    padding: 12px 30px; /* Hacemos el botón un poco más ancho */
-    font-size: 16px;
-    font-weight: 600;
-}
-
-
-
-</style>
-
-<script>
-
-let items = [];
-let lastDeletedItem = null; 
-let messageTimeout;  
-let allChecked = false;
-let lastDeletedItems = []; 
-let previewMode = false;
-let currentFetchController = null; // (NUEVO) Para controlar la cancelación
-
-// Inicialización al cargar la página
-window.onload = function () {
-    const savedItems = localStorage.getItem("items");
-    if (savedItems) {
-        items = JSON.parse(savedItems);
-        updateTable();
-    }
-    loadColorClients();
-    updateButtonStates();
-};
-
-
-// Guardar en localStorage
-function saveToLocalStorage() {
-    localStorage.setItem("items", JSON.stringify(items));
-}
-
-
-// Obtener datos del enlace (MODIFICADO para apuntar a m.shein.com)
-function obtenerFuente() {
-    let enlace = document.getElementById("enlace").value.trim();
-    const porcentajeSeleccionado = parseFloat(document.getElementById("percentageSelect").value) / 100;
-    
-    if (!enlace) {
-        showMessage("Por favor, ingrese un enlace válido.", 'error');
-        return;
-    }
-    
-    // --- ¡CAMBIO 1 AQUÍ! ---
-    const baseURL = "https://m.shein.com/us/";
-    
-    // --- ¡CAMBIO 2 AQUÍ! (para limpiar 'us/' si ya viene en el enlace) ---
-    const cleanPath = enlace.replace(/^(https?:\/\/)?([a-zA-Z0-9.-]+\.)?shein\.com\/(us\/)?/i, "");
-    const finalEnlace = baseURL + cleanPath;
-    // --- FIN DE LOS CAMBIOS ---
-
-    // Actualiza el valor en la caja de texto
-    document.getElementById("enlace").value = finalEnlace;
-    
-    // (El resto de la lógica de UI de carga es idéntica)
-    const enlaceInput = document.getElementById("enlace");
-    const clearButton = document.querySelector("button[onclick='clearInput()']");
-    const addButton = document.querySelector("button[onclick='obtenerFuente()']"); 
-    
-    enlaceInput.disabled = true;
-    enlaceInput.style.animation = "pulse 1.5s infinite";
-    
-    if (addButton) { 
-        addButton.style.display = 'none'; 
-    }
-
-    if (clearButton) {
-        clearButton.innerHTML = '<i class="fas fa-times"></i> Cancelar';
-        clearButton.classList.add('cancel-button'); 
-        
-        clearButton.onclick = function() {
-            if (currentFetchController) {
-                currentFetchController.abort(); 
-            }
-            resetUI(); 
-            showMessage("Proceso cancelado.", 'error');
-        };
-    }
-
-    showMessage("Procesando, por favor espere...", 'processing');
-    
-    fetchWithRetry(finalEnlace, porcentajeSeleccionado, 5);
-}
-
-
-// FUNCIÓN: Fetch con reintentos (MODIFICADA para Cancelación y Reset)
-function fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft) {
-    if (retriesLeft <= 0) {
-        showMessage("No se extrajo información. Se alcanzó el número máximo de reintentos.", 'error');
-        resetUI(); // <-- Resetear UI al fallar
-        return;
-    }
-
-    // Crear y asignar el AbortController
-    currentFetchController = new AbortController();
-    const signal = currentFetchController.signal;
-
-    const url = `https://script.google.com/macros/s/AKfycbwq82FHIL2RGyh_6pl9jluP2sKltOXzqMHzeMHTPq2ITbM5GHA8uhFLupRDHVA8zhWS/exec?url=${encodeURIComponent(enlace)}`;
-    
-    fetch(url, { signal }) // <-- Pasar el signal al fetch
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Error de red: ${response.statusText}`);
-            }
-            return response.text();
-        })
-        .then(data => {
-            const success = extractData(data, porcentajeSeleccionado, enlace);
-            
-            if (success) {
-                resetUI(); // <-- Resetear UI al tener éxito
-            } else {
-                // Si la extracción falló, reintentar el fetch
-                console.log(`Datos clave faltantes. Reintentando... ${retriesLeft - 1} intentos restantes.`);
-                showMessage("Reintentando obtener datos...", 'processing');
-                
-                setTimeout(() => {
-                    fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft - 1);
-                }, 500);
-            }
-        })
-        .catch(error => {
-            if (error.name === 'AbortError') {
-                console.log('Fetch abortado por el usuario.');
-                // resetUI() ya se llamó desde el botón de cancelar
-                return;
-            }
-
-            console.error("Error en fetch:", error);
-            // Reintentar en caso de error de red
-            setTimeout(() => {
-                fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft - 1);
-            }, 500);
-        });
-}
-
-
-/**
- * Intenta encontrar una coincidencia en los datos usando una lista de patrones regex.
- * Devuelve el primer grupo de captura de la primera coincidencia exitosa.
- */
-function findMatch(data, patterns) {
-    for (const pattern of patterns) {
-        const match = data.match(pattern);
-        if (match && match[1]) {
-            return match[1]; 
-        }
-    }
-    return null;
-}
-
-
-// Extraer datos del HTML (MODIFICADO para nuevo precio y tallas)
-function extractData(data, porcentajeSeleccionado, enlace) {
-    
-    // --- Patrones (Títulos, SKU, Imagen, Precio - Sin cambios) ---
-
-    const titlePatterns = [
-        /"goods_name"\s*:\s*"(.*?)"/i, // Prioridad 1: JSON gbRawData
-        /<meta property="og:title" content="(.*?)"/i, // Fallback: Meta Tag
-        /<h1 class="product-intro__head-name".*?<span class="fsp-element">(.*?)<\/span>/i, 
-        /<title>(.*?) \| SHEIN USA<\/title>/i, 
-        /<title>(.*?) \| SHEIN<\/title>/i
-    ];
-    
-    const skuPatterns = [
-        /"goods_sn"\s*:\s*"(s[a-zA-Z0-9]{5,})"/i,  // Prioridad 1: JSON gbRawData (SPU)
-        /<span class="product-intro__head-sku-text">\s*SKU:\s*(s[a-zA-Z0-9]{5,})<\/span>/i, // HTML
-        /data-clipboard-text="(s[a-zA-Z0-9]{5,})"/i, // HTML Botón Copiar
-        /"skc_name"\s*:\s*"(s[a-zA-Z0-9]{5,})"/i,  // Fallback JSON (SPU)
-        /"sku":"(s[a-zA-Z0-9]{5,})"/i, // Fallback ld+json (SPU)
-        /"sku":"(I[a-zA-Z0-9]{5,})"/i // Fallback ld+json (SKU de variante)
-    ];
-
-    const imagePatterns = [
-        /"skcImages"\s*:\s*\[\s*"(.*?)"/i, // Prioridad 1: JSON gbRawData (Galería)
-        /<link rel="preload" as="image" href="(.*_900x\.webp)"/i, // <head> preload
-        /<div class="crop-image-container fsp-element" data-before-crop-src="(.*?)"/i, // HTML <body> (Imagen principal)
-        /"image":"(.*?)"/i, // Fallback: ld+json
-        /<div class="crop-image-container" data-before-crop-src="(.*?)"/i // Fallback: HTML (Cualquier thumbnail)
-    ];
-
-    const priceAppPatterns = [ 
-        /"retailPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i, 
-        /"originalPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i 
-    ];
-
-    // --- Extracción (Sin cambios) ---
-    
-    let image = findMatch(data, imagePatterns);
-    const sku = findMatch(data, skuPatterns);
-    const priceAppStr = findMatch(data, priceAppPatterns); 
-    const title = findMatch(data, titlePatterns);
-
-// --- Lógica de Tallas (¡MODIFICADA!) ---
-let sizes = [];
-
-// INTENTO 1: Usar "base_size_sort" (El más fiable, sugerido por ti)
-// Busca: "base_size_sort":{"0XL":0,"1XL":1,"2XL":2,"3XL":3,"4XL":4}
-// O: "base_size_sort":{"9-12M":4,"6-9M":3,"18-24M":6,"3-6M":2,"12-18M":5}
-const baseSizeSortMatch = data.match(/"base_size_sort":(\{.*?\})/);
-
-if (baseSizeSortMatch && baseSizeSortMatch[1]) {
-    try {
-        const sizeObject = JSON.parse(baseSizeSortMatch[1]);
-        sizes = Object.keys(sizeObject); // Extrae ["0XL", "1XL", "2XL", "3XL", "4XL"] o ["9-12M", "6-9M", etc.]
-    } catch (e) {
-        console.error("Fallo al parsear JSON de base_size_sort:", e);
-        sizes = []; // Asegurarse de que sizes esté vacío si JSON.parse falla
-    }
-}
-
-// INTENTO 2: Usar "attr_value_list" (Para casos como "0 (S)")
-if (sizes.length === 0) {
-    // Añadimos la 's' al final para que '.' incluya saltos de línea (para m.shein.com)
-    const sizeBlockMatch = data.match(/"attr_name":"Talla".*?"attr_value_list":(\[.*?\])/s);
-    
-    if (sizeBlockMatch && sizeBlockMatch[1]) {
-        try {
-            const sizeList = JSON.parse(sizeBlockMatch[1]);
-            sizeList.forEach(item => {
-                // Filtro: Asegurarse que sea una talla real (tenga attr_value_id) y un nombre
-                if (item.attr_value_name && item.attr_value_id) {
-                    let sizeLabel = item.attr_value_name; // "0XL"
-                    
-                    // Lógica mejorada: Solo combinar si el nombre es SOLO letras (S, M, L)
-                    // y tiene un valor local (como "0", "2", "4")
-                    if (item.attr_local_size_value && /^[a-zA-Z]+$/.test(item.attr_value_name)) {
-                        sizeLabel = `${item.attr_local_size_value} (${item.attr_value_name})`; // "0 (S)"
-                    }
-                    sizes.push(sizeLabel);
-                }
-            });
-        } catch (e) {
-            console.error("Fallo al parsear JSON de tallas (attr_value_list):", e);
-        }
-    }
-}
-
-// INTENTO 3: Fallback a JSON genérico (Tu segunda sugerencia)
-// Busca "attr_value_name":"S" en todo el documento
-if (sizes.length === 0) {
-    console.log("Intentando fallback de JSON genérico para tallas...");
-    const jsonPattern = /"attr_value_name":"(.*?)"/g;
-    const jsonSizes = [...data.matchAll(jsonPattern)].map(match => match[1]);
-    sizes.push(...jsonSizes);
-}
-
-// INTENTO 4: Fallback a HTML 
-if (sizes.length === 0) {
-    console.log("Intentando fallback de HTML para tallas...");
-    const htmlSizePatterns = [
-        /data-attr_id="87".*?data-attr_value_name="(.*?)"/g, 
-        /<p class="product-intro__size-radio-inner.*?>(.*?)<\/p>/g
-    ];
-    
-    const htmlSizes = htmlSizePatterns.flatMap(pattern => 
-        [...data.matchAll(pattern)].map(match => match[1])
-    );
-    sizes.push(...htmlSizes);
-}
-
-// Limpieza final: Quita duplicados, vacíos, pero MANTIENE rangos como "9-12M"
-const finalSizes = [...new Set(sizes.filter(s => s && s.trim() !== ''))];
-// --- Fin Lógica de Tallas ---
-
-
-
-    // --- Verificación y guardado (Sin cambios) ---
-    if (image && sku && priceAppStr && title) {
-        if (!image.startsWith("http")) {
-            image = "https:" + image;
-        }
-        
-        image = image.replace(/_thumbnail_\d+x\d+\.webp/i, '_thumbnail_900x.webp');
-
-        const priceApp = parseFloat(priceAppStr); 
-
-        const item = {
-            image: image,
-            title: title, 
-            sku: sku,     
-            priceApp: priceApp,
-            priceLempiras: calculatePriceInLempiras(parseFloat(priceApp)), 
-            percentage: porcentajeSeleccionado,
-            sizes: finalSizes, // <-- Ahora tendrá las tallas correctas
-            selectedSize: "",
-            enlace: enlace,
-            color: '#ffffff' 
-        };
-
-        items.push(item);
-        saveToLocalStorage();
-        updateTable();
-
-        showMessage("Datos cargados con éxito.", 'success');
-        return true; // <--- DEVOLVER ÉXITO
-    } else {
-         console.log("Faltaron datos clave:", { 
-             image: !!image, 
-             sku: !!sku, 
-             priceAppStr: !!priceAppStr, 
-             title: !!title 
-         });
-
-         return false; // <--- DEVOLVER FRACASO (para que fetchWithRetry reintente)
-    }
-}
-
-
-
-// Calcular precio en lempiras
-function calculatePriceInLempiras(priceApp) {
-    const priceWithISV = priceApp * 1.07; 
-    return (priceWithISV * 26.3).toFixed(2); 
-}
-
-
-// Generar Tallas
-function generateSizeSelect(index, item) {
-	const sizeOptions = item.sizes.map(size => 
-		`<option value="${size}" ${size === item.selectedSize ? 'selected' : ''}>${size}</option>`
-	).join("");
-	return `<select id="sizeSelect${index}" class="small-select" onchange="updateSelectedSize(${index})">
-		<option value="">Seleccionar Talla</option>
-		${sizeOptions}
-	</select>`;
-}
-
-
-// --- IMAGEN CLICKEABLE (Punto 2) ---
-// Nueva función para ser llamada desde la imagen
-function toggleCheckbox(index) {
-    const checkbox = document.querySelector(`.itemCheckbox[data-index="${index}"]`);
-    if (checkbox) {
-        checkbox.checked = !checkbox.checked; // Invierte el estado del check
-        updateButtonStates(); // Actualiza los botones
-    }
-}
-
-
-// Actualizar la tabla
-function updateTable() {
-    const tableBody = document.getElementById("itemTableBody");
-    tableBody.innerHTML = "";
-    items.forEach((item, index) => {
-        const row = document.createElement("tr");
-        
-        if (item.color) {
-            row.style.backgroundColor = item.color;
-        }
-        
-        const precioPersonalizado = item.precioPersonalizado || 0;
-        const priceLempiras = parseFloat(item.priceLempiras) || 0;
-        const precioStyle = precioPersonalizado < priceLempiras ? 
-            'style="background-color: #ff0000; color: white;"' : 
-            'style="background-color: white; color: black;"';
-        
-        // --- IMAGEN CLICKEABLE (Punto 2) ---
-        // Se añadió onclick="toggleCheckbox(${index})" y style="... cursor: pointer;" a la <img>
-        row.innerHTML = 
-            `<td>
-                <div style="position: relative; display: inline-block;">
-                    <img src="${item.image}" alt="${item.title}" style="width:50px; cursor: pointer;" onclick="toggleCheckbox(${index})">
-                    <input type="checkbox" class="itemCheckbox" data-index="${index}" onchange="updateButtonStates()" style="position: absolute; top: 0; right: 0;">
-                </div>
-            </td>
-            <td class="hidden-column">${item.title}</td>
-            <td>${generateSizeSelect(index, item)}</td>
-            <td class="hidden-column">${item.sku}</td>
-            <td class="preview-hidden">
-                <div style="display: flex; align-items: center; gap: 5px;">
-                    <button onclick="toggleEditPrice(${index})">
-                        ${item.editingPrice ? '<i class="fas fa-save"></i>' : '<i class="fas fa-pencil-alt"></i>'}
-                    </button>
-                    ${item.editingPrice ? `<input type="number" id="priceAppInput${index}" value="${item.priceApp.toFixed(2)}" class="small-input editable">` : item.priceApp.toFixed(2)}
-                </div>
-            </td>
-            <td class="preview-hidden">${item.priceLempiras}</td>
-            <td><input type="number" id="customPriceInput${index}" class="small-input" value="${item.precioPersonalizado}" placeholder="Precio" oninput="updateCustomPrice(${index})" ${precioStyle}></td>
-            <td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>`;
-                
-        tableBody.appendChild(row);
-    });
-    updateButtonStates();
-}
-
-
-// Ocultar columnas y encabezados
-const style = document.createElement('style');
-style.innerHTML = `
-	.hidden-column { display: none; }
-	th:nth-child(2), th:nth-child(4), th:nth-child(8) { display: none; }
-`;
-document.head.appendChild(style);
-
-
-// Actualizar talla seleccionada
-function updateSelectedSize(index) {
-	const selectedSize = document.getElementById(`sizeSelect${index}`).value;
-	items[index].selectedSize = selectedSize;
-	saveToLocalStorage();
-}
-
-
-// Deshacer eliminación
-function undoDelete() {
-	document.getElementById("dropdownMenu").classList.remove("show");
-	if (lastDeletedItems.length > 0) {
-		items = items.concat(lastDeletedItems);
-                lastDeletedItems = [];
-                saveToLocalStorage();
-                updateTable();
-		showMessage("Se recuperó la última eliminación con éxito.", 'success');
-	}
-}
-
-
-// Borrar Texto de Enlace (MODIFICADO)
-function clearInput() {
-	document.getElementById("enlace").value = "";
-	document.getElementById("resultado").innerText = "";
-    resetUI(); // Asegura que la UI esté reseteada
-}
-
-// NUEVA función para resetear la UI (Request 1 y 3)
-function resetUI() {
-    const enlaceInput = document.getElementById("enlace");
-    // Busca el botón, ya sea que diga "Borrar" o "Cancelar"
-    const clearButton = document.querySelector("button[onclick='clearInput()'], button[onclick*='currentFetchController']"); 
-    const addButton = document.querySelector("button[onclick='obtenerFuente()']"); // (Req 1)
-    
-    enlaceInput.disabled = false;
-    enlaceInput.style.animation = "none";
-    
-    if (clearButton) {
-        clearButton.innerHTML = '<i class="fas fa-eraser"></i>';
-        clearButton.onclick = clearInput; // Restaura la función original de "Borrar"
-        clearButton.classList.remove('cancel-button'); // (Req 3)
-    }
-
-    if (addButton) { // (Req 1)
-        addButton.style.display = 'inline-flex'; // Muestra el botón "+"
-    }
-    
-    if (currentFetchController) {
-        currentFetchController.abort(); // Cancela cualquier fetch si aún estuviera activo
-    }
-    currentFetchController = null; // Limpia el controlador
-}
-
-
-// Copiar Filas Seleccionadas Para Exportar
-function copySelectedRows() {
-    document.getElementById("dropdownMenu").classList.remove("show");
-    const selectedItems = Array.from(document.querySelectorAll('.itemCheckbox:checked')).map(checkbox => {
-        const index = checkbox.getAttribute('data-index');
-        const item = items[index];
-        const imageFormula = `=IMAGE("${item.image}")`;
-        const detailFormula = `=HYPERLINK("${item.enlace}", "Ver detalle")`;
-        const selectedSize = item.selectedSize || '""';
-        const customPriceInput = document.getElementById(`customPriceInput${index}`);
-        const customPrice = customPriceInput ? customPriceInput.value.trim() : '';
-        const priceToCopy = customPrice !== '' ? customPrice : item.priceApp.toFixed(2);
-        const decodedTitle = decodeHtmlEntities(item.title);
-
-        const porcentaje = item.percentage !== undefined ? item.percentage : 0;
-        
-        // Fórmula corregida a RC[-1]
-        const priceLempirasFormula = `=INDIRECT("RC[-1]", 0) * 1.07 * 26.3`;
-        
-        return [
-            imageFormula,
-            decodedTitle,
-            `${selectedSize}`,
-            item.sku,
-            item.priceApp.toFixed(2),
-            priceLempirasFormula,
-            detailFormula,
-            '',
-            customPrice
-        ].join('\t');
-    });
-
-    if (selectedItems.length === 0) {
-        alert("Por favor, seleccione al menos un artículo para copiar.");
-        return;
-    }
-
-    const textToCopy = selectedItems.join('\n');
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            showMessage("Datos copiados al portapapeles.", 'success');
-        }).catch(err => {
-            console.error('Error al copiar: ', err);
-            alert("No se pudo copiar automáticamente. Prueba de nuevo o copia manually.");
-            showManualCopyModal(textToCopy);
-        });
-    } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = textToCopy;
-        textArea.style.position = "fixed";
-        textArea.style.opacity = "0";
-        document.body.appendChild(textArea);
-        textArea.select();
-
-        try {
-            const successful = document.execCommand('copy');
-            if (successful) {
-            showMessage("Datos copiados al portapapeles.", 'success');
-            } else {
-                showMessage("No se pudo copiar automáticamente. Prueba de nuevo o copia manually.", 'error');
-                showManualCopyModal(textToCopy);
-            }
-        } catch (err) {
-            console.error('Error al copiar (fallback): ', err);
-            showMessage("No se pudo copiar automáticamente. Prueba de nuevo o copia manually.", 'error');
-            showManualCopyModal(textToCopy);
-        }
-
-        document.body.removeChild(textArea);
-    }
-}
-
-
-// Función para mostrar el modal con el texto a copiar manualmente
-function showManualCopyModal(text) {
-    const modal = document.getElementById('manualCopyModal');
-    const textArea = document.getElementById('manualCopyTextArea');
-    textArea.value = text;
-    modal.style.display = 'block';
-}
-
-
-// Función para copiar manually desde el área de texto del modal
-function copyTextAreaContent() {
-    const textArea = document.getElementById('manualCopyTextArea');
-    textArea.select();
-    document.execCommand('copy');
-    alert("Texto copiado al portapapeles.");
-}
-
-
-// Función para cerrar el modal
-function closeManualCopyModal() {
-    const modal = document.getElementById('manualCopyModal');
-    modal.style.display = 'none';
-}
-
-
-// Función para decodificar entidades HTML
-function decodeHtmlEntities(str) {
-    const textarea = document.createElement('textarea');
-    textarea.innerHTML = str;
-    return textarea.value;
-}
-
-
-// Función para Actualizar el Estado de los Botones
-function updateButtonStates() {
-    const selectedItemsCount = document.querySelectorAll('.itemCheckbox:checked').length;
-    const exportButton = document.querySelector('button[onclick="exportSelectedRows()"]');
-    const colorClientsButton = document.querySelector('button[onclick="showColorClientsModal()"]');
-    const groupByColorButton = document.querySelector('button[onclick="groupByColor()"]');
-    const previewButton = document.querySelector('button[onclick="togglePreview()"]');
-    
-    const hasItems = items.length > 0;
-    
-    exportButton.style.display = selectedItemsCount === 0 ? 'none' : 'flex';
-    
-    colorClientsButton.style.display = hasItems ? 'flex' : 'none';
-    groupByColorButton.style.display = hasItems ? 'flex' : 'none';
-    previewButton.style.display = hasItems ? 'flex' : 'none';
-    
-    document.querySelector('button[onclick="openColorPicker(event)"]').disabled = selectedItemsCount === 0;
-    document.querySelector('button[onclick="copySelectedRows()"]').disabled = selectedItemsCount === 0;
-    document.querySelector('button[onclick="duplicateSelectedRow()"]').disabled = selectedItemsCount === 0;
-    document.querySelector('button[onclick="undoDelete()"]').disabled = lastDeletedItems.length === 0;
-    document.querySelector('button[onclick="deleteSelectedItems()"]').disabled = selectedItemsCount === 0;
-}
-
-
-     
-// --- FUNCIÓN DE MENSAJE (Punto 1) ---
-// Actualizada para manejar el spinner sin caja
-function showMessage(message, type) {
-    const resultDiv = document.getElementById("resultado");
-    resultDiv.innerHTML = ""; // Limpiar
-
-    if (type === "processing") {
-        // Sin fondo, sin padding, solo el spinner
-        resultDiv.style.backgroundColor = 'transparent';
-        resultDiv.style.padding = '10px 15px'; // Padding para mantener la posición
-        resultDiv.style.color = 'white'; // Oculta texto residual
-        resultDiv.innerHTML = `<div class="loader"></div>`; 
-    } else {
-        // Con fondo y padding para mensajes
-        resultDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-        resultDiv.style.padding = '10px 15px';
-        resultDiv.style.color = 'white';
-        resultDiv.textContent = message; 
-    }
-
-    resultDiv.style.display = 'block'; // Mostrarlo
-
-    if (type !== "processing") {
-        // Ocultar mensajes de éxito/error
-        if (messageTimeout) clearTimeout(messageTimeout);
-        messageTimeout = setTimeout(() => {
-            resultDiv.style.display = 'none';
-        }, 2000);
-    }
-}
-
-
-// Botón de Check de Encabezado para marcar y desmarcar todas las filas
-function toggleSelectAll() {
-    document.getElementById("dropdownMenu").classList.remove("show");
-
-    allChecked = !allChecked;
-    document.querySelectorAll('.itemCheckbox').forEach(checkbox => {
-        checkbox.checked = allChecked;
-    });
-
-    updateButtonStates();
-
-    const selectAllButton = document.getElementById("selectAllButton");
-    selectAllButton.innerText = allChecked ? "☐" : "☑";
-}
-
-
-// Función para editar precios de App
-function toggleEditPrice(index) {
-    document.getElementById("dropdownMenu").classList.remove("show");
-
-    if (items[index].editingPrice) {
-        const newPrice = parseFloat(document.getElementById(`priceAppInput${index}`).value);
-        if (newPrice !== items[index].priceApp) {
-            items[index].priceApp = newPrice;
-            items[index].priceLempiras = calculatePriceInLempiras(newPrice, items[index].percentage);
-            showMessage("Precio de App actualizado con éxito.", 'success');
-        }
-    }
-
-    items[index].editingPrice = !items[index].editingPrice;
-    saveToLocalStorage();
-    updateTable();
-}
-
-
-// Función para eliminar filas seleccionadas
-function deleteSelectedItems() {
-    document.getElementById("dropdownMenu").classList.remove("show");
-
-    lastDeletedItems = items.filter((_, index) => document.querySelector(`.itemCheckbox[data-index="${index}"]`).checked);
-    items = items.filter((_, index) => !document.querySelector(`.itemCheckbox[data-index="${index}"]`).checked);
-
-    saveToLocalStorage();
-    updateTable();
-    updateButtonStates();
-    showMessage("Filas eliminadas con éxito.", 'success');
-}
-
-
-// Función para Guardar el precio editado
-function updateCustomPrice(index) {
-    const customPriceInput = document.getElementById(`customPriceInput${index}`);
-    const customPrice = customPriceInput.value;
-    items[index].precioPersonalizado = customPrice;
-    
-    const priceLempiras = parseFloat(items[index].priceLempiras) || 0;
-    const precioPersonalizado = parseFloat(customPrice) || 0;
-    
-    if (precioPersonalizado < priceLempiras) {
-        customPriceInput.style.backgroundColor = '#ff0000';
-        customPriceInput.style.color = 'white';
-    } else {
-        customPriceInput.style.backgroundColor = 'white';
-        customPriceInput.style.color = 'black';
-    }
-    
-    saveToLocalStorage();
-}
-
-
-// Función para la vista previa
-function togglePreview() {
-    document.getElementById("dropdownMenu").classList.remove("show");
-
-    const tableBody = document.getElementById("itemTableBody");
-    const dropdownToggle = document.querySelector(".dropdown-toggle.with-icon");
-    const body = document.body;
-    const tableHeaders = document.querySelectorAll("#itemTable thead th");
-
-    const columnsToHide = [4, 5]; 
-
-    const title = document.querySelector("h2");
-    const enlaceInput = document.getElementById("enlace");
-    const addButton = document.querySelector("button[onclick='obtenerFuente()']");
-    const clearButton = document.querySelector("button[onclick='clearInput()'], button[onclick*='currentFetchController']"); // Modificado para encontrarlo siempre
-    const openColorPicker2Button = document.getElementById("openColorPicker2");
-    const downloadTableImageButton = document.getElementById("downloadTableImage");
-    
-    const totalRow = document.getElementById("totalRow");
-
-    if (!previewMode) {
-        body.classList.add("preview-mode");
-        
-        Array.from(tableBody.rows).forEach(row => {
-            columnsToHide.forEach(index => {
-                if (row.cells[index]) {
-                    row.cells[index].classList.add("col-hidden");
-                }
-            });
-        });
-
-        tableHeaders.forEach((header, index) => {
-            if (columnsToHide.includes(index)) {
-                header.classList.add("header-hidden");
-            }
-        });
-
-        if (title) title.style.display = 'none';
-        if (enlaceInput) enlaceInput.style.display = 'none';
-        if (addButton) addButton.style.display = 'none';
-        if (clearButton) clearButton.style.display = 'none';
-        
-        if (totalRow) {
-            totalRow.style.display = 'none';
-        }
-
-        openColorPicker2Button.style.display = 'inline-block';
-        downloadTableImageButton.style.display = 'inline-block';
-
-        dropdownToggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
-        dropdownToggle.onclick = togglePreview;
-    } else {
-        body.classList.remove("preview-mode");
-
-        Array.from(tableBody.rows).forEach(row => {
-            columnsToHide.forEach(index => {
-                if (row.cells[index]) {
-                    row.cells[index].classList.remove("col-hidden");
-                }
-            });
-        });
-
-        tableHeaders.forEach((header, index) => {
-            if (columnsToHide.includes(index)) {
-                header.classList.remove("header-hidden");
-            }
-        });
-
-        Array.from(tableBody.rows).forEach(row => {
-            row.style.display = ''; 
-        });
-
-        if (title) title.style.display = '';
-        if (enlaceInput) enlaceInput.style.display = '';
-        if (addButton) addButton.style.display = '';
-        if (clearButton) clearButton.style.display = '';
-
-        if (totalRow) {
-            totalRow.style.display = 'none';
-        }
-
-        openColorPicker2Button.style.display = 'none';
-        downloadTableImageButton.style.display = 'none';
-
-        dropdownToggle.innerHTML = '<i class="fas fa-bars"></i>';
-        dropdownToggle.onclick = toggleDropdown;
-    }
-
-    previewMode = !previewMode; 
-}
-
-
-// Función para duplicar filas seleccionadas
-function duplicateSelectedRow() {
-    document.getElementById("dropdownMenu").classList.remove("show");
-
-    const selectedCheckbox = document.querySelector('.itemCheckbox:checked');
-    if (!selectedCheckbox) {
-        showMessage("Por favor, seleccione una fila para duplicar.", 'error');
-        return;
-    }
-
-    const index = parseInt(selectedCheckbox.getAttribute('data-index'));
-    const itemToDuplicate = items[index];
-    const newItem = { ...itemToDuplicate };
-    items.splice(index + 1, 0, newItem); 
-
-    saveToLocalStorage();
-    updateTable();
-    showMessage("Fila duplicada con éxito.", 'success');
-}
-
-
-// Función del menú desplegable 
-function toggleDropdown() {
-    const dropdownMenu = document.getElementById("dropdownMenu");
-    dropdownMenu.classList.toggle("show");
-}
-
-document.addEventListener("click", function (event) {
-    var dropdown = document.querySelector(".floating-dropdown");
-    var menu = document.getElementById("dropdownMenu");
-
-    if (!dropdown.contains(event.target)) {
-        menu.classList.remove("show");
-    }
-});
-
-
-function handleMenuClick(action) {
-    action();
-    document.getElementById("dropdownMenu").classList.remove("show");
-}
-// Función del menú desplegable 
-
-
-// Función para abrir el selector de colores
-function openColorPicker(event) {
-    event.stopPropagation(); 
-    const colorPicker = document.getElementById("colorPicker");
-    colorPicker.classList.toggle("show");
-}
-
-
-// Función para aplicar el color seleccionado a las filas
-function applyColorToSelectedRows(color) {
-    const selectedCheckboxes = document.querySelectorAll('.itemCheckbox:checked');
-    selectedCheckboxes.forEach(checkbox => {
-        const index = checkbox.getAttribute('data-index');
-        const row = document.querySelector(`#itemTableBody tr:nth-child(${parseInt(index) + 1})`);
-        if (row) {
-            row.style.backgroundColor = color;
-            const imageCell = row.querySelector('td:first-child');
-            if (imageCell) {
-                imageCell.style.backgroundColor = color;
-            }
-            items[index].color = color;
-        }
-    });
-    saveToLocalStorage();
-    closeColorPicker();
-}
-
-
-// Función para cerrar el selector de colores
-function closeColorPicker() {
-    const colorPicker = document.getElementById("colorPicker");
-    colorPicker.classList.remove("show");
-}
-
-
-// Cerrar el menú de colores al hacer clic fuera de él
-document.addEventListener("click", function (event) {
-    const colorPicker = document.getElementById("colorPicker");
-    const colorButton = document.getElementById("colorButton");
-    if (!colorPicker.contains(event.target) && !colorButton.contains(event.target)) {
-        closeColorPicker();
-    }
-});
-
-
-// Función para agrupar filas por colores
-function groupByColor() {
-    document.getElementById("dropdownMenu").classList.remove("show");
-
-    const groupedItems = {};
-    items.forEach(item => {
-        const color = item.color || '#ffffff'; 
-        if (!groupedItems[color]) {
-            groupedItems[color] = [];
-        }
-        groupedItems[color].push(item);
-    });
-
-    const newItems = [];
-    Object.keys(groupedItems).forEach(color => {
-        newItems.push(...groupedItems[color]);
-    });
-
-    items = newItems;
-
-    saveToLocalStorage();
-    updateTable();
-    showMessage("Todas las filas agrupadas por colores con éxito.", 'success');
-}
-
-
-// Función para abrir la segunda paleta de colores
-function openColorPicker2(event) {
-    event.stopPropagation();
-    const colorPicker2 = document.getElementById("colorPicker2");
-    colorPicker2.classList.toggle("show");
-}
-
-// Función para filtrar las filas por color
-function filterRowsByColor(color) {
-    const rows = document.querySelectorAll("#itemTableBody tr");
-    const filteredRows = [];
-
-    rows.forEach((row, index) => {
-        const itemColor = items[index].color || '#ffffff';
-        
-        if (itemColor.toLowerCase() === color.toLowerCase()) {
-            row.style.display = '';
-            filteredRows.push(row);
-        } else {
-            row.style.display = 'none';
-        }
-    });
-
-    const total = calculateTotalPrice(filteredRows);
-    showTotalRow(total);
-    closeColorPicker2();
-}
-
-
-// Función para cerrar la segunda paleta de colores
-function closeColorPicker2() {
-    const colorPicker2 = document.getElementById("colorPicker2");
-    colorPicker2.classList.remove("show");
-}
-
-// Cerrar la paleta al hacer clic fuera de ella
-document.addEventListener("click", function (event) {
-    const colorPicker2 = document.getElementById("colorPicker2");
-    const openColorPicker2Button = document.getElementById("openColorPicker2");
-    if (!colorPicker2.contains(event.target) && !openColorPicker2Button.contains(event.target)) {
-        closeColorPicker2(); 
-    }
-});
-
-
-function calculateTotalPrice(filteredRows) {
-    let totalPrice = 0;
-
-    filteredRows.forEach(row => {
-        const priceCell = row.querySelector("td:nth-child(7)"); 
-        if (priceCell) {
-            const input = priceCell.querySelector("input");
-            if (input) {
-                let priceText = input.value.trim().replace(/\s+/g, "");
-                const price = parseFloat(priceText) || 0;
-                totalPrice += price;
-            }
-        }
-    });
-
-    return { totalPrice };
-}
-
-function showTotalRow(totals) {
-    const tableBody = document.getElementById("itemTableBody");
-    let totalRow = document.getElementById("totalRow");
-
-    if (totalRow) {
-        totalRow.remove();
-    }
-
-    totalRow = document.createElement("tr");
-    totalRow.id = "totalRow";
-    
-    totalRow.innerHTML = `
-        <td colspan="2" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total en Lempiras:</td> 
-        <td class="hidden-cell"></td> 
-        <td class="hidden-cell"></td> 
-        <td class="hidden-cell"></td> 
-        <td class="hidden-cell"></td> 
-        <td style="font-weight: bold; background-color: #f4f4f4;">${totals.totalPrice.toFixed(2)}</td> 
-        <td class="hidden-cell"></td> 
-    `;
-
-    tableBody.appendChild(totalRow);
-}
-
-
-// --- FUNCIÓN DE RESPALDO PARA DESCARGAR ---
-function downloadFallback(canvas) {
-    const image = canvas.toDataURL("image/png", 1.0);
-    const link = document.createElement("a");
-    link.href = image;
-    link.download = "Detalle.png"; // Nombre del archivo
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
-
-// --- FUNCIÓN DE DESCARGA ACTUALIZADA PARA COMPARTIR (Punto 2) ---
-function downloadTableImage() {
-    const table = document.getElementById("itemTable");
-    const tableContainer = document.querySelector(".table-container");
-
-    tableContainer.scrollTop = 0;
-
-    setTimeout(() => {
-        const options = {
-            scale: window.devicePixelRatio * 2,
-            useCORS: true,
-            backgroundColor: "#ffffff",
-            logging: false
-        };
-
-        html2canvas(table, options).then(canvas => {
-            // Convierte el canvas a un Blob (archivo en memoria)
-            canvas.toBlob(blob => {
-                const file = new File([blob], "Detalle.png", { type: "image/png" });
-                const shareData = {
-                    files: [file],
-                    title: 'Detalle de Pedido',
-                    text: 'Aquí está el detalle de la tabla.'
-                };
-
-                // Comprueba si el navegador PUEDE compartir este tipo de datos
-                if (navigator.canShare && navigator.canShare(shareData)) {
-                    // Intenta abrir el diálogo de compartir
-                    navigator.share(shareData)
-                        .then(() => console.log('Imagen compartida con éxito.'))
-                        .catch(error => {
-                            // Si el usuario cierra el diálogo o hay un error, usa el fallback
-                            console.log('Error al compartir o diálogo cancelado:', error);
-                            downloadFallback(canvas); // Llama a la función de descarga original
-                        });
-                } else {
-                    // Si el navegador no soporta 'navigator.share' (ej. PC), descarga directamente
-                    console.log('API de compartir no soportada, usando descarga directa.');
-                    downloadFallback(canvas);
-                }
-            }, 'image/png'); 
-            
-        }).catch(error => {
-            console.error("Error al capturar la tabla:", error);
-            alert("Hubo un error al generar la imagen. Inténtalo de nuevo.");
-        });
-    }, 100);
-}
-
-
-// Función para exportar filas seleccionadas como texto
-function exportSelectedRows() {
-    const selectedItems = Array.from(document.querySelectorAll('.itemCheckbox:checked')).map(checkbox => {
-        const index = checkbox.getAttribute('data-index');
-        const item = items[index];
-        return JSON.stringify({
-            ...item,
-            clientName: item.clientName || '',
-            clientPayment: item.clientPayment || 0,
-            color: item.color || '#ffffff'
-        });
-    }).join('\n---ITEM---\n');
-    
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(selectedItems).then(() => {
-            showMessage("Datos exportados al portapapeles.", 'success');
-        }).catch(err => {
-            console.error('Error al copiar:', err);
-            showManualCopyModal(selectedItems);
-        });
-    } else {
-        showManualCopyModal(selectedItems);
-    }
-}
-
-// Función para mostrar el modal de importación
-function showImportModal() {
-    document.getElementById("importModal").style.display = "block";
-    document.getElementById("importDataTextArea").value = "";
-    document.getElementById("importDataTextArea").focus();
-}
-
-// Función para cerrar el modal de importación
-function closeImportModal() {
-    document.getElementById("importModal").style.display = "none";
-}
-
-// Función para importar datos
-function importData() {
-    const importText = document.getElementById("importDataTextArea").value.trim();
-    if (!importText) {
-        showMessage("No hay datos para importar.", 'error');
-        return;
-    }
-
-    try {
-        let importedItems = [];
-        
-        if (importText.startsWith('{') || importText.startsWith('[') || importText.includes('---ITEM---')) {
-            // Formato JSON (el actual)
-            importedItems = importText.split('\n---ITEM---\n').map(itemStr => {
-                try {
-                    return JSON.parse(itemStr);
-                } catch (e) {
-                    console.error("Error parsing item:", itemStr);
-                    return null;
-                }
-            }).filter(item => item !== null);
-        } else {
-            // Formato Excel (nuevo)
-            importedItems = parseExcelFormat(importText);
-        }
-
-        if (importedItems.length === 0) {
-            showMessage("No se encontraron datos válidos para importar.", 'error');
-            return;
-        }
-
-        importedItems.forEach(item => {
-            if (item.color && (item.clientName || item.clientPayment !== undefined)) {
-                colorClients[item.color] = {
-                    name: item.clientName || '',
-                    payment: item.clientPayment || 0
-                };
-            }
-            
-            if (!item.priceLempiras && item.priceApp) {
-                item.priceLempiras = calculatePriceInLempiras(item.priceApp);
-            }
-        });
-
-        items.unshift(...importedItems);
-        saveColorClients();
-        saveToLocalStorage();
-        updateTable();
-        closeImportModal();
-        showMessage(`${importedItems.length} items importados con éxito.`, 'success');
-    } catch (error) {
-        console.error("Error importing data:", error);
-        showMessage("Error al importar datos. Verifica el formato.", 'error');
-    }
-}
-
-
-function parseExcelFormat(text) {
-    const lines = text.split('\n').filter(line => line.trim() !== '');
-    const items = [];
-    
-    for (const line of lines) {
-        try {
-            const columns = line.split('\t');
-            
-            let imageUrl = columns[0].replace(/^=IMAGE\("|"\)$/g, '');
-            const title = columns[1];
-            const size = columns[2];
-            const sku = columns[3];
-            const priceApp = parseFloat(columns[4]) || 0;
-            const customPrice = parseFloat(columns[columns.length - 1]) || '';
-            
-            let link = '';
-            const linkColumnIndex = 7; 
-            if (columns[linkColumnIndex] && columns[linkColumnIndex].includes('HYPERLINK')) {
-                link = columns[linkColumnIndex].replace(/^=HYPERLINK\("|".*$/g, '');
-            }
-            
-            const newItem = {
-                image: imageUrl,
-                title: title,
-                sizes: [size],
-                selectedSize: size,
-                sku: sku,
-                priceApp: priceApp,
-                priceLempiras: calculatePriceInLempiras(priceApp),
-                enlace: link || `https://us.shein.com/search?keywords=${sku}`,
-                precioPersonalizado: customPrice,
-                color: '#ffffff' 
-            };
-            
-            items.push(newItem);
-        } catch (e) {
-            console.error("Error parsing line:", line, e);
-        }
-    }
-    
-    return items;
-}
-
-
-// Objeto para guardar la asociación de colores con clientes
-let colorClients = {};
-
-// Cargar los clientes desde localStorage al iniciar
-function loadColorClients() {
-    const savedColorClients = localStorage.getItem("colorClients");
-    if (savedColorClients) {
-        try {
-            colorClients = JSON.parse(savedColorClients);
-            
-            for (const color in colorClients) {
-                if (typeof colorClients[color] === 'string') {
-                    colorClients[color] = {
-                        name: colorClients[color],
-                        payment: 0
-                    };
-                }
-            }
-        } catch (e) {
-            console.error("Error parsing colorClients:", e);
-            colorClients = {};
-        }
-    }
-}
-
-
-// Mostrar el modal de gestión de clientes por color
-function showColorClientsModal() {
-    const modal = document.getElementById("colorClientsModal");
-    const listContainer = document.getElementById("colorClientsList");
-    
-    const colors = items.map(item => item.color).filter(color => color !== undefined);
-    const usedColors = [...new Set(colors)];
-    
-    if (usedColors.length === 0) {
-        listContainer.innerHTML = '<p>No hay colores asignados todavía.</p>';
-        modal.style.display = 'block';
-        return;
-    }
-    
-    listContainer.innerHTML = '';
-    
-usedColors.forEach(color => {
-        // 1. Contenedor principal de la fila
-        const colorDiv = document.createElement("div");
-        colorDiv.className = 'client-row'; // <-- NUEVA CLASE
-        
-        // 2. Caja de color
-        const colorBox = document.createElement("div");
-        colorBox.className = 'client-color-box'; // <-- NUEVA CLASE
-        colorBox.style.backgroundColor = color; // <-- Único estilo inline necesario
-        
-        // 3. Contenedor para los inputs
-        const inputsContainer = document.createElement("div");
-        inputsContainer.className = 'client-inputs'; // <-- NUEVA CLASE
-        
-        // 4. Input de Nombre
-        const clientNameInput = document.createElement("input");
-        clientNameInput.type = 'text';
-        clientNameInput.value = (colorClients[color] && colorClients[color].name) || '';
-        clientNameInput.placeholder = 'Nombre del cliente';
-        clientNameInput.disabled = true;
-        
-        // 5. Input de Monto
-        const clientPaymentInput = document.createElement("input");
-        clientPaymentInput.type = 'number';
-        clientPaymentInput.placeholder = 'Monto (ej: 500)';
-        clientPaymentInput.disabled = true;
-        
-        if (colorClients[color] && colorClients[color].payment !== 0) {
-            clientPaymentInput.value = colorClients[color].payment;
-        }
-        
-        clientPaymentInput.addEventListener('focus', () => {
-            if (clientPaymentInput.value === '0') {
-                clientPaymentInput.value = '';
-            }
-        });
-        
-        // 6. Botón de Editar/Guardar
-        const editButton = document.createElement("button");
-        editButton.className = 'client-edit-btn'; // <-- NUEVA CLASE
-        editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
-        editButton.title = 'Editar'; // Tooltip
-        
-        // Lógica del botón (sin cambios, solo se actualiza el ícono y el title)
-        editButton.onclick = function() {
-            if (clientNameInput.disabled) {
-                clientNameInput.disabled = false;
-                clientPaymentInput.disabled = false;
-                clientNameInput.focus();
-                editButton.innerHTML = '<i class="fas fa-save"></i>'; // Icono de Guardar
-                editButton.title = 'Guardar';
-            } else {
-                clientNameInput.disabled = true;
-                clientPaymentInput.disabled = true;
-                
-                const paymentValue = clientPaymentInput.value.trim() === '' ? undefined : parseFloat(clientPaymentInput.value);
-                
-                colorClients[color] = {
-                    name: clientNameInput.value.trim(),
-                    payment: paymentValue
-                };
-                
-                saveColorClients();
-                
-                items.forEach(item => {
-                    if (item.color === color) {
-                        item.clientName = colorClients[color].name;
-                        item.clientPayment = colorClients[color].payment;
-                    }
-                });
-                
-                saveToLocalStorage();
-                editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>'; // Icono de Editar
-                editButton.title = 'Editar';
-                
-                if (clientPaymentInput.value === '0' || clientPaymentInput.value.trim() === '') {
-                    clientPaymentInput.value = '';
-                }
-                
-                showMessage("Datos del cliente guardados.", 'success');
-            }
-        };
-        
-        // 7. Armar la fila (Añadiendo los inputs al contenedor de inputs)
-        inputsContainer.appendChild(clientNameInput);
-        inputsContainer.appendChild(clientPaymentInput);
-        
-        colorDiv.appendChild(colorBox);
-        colorDiv.appendChild(inputsContainer);
-        colorDiv.appendChild(editButton);
-        
-        listContainer.appendChild(colorDiv);
-    });
-
-    
-    modal.style.display = 'block';
-}
-
-
-// Cerrar el modal de clientes por color
-function closeColorClientsModal() {
-    document.getElementById("colorClientsModal").style.display = 'none';
-}
-
-// Guardar los nombres de clientes en localStorage
-function saveColorClients() {
-    localStorage.setItem("colorClients", JSON.stringify(colorClients));
-}
-
-// Reemplaza la función original
-function confirmClearAllClients() {
-    // Oculta el botón principal "Eliminar Todos"
-    document.getElementById('clearAllClientsBtn').style.display = 'none';
-    // Muestra el contenedor de "Confirmar" / "Cancelar"
-    document.getElementById('confirmClearBox').style.display = 'flex';
-}
-
-// Nueva función para el botón "Cancelar"
-function cancelClearAction() {
-    // Oculta el contenedor de "Confirmar" / "Cancelar"
-    document.getElementById('confirmClearBox').style.display = 'none';
-    // Muestra el botón principal "Eliminar Todos"
-    document.getElementById('clearAllClientsBtn').style.display = 'block';
-}
-
-
-// Busca esta función y AÑADE las 2 últimas líneas
-function clearAllClients() {
-    for (const color in colorClients) {
-        colorClients[color] = { name: '', payment: 0 };
-    }
-    
-    items.forEach(item => {
-        if (item.color) {
-            item.clientName = '';
-            item.clientPayment = 0;
-        }
-    });
-    
-    saveColorClients();
-    saveToLocalStorage();
-    showColorClientsModal(); 
-    showMessage("Todos los clientes y pagos han sido eliminados.", 'success');
-
-    // --- AÑADE ESTAS DOS LÍNEAS AL FINAL ---
-    document.getElementById('confirmClearBox').style.display = 'none';
-    document.getElementById('clearAllClientsBtn').style.display = 'block';
-}
-
-
-</script>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta charset="UTF-8">
+	<title>Creador v4.0</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+	<style>
+		/* --- SPINNER DE CARGA (Punto 1) --- */
+		#resultado .loader {
+			width: 20px;
+			height: 20px;
+			border: 3px solid #007bff;
+			/* Color azul de la app */
+			border-bottom-color: transparent;
+			border-radius: 50%;
+			display: inline-block;
+			box-sizing: border-box;
+			animation: spin 1s linear infinite;
+			/* Animación de giro */
+		}
+
+		@keyframes spin {
+			0% {
+				transform: rotate(0deg);
+			}
+
+			100% {
+				transform: rotate(360deg);
+			}
+		}
+
+		/* --- FIN DEL SPINNER --- */
+
+		/* Estilos de botones de vista previa (filtro y descarga) */
+		#downloadTableImage {
+			position: fixed;
+			bottom: 20px;
+			left: 90px;
+			background-color: #007bff;
+			color: white;
+			border: none;
+			padding: 12px;
+			font-size: 16px;
+			cursor: pointer;
+			border-radius: 50%;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+			transition: background-color 0.3s ease;
+			z-index: 1000;
+			width: 40px;
+			height: 40px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		#downloadTableImage:hover {
+			background-color: #0056b3;
+		}
+
+		.hidden-cell {
+			display: none;
+		}
+
+		#openColorPicker2 {
+			position: fixed;
+			bottom: 20px;
+			left: 20px;
+			background-color: #007bff;
+			color: white;
+			border: none;
+			padding: 12px;
+			font-size: 16px;
+			cursor: pointer;
+			border-radius: 50%;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+			transition: background-color 0.3s ease;
+			z-index: 1000;
+			width: 40px;
+			height: 40px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		#openColorPicker2:hover {
+			background-color: #0056b3;
+		}
+
+		/* Paleta de colores 2 (Filtro) */
+		#colorPicker2 {
+			display: none;
+			position: fixed;
+			bottom: 70px;
+			left: 20px;
+			background-color: white;
+			border-radius: 10px;
+			padding: 10px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+			flex-wrap: wrap;
+			gap: 5px;
+			width: 120px;
+			z-index: 1001;
+		}
+
+		#colorPicker2.show {
+			display: flex;
+		}
+
+		/* Paleta de colores 1 (Asignar color) */
+		.color-picker {
+			display: none;
+			position: fixed;
+			bottom: 20px;
+			left: 90px;
+			background-color: white;
+			border-radius: 10px;
+			padding: 10px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+			flex-wrap: wrap;
+			gap: 5px;
+			width: 120px;
+			z-index: 1001;
+		}
+
+		.color-picker.show {
+			display: flex;
+		}
+
+		.color-option {
+			width: 20px;
+			height: 20px;
+			border-radius: 50%;
+			cursor: pointer;
+			border: 2px solid #ccc;
+			transition: transform 0.2s ease;
+		}
+
+		.color-option:hover {
+			transform: scale(1.2);
+			border-color: #007bff;
+		}
+
+		/* Ocultar botones deshabilitados en el menú flotante */
+		.floating-menu button.with-icon:disabled {
+			display: none;
+		}
+
+		/* Contenedor del botón flotante y el menú */
+		.floating-dropdown {
+			position: fixed;
+			bottom: 20px;
+			left: 20px;
+			z-index: 1000;
+		}
+
+		/* Botón que abre el menú */
+		.dropdown-toggle.with-icon {
+			background-color: #007bff;
+			color: white;
+			border: none;
+			padding: 12px;
+			font-size: 16px;
+			cursor: pointer;
+			border-radius: 50%;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+			transition: background-color 0.3s ease;
+		}
+
+		.dropdown-toggle.with-icon:hover {
+			background-color: #0056b3;
+		}
+
+		/* --- MENÚ DINÁMICO (Punto 3) --- */
+		.floating-menu {
+			position: absolute;
+			bottom: 60px;
+			/* Posición encima del botón */
+			left: 0;
+			flex-direction: column;
+			/* Íconos en columna */
+			gap: 10px;
+			/* Espacio entre íconos */
+			background-color: rgba(255, 255, 255, 0.9);
+			/* Fondo semi-transparente */
+			border-radius: 10px;
+			padding: 10px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+			/* Animación */
+			visibility: hidden;
+			opacity: 0;
+			transform: scale(0.9) translateY(10px);
+			transition: visibility 0.2s, opacity 0.2s, transform 0.2s ease-out;
+			transform-origin: bottom left;
+		}
+
+		.floating-menu.show {
+			display: flex;
+			visibility: visible;
+			opacity: 1;
+			transform: scale(1) translateY(0);
+		}
+
+		/* --- FIN MENÚ DINÁMICO --- */
+
+		/* Estilo para los botones del menú flotante */
+		.floating-menu button.with-icon {
+			background-color: #007bff;
+			display: flex;
+			align-items: center;
+
+			/* --- MODIFICADO --- */
+			/* Cambiamos de círculo a píldora */
+			width: auto;
+			/* Ancho automático según el contenido */
+			height: auto;
+			/* Altura automática */
+			padding: 8px 14px;
+			/* Relleno interno */
+			border-radius: 20px;
+			/* Bordes redondeados */
+			gap: 10px;
+			/* Espacio entre el icono y el texto */
+		}
+
+		/* Estilo para el texto (span) dentro de los botones del menú */
+		.floating-menu button.with-icon span {
+			font-size: 14px;
+			color: white;
+			font-weight: 500;
+			white-space: nowrap;
+			/* Evita que el texto se parta en dos líneas */
+		}
+
+		.floating-menu button.with-icon:hover {
+			background-color: #0056b3;
+		}
+
+		/* Estilo para los íconos dentro del menú flotante */
+		.floating-menu button.with-icon i {
+			font-size: 16px;
+		}
+
+		/* Estilos base */
+		body {
+			font-family: Arial, sans-serif;
+			margin: 20px;
+		}
+
+		.controls {
+			position: sticky;
+			top: 0;
+			/* LIMPIEZA 5: Ajustado de 40px a 0 */
+			background-color: white;
+			z-index: 3;
+			padding: 10px;
+			margin-bottom: 10px;
+			display: flex;
+			gap: 10px;
+			flex-wrap: wrap;
+		}
+
+		.controls input,
+		.controls select,
+		.controls button {
+			flex: 1 1 auto;
+			max-width: 100%;
+		}
+
+		/* Estilos base para la tabla */
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 20px;
+			table-layout: auto;
+		}
+
+		th,
+		td {
+			border: 1px solid #ccc;
+			padding: 8px;
+			text-align: center;
+			vertical-align: middle;
+			font-size: 14px;
+		}
+
+		th {
+			background-color: #f4f4f4;
+			position: sticky;
+			top: 0;
+			z-index: 2;
+		}
+
+		/* Ajustar el ancho de las columnas */
+		th:nth-child(1),
+		td:nth-child(1) {
+			/* Columna del checkbox */
+			width: 40px;
+		}
+
+		th:nth-child(2),
+		td:nth-child(2) {
+			/* Columna del título */
+			width: 150px;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		th:nth-child(3),
+		td:nth-child(3) {
+			/* Columna de la talla */
+			width: 120px;
+		}
+
+		th:nth-child(4),
+		td:nth-child(4) {
+			/* Columna del SKU */
+			width: 80px;
+		}
+
+		th:nth-child(5),
+		td:nth-child(5) {
+			/* Columna del precio App */
+			width: 80px;
+		}
+
+		th:nth-child(6),
+		td:nth-child(6) {
+			/* Columna del precio en Lempiras */
+			width: 80px;
+		}
+
+		th:nth-child(7),
+		td:nth-child(7) {
+			/* Columna del precio personalizado */
+			width: 80px;
+		}
+
+		th:nth-child(8),
+		td:nth-child(8) {
+			/* Columna del enlace */
+			width: 80px;
+		}
+
+		/* Asegurar que el select dentro de la columna de talla ocupe todo el ancho */
+		td:nth-child(3) select {
+			width: 100%;
+			box-sizing: border-box;
+			font-size: 14px;
+		}
+
+		/* LIMPIEZA 4: Estilos movidos desde JS */
+		.hidden-column {
+			display: none;
+		}
+		/* Oculta Título, SKU, Enlace por defecto */
+		th:nth-child(2),
+		th:nth-child(4),
+		th:nth-child(8) {
+			display: none;
+		}
+		/* FIN LIMPIEZA 4 */
+
+		/* Estilos para pantallas pequeñas (móviles) */
+		@media (max-width: 767px) {
+
+			th,
+			td {
+				padding: 6px;
+				font-size: 12px;
+			}
+
+			th:nth-child(1),
+			td:nth-child(1) {
+				/* Columna del checkbox */
+				width: 30px;
+			}
+
+			th:nth-child(2),
+			td:nth-child(2) {
+				/* Columna del título */
+				width: 100px;
+			}
+
+			th:nth-child(3),
+			td:nth-child(3) {
+				/* Columna de la talla */
+				width: 80px;
+			}
+
+			th:nth-child(4),
+			td:nth-child(4) {
+				/* Columna del SKU */
+				width: 60px;
+			}
+
+			th:nth-child(5),
+			td:nth-child(5) {
+				/* Columna del precio App */
+				width: 60px;
+			}
+
+			th:nth-child(6),
+			td:nth-child(6) {
+				/* Columna del precio en Lempiras */
+				width: 60px;
+			}
+
+			th:nth-child(7),
+			td:nth-child(7) {
+				/* Columna del precio personalizado */
+				width: 60px;
+			}
+
+			th:nth-child(8),
+			td:nth-child(8) {
+				/* Columna del enlace */
+				width: 60px;
+			}
+
+			/* Ajustar el tamaño de los inputs y selects en móviles */
+			input[type="text"],
+			input[type="number"],
+			select {
+				font-size: 12px;
+				padding: 4px;
+			}
+
+			td:nth-child(7) input {
+				height: 17px;
+				padding: 8px;
+				font-size: 14px;
+				text-align: center;
+				line-height: 15px;
+			}
+
+		}
+
+		/* Contenedor de la tabla con desplazamiento vertical */
+		.table-container {
+			height: calc(100vh - 210px);
+			overflow-y: auto;
+		}
+
+		/* Estilos para el encabezado y controles */
+		.fixed-header {
+			position: sticky;
+			top: 0;
+			background-color: white;
+			z-index: 3;
+			padding: 10px;
+		}
+
+		.controls {
+			margin-bottom: 10px;
+		}
+
+		.error {
+			color: red;
+		}
+
+		.processing {
+			color: green;
+		}
+
+		button:disabled {
+			background-color: #ccc;
+			cursor: not-allowed;
+		}
+
+		input[type="text"],
+		input[type="number"],
+		select {
+			text-align: center;
+		}
+
+		.small-input,
+		.small-select {
+			width: 60px;
+			padding: 5px;
+			font-size: 14px;
+		}
+
+		/* --- ESTILO SPINNER (Punto 1) --- */
+		/* Quitado el fondo, padding, etc., del contenedor */
+		#resultado {
+			position: fixed;
+			top: 5px;
+			right: 20px;
+			z-index: 1000;
+			display: none;
+			font-size: 14px;
+			border-radius: 5px;
+		}
+
+		/* Media queries para dispositivos móviles */
+		@media (max-width: 768px) {
+			body {
+				margin: 10px;
+			}
+
+			.controls {
+				top: 0;
+				/* LIMPIEZA 5: Ajustado de 30px a 0 */
+				padding: 8px;
+			}
+
+			/* LIMPIEZA 2: Eliminado .dropdown-menu */
+
+			#resultado {
+				max-width: 250px;
+				padding: 8px;
+				font-size: 10px;
+			}
+
+			/* LIMPIEZA 3: Eliminado p, h3, button de #resultado */
+
+			table {
+				font-size: 12px;
+			}
+
+			th,
+			td {
+				padding: 6px;
+			}
+
+			.small-input,
+			.small-select {
+				width: 50px;
+				padding: 4px;
+				font-size: 12px;
+			}
+		}
+
+		.preview-hidden {
+			display: table-cell;
+		}
+
+		.col-hidden {
+			display: none !important;
+		}
+
+		.header-hidden {
+			display: none !important;
+		}
+
+		/* Estilo base para los botones con íconos */
+		button {
+			background-color: #007bff;
+			color: white;
+			border: none;
+			padding: 5px 10px;
+			font-size: 14px;
+			cursor: pointer;
+			border-radius: 5px;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 8px;
+			transition: background-color 0.3s ease, transform 0.2s ease;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+
+		/* Efecto hover para los botones */
+		button:hover {
+			background-color: #0056b3;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+		}
+
+		/* Efecto active (cuando se hace clic) */
+		button:active {
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+
+		/* Estilo para los íconos dentro de los botones */
+		button i {
+			font-size: 16px;
+		}
+
+		/* Estilo específico para el botón de editar */
+		button .fa-pencil-alt {
+			color: #ffffff;
+		}
+
+		/* Estilo específico para el botón de guardar */
+		button .fa-save {
+			color: #ffffff;
+		}
+
+		/* --- Efecto de Carga para Input (Request 1) --- */
+		@keyframes pulse {
+			0% {
+				box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
+			}
+
+			70% {
+				box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+			}
+
+			100% {
+				box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+			}
+		}
+
+		#enlace:disabled {
+			background-color: #f8f9fa;
+			/* Un fondo leggermente gris */
+		}
+
+		/* --- Fin Efecto Carga --- */
+
+		/* --- Estilo Botón Cancelar (Request 3) --- */
+		.cancel-button {
+			background-color: #D32F2F !important;
+			/* Rojo */
+			color: white !important;
+		}
+
+		.cancel-button:hover {
+			background-color: #C2185B !important;
+			/* Rojo más oscuro al pasar el mouse */
+		}
+
+		/* --- Fin Estilo Botón Cancelar --- */
+
+		/* --- Estilos Modal Clientes (Mejorado) --- */
+		#colorClientsModal {
+			/* Sombra y bordes redondeados para el contenedor principal */
+			border-radius: 10px !important;
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+			border: none !important;
+			width: 90% !important;
+			max-width: 500px !important;
+			background-color: #f9f9f9 !important;
+		}
+
+		/* Título del modal (Genérico) */
+		#colorClientsModal h3,
+		#importModal h3 {
+			margin-top: 0;
+			margin-bottom: 20px;
+			text-align: center;
+			/* Título centrado */
+			color: #333;
+			font-weight: 600;
+		}
+
+		/* Botón de "Eliminar Todos" */
+		#clearAllClientsBtn {
+			background-color: #D32F2F;
+			/* Rojo */
+			color: white;
+			width: 100%;
+			margin-bottom: 20px;
+			padding: 10px;
+			font-size: 14px;
+			font-weight: 500;
+		}
+
+		#clearAllClientsBtn:hover {
+			background-color: #b71c1c;
+			/* Rojo más oscuro */
+		}
+
+		/* Contenedor de la lista */
+		#colorClientsList {
+			max-height: 300px;
+			overflow-y: auto;
+			margin-bottom: 20px;
+			background-color: #ffffff;
+			border: 1px solid #ddd;
+			/* Borde sutil alrededor de la lista */
+			border-radius: 8px;
+			overflow: hidden;
+			/* Añadido: para cortar las filas con el borde redondeado */
+		}
+
+		/* Fila individual de cliente/color */
+		.client-row {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			padding: 12px;
+		}
+
+		/* --- NUEVO: Estilo "Cebra" para filas pares --- */
+		.client-row:nth-child(even) {
+			background-color: #e9ecef;
+			/* Un gris más notorio y limpio */
+		}
+
+		/* Evitar doble borde en la última fila */
+		.client-row:last-child {
+			border-bottom: none;
+		}
+
+		/* Caja de color */
+		.client-color-box {
+			width: 28px;
+			height: 28px;
+			border-radius: 50%;
+			/* Círculo */
+			border: 2px solid #fff;
+			/* Borde blanco para separarlo */
+			box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+			/* Sombra suave */
+			flex-shrink: 0;
+		}
+
+		/* Contenedor para los dos inputs (nombre y monto) */
+		.client-inputs {
+			flex-grow: 1;
+			/* Ocupa el espacio disponible */
+			display: flex;
+			flex-direction: column;
+			/* Apila nombre y monto */
+			gap: 6px;
+		}
+
+		/* Estilo de los inputs dentro del modal */
+		.client-inputs input {
+			width: 100%;
+			padding: 9px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			font-size: 14px;
+			box-sizing: border-box;
+			/* Importante para que el padding no rompa el ancho */
+			transition: border-color 0.2s ease, box-shadow 0.2s ease;
+		}
+
+		.client-inputs input:focus {
+			border-color: #007bff;
+			box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+			outline: none;
+		}
+
+		.client-inputs input:disabled {
+			background-color: #f8f9fa;
+			/* Fondo gris claro al estar deshabilitado */
+			color: #555;
+			border-color: #eee;
+		}
+
+		/* Botón de Editar/Guardar de la fila */
+		.client-edit-btn {
+			background-color: #007bff;
+			color: white;
+			border: none;
+			border-radius: 50%;
+			/* Círculo */
+			width: 40px;
+			height: 40px;
+			flex-shrink: 0;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			transition: background-color 0.3s ease;
+		}
+
+		.client-edit-btn:hover {
+			background-color: #0056b3;
+		}
+
+		/* Botón de Cerrar Modal */
+		#closeColorClientsBtn {
+			width: 100%;
+			padding: 12px;
+			font-size: 16px;
+			font-weight: 600;
+		}
+
+		/* --- Fin Estilos Modal Clientes --- */
+
+		/* --- Mejoras Modal Clientes (Confirmación y 'X') --- */
+
+		/* 1. Botón 'X' para cerrar (Estilo Flotante sin borde) */
+		.modal-close-btn {
+			position: absolute;
+			top: 10px;
+			right: 15px;
+			background: none;
+			border: none;
+			outline: none;
+			font-size: 2.2rem;
+			color: #aaa;
+			cursor: pointer;
+			line-height: 1;
+			font-weight: 300;
+			transition: color 0.2s ease;
+			z-index: 10;
+
+			/* --- LÍNEAS AÑADIDAS/MODIFICADAS --- */
+			padding: 0;
+			/* Elimina cualquier padding que le dé forma de cuadro */
+			box-shadow: none;
+			/* Elimina la sombra heredada de 'button' */
+		}
+
+		.modal-close-btn:hover {
+			color: #D32F2F;
+			/* 1. La X se pone Roja */
+
+			/* --- LÍNEAS AÑADIDAS --- */
+			/* 2. Forzamos que el fondo sea transparente y sin sombra */
+			background-color: transparent !important;
+			box-shadow: none !important;
+		}
+
+		/* 2. Contenedor del modal (Genérico) */
+		#colorClientsModal .modal-content,
+		#importModal .modal-content {
+			position: relative;
+			padding: 20px;
+			/* Añadimos padding para que el título no choque con la 'X' */
+			padding-top: 45px;
+		}
+
+		/* 3. Contenedor de botones de Confirmación/Cancelación */
+		#confirmClearBox {
+			/* Usamos flex para que los botones se alineen */
+			display: flex;
+			gap: 10px;
+			margin-bottom: 20px;
+			width: 100%;
+		}
+
+		#confirmClearBox button {
+			flex: 1;
+			/* Hacemos que ambos botones ocupen 50% del espacio */
+			padding: 10px;
+			font-size: 14px;
+			font-weight: 500;
+		}
+
+		/* Botón de Confirmar (Rojo) */
+		#confirmClearBtn {
+			background-color: #D32F2F;
+			color: white;
+		}
+
+		#confirmClearBtn:hover {
+			background-color: #b71c1c;
+		}
+
+		/* Botón de Cancelar (Gris) */
+		#cancelClearBtn {
+			background-color: #6c757d;
+			color: white;
+		}
+
+		#cancelClearBtn:hover {
+			background-color: #5a6268;
+		}
+
+		/* --- Estilos Modal Importar (Mejorado) --- */
+
+		/* 1. Contenedor principal (copia el estilo del otro modal) */
+		#importModal {
+			border-radius: 10px !important;
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+			border: none !important;
+			width: 90% !important;
+			max-width: 500px !important;
+			background-color: #f9f9f9 !important;
+			/* JS maneja position y display */
+		}
+
+		/* 2. Párrafo de descripción */
+		#importModal p {
+			text-align: center;
+			color: #555;
+			font-size: 15px;
+			margin-top: 0;
+			margin-bottom: 20px;
+		}
+
+		/* 3. Área de texto */
+		#importDataTextArea {
+			width: 100%;
+			height: 200px;
+			margin-bottom: 20px;
+			border: 1px solid #ccc;
+			border-radius: 8px;
+			padding: 12px;
+			font-size: 14px;
+			box-sizing: border-box;
+			resize: vertical;
+			/* Permitir al usuario agrandar verticalmente */
+			transition: border-color 0.2s ease, box-shadow 0.2s ease;
+		}
+
+		/* 4. Efecto de Foco para el área de texto */
+		#importDataTextArea:focus {
+			border-color: #007bff;
+			box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+			outline: none;
+		}
+
+		/* 5. Contenedor de botones de acción (Centrado) */
+		.modal-actions {
+			width: 100%;
+			text-align: center;
+			/* Centra el botón hijo */
+			margin-top: 10px;
+			/* Pequeño espacio extra arriba */
+		}
+
+		/* 6. Estilo de botones (Primario) */
+		.modal-actions button {
+			/* Ya no usa flex: 1 */
+			padding: 12px 30px;
+			/* Hacemos el botón un poco más ancho */
+			font-size: 16px;
+			font-weight: 600;
+		}
+	</style>
+
+	<script>
+		let items = [];
+		let lastDeletedItem = null;
+		let messageTimeout;
+		let allChecked = false;
+		let lastDeletedItems = [];
+		let previewMode = false;
+		let currentFetchController = null; // (NUEVO) Para controlar la cancelación
+
+		// Inicialización al cargar la página
+		window.onload = function () {
+			const savedItems = localStorage.getItem("items");
+			if (savedItems) {
+				items = JSON.parse(savedItems);
+				updateTable();
+			}
+			loadColorClients();
+			updateButtonStates();
+		};
+
+		// Guardar en localStorage
+		function saveToLocalStorage() {
+			localStorage.setItem("items", JSON.stringify(items));
+		}
+
+		// Obtener datos del enlace (MODIFICADO para apuntar a m.shein.com)
+		function obtenerFuente() {
+			let enlace = document.getElementById("enlace").value.trim();
+			// LIMPIEZA 6: Se usa valor hardcoded
+			const porcentajeSeleccionado = 0.20; // 20% hardcoded
+
+			if (!enlace) {
+				showMessage("Por favor, ingrese un enlace válido.", 'error');
+				return;
+			}
+
+			// --- ¡CAMBIO 1 AQUÍ! ---
+			const baseURL = "https://m.shein.com/us/";
+
+			// --- ¡CAMBIO 2 AQUÍ! (para limpiar 'us/' si ya viene en el enlace) ---
+			const cleanPath = enlace.replace(/^(https?:\/\/)?([a-zA-Z0-9.-]+\.)?shein\.com\/(us\/)?/i, "");
+			const finalEnlace = baseURL + cleanPath;
+			// --- FIN DE LOS CAMBIOS ---
+
+			// Actualiza el valor en la caja de texto
+			document.getElementById("enlace").value = finalEnlace;
+
+			// (El resto de la lógica de UI de carga es idéntica)
+			const enlaceInput = document.getElementById("enlace");
+			const clearButton = document.querySelector("button[onclick='clearInput()']");
+			const addButton = document.querySelector("button[onclick='obtenerFuente()']");
+
+			enlaceInput.disabled = true;
+			enlaceInput.style.animation = "pulse 1.5s infinite";
+
+			if (addButton) {
+				addButton.style.display = 'none';
+			}
+
+			if (clearButton) {
+				clearButton.innerHTML = '<i class="fas fa-times"></i> Cancelar';
+				clearButton.classList.add('cancel-button');
+
+				clearButton.onclick = function () {
+					if (currentFetchController) {
+						currentFetchController.abort();
+					}
+					resetUI();
+					showMessage("Proceso cancelado.", 'error');
+				};
+			}
+
+			showMessage("Procesando, por favor espere...", 'processing');
+
+			fetchWithRetry(finalEnlace, porcentajeSeleccionado, 5);
+		}
+
+		// FUNCIÓN: Fetch con reintentos (MODIFICADA para Cancelación y Reset)
+		function fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft) {
+			if (retriesLeft <= 0) {
+				showMessage("No se extrajo información. Se alcanzó el número máximo de reintentos.", 'error');
+				resetUI(); // <-- Resetear UI al fallar
+				return;
+			}
+
+			// Crear y asignar el AbortController
+			currentFetchController = new AbortController();
+			const signal = currentFetchController.signal;
+
+			const url = `https://script.google.com/macros/s/AKfycbwq82FHIL2RGyh_6pl9jluP2sKltOXzqMHzeMHTPq2ITbM5GHA8uhFLupRDHVA8zhWS/exec?url=${encodeURIComponent(enlace)}`;
+
+			fetch(url, {
+					signal
+				}) // <-- Pasar el signal al fetch
+				.then(response => {
+					if (!response.ok) {
+						throw new Error(`Error de red: ${response.statusText}`);
+					}
+					return response.text();
+				})
+				.then(data => {
+					const success = extractData(data, porcentajeSeleccionado, enlace);
+
+					if (success) {
+						resetUI(); // <-- Resetear UI al tener éxito
+					} else {
+						// Si la extracción falló, reintentar el fetch
+						console.log(`Datos clave faltantes. Reintentando... ${retriesLeft - 1} intentos restantes.`);
+						showMessage("Reintentando obtener datos...", 'processing');
+
+						setTimeout(() => {
+							fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft - 1);
+						}, 500);
+					}
+				})
+				.catch(error => {
+					if (error.name === 'AbortError') {
+						console.log('Fetch abortado por el usuario.');
+						// resetUI() ya se llamó desde el botón de cancelar
+						return;
+					}
+
+					console.error("Error en fetch:", error);
+					// Reintentar en caso de error de red
+					setTimeout(() => {
+						fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft - 1);
+					}, 500);
+				});
+		}
+
+		/**
+		 * Intenta encontrar una coincidencia en los datos usando una lista de patrones regex.
+		 * Devuelve el primer grupo de captura de la primera coincidencia exitosa.
+		 */
+		function findMatch(data, patterns) {
+			for (const pattern of patterns) {
+				const match = data.match(pattern);
+				if (match && match[1]) {
+					return match[1];
+				}
+			}
+			return null;
+		}
+
+		// Extraer datos del HTML (MODIFICADO para nuevo precio y tallas)
+		function extractData(data, porcentajeSeleccionado, enlace) {
+
+			// --- Patrones (Títulos, SKU, Imagen, Precio - Sin cambios) ---
+
+			const titlePatterns = [
+				/"goods_name"\s*:\s*"(.*?)"/i, // Prioridad 1: JSON gbRawData
+				/<meta property="og:title" content="(.*?)"/i, // Fallback: Meta Tag
+				/<h1 class="product-intro__head-name".*?<span class="fsp-element">(.*?)<\/span>/i,
+				/<title>(.*?) \| SHEIN USA<\/title>/i,
+				/<title>(.*?) \| SHEIN<\/title>/i
+			];
+
+			const skuPatterns = [
+				/"goods_sn"\s*:\s*"(s[a-zA-Z0-9]{5,})"/i, // Prioridad 1: JSON gbRawData (SPU)
+				/<span class="product-intro__head-sku-text">\s*SKU:\s*(s[a-zA-Z0-9]{5,})<\/span>/i, // HTML
+				/data-clipboard-text="(s[a-zA-Z0-9]{5,})"/i, // HTML Botón Copiar
+				/"skc_name"\s*:\s*"(s[a-zA-Z0-9]{5,})"/i, // Fallback JSON (SPU)
+				/"sku":"(s[a-zA-Z0-9]{5,})"/i, // Fallback ld+json (SPU)
+				/"sku":"(I[a-zA-Z0-9]{5,})"/i // Fallback ld+json (SKU de variante)
+			];
+
+			const imagePatterns = [
+				/"skcImages"\s*:\s*\[\s*"(.*?)"/i, // Prioridad 1: JSON gbRawData (Galería)
+				/<link rel="preload" as="image" href="(.*_900x\.webp)"/i, // <head> preload
+				/<div class="crop-image-container fsp-element" data-before-crop-src="(.*?)"/i, // HTML <body> (Imagen principal)
+				/"image":"(.*?)"/i, // Fallback: ld+json
+				/<div class="crop-image-container" data-before-crop-src="(.*?)"/i // Fallback: HTML (Cualquier thumbnail)
+			];
+
+			const priceAppPatterns = [
+				/"retailPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i,
+				/"originalPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i
+			];
+
+			// --- Extracción (Sin cambios) ---
+
+			let image = findMatch(data, imagePatterns);
+			const sku = findMatch(data, skuPatterns);
+			const priceAppStr = findMatch(data, priceAppPatterns);
+			const title = findMatch(data, titlePatterns);
+
+			// --- Lógica de Tallas (¡MODIFICADA!) ---
+			let sizes = [];
+
+			// INTENTO 1: Usar "base_size_sort" (El más fiable, sugerido por ti)
+			const baseSizeSortMatch = data.match(/"base_size_sort":(\{.*?\})/);
+
+			if (baseSizeSortMatch && baseSizeSortMatch[1]) {
+				try {
+					const sizeObject = JSON.parse(baseSizeSortMatch[1]);
+					sizes = Object.keys(sizeObject);
+				} catch (e) {
+					console.error("Fallo al parsear JSON de base_size_sort:", e);
+					sizes = [];
+				}
+			}
+
+			// INTENTO 2: Usar "attr_value_list" (Para casos como "0 (S)")
+			if (sizes.length === 0) {
+				const sizeBlockMatch = data.match(/"attr_name":"Talla".*?"attr_value_list":(\[.*?\])/s);
+
+				if (sizeBlockMatch && sizeBlockMatch[1]) {
+					try {
+						const sizeList = JSON.parse(sizeBlockMatch[1]);
+						sizeList.forEach(item => {
+							if (item.attr_value_name && item.attr_value_id) {
+								let sizeLabel = item.attr_value_name;
+								if (item.attr_local_size_value && /^[a-zA-Z]+$/.test(item.attr_value_name)) {
+									sizeLabel = `${item.attr_local_size_value} (${item.attr_value_name})`; // "0 (S)"
+								}
+								sizes.push(sizeLabel);
+							}
+						});
+					} catch (e) {
+						console.error("Fallo al parsear JSON de tallas (attr_value_list):", e);
+					}
+				}
+			}
+
+			// INTENTO 3: Fallback a JSON genérico
+			if (sizes.length === 0) {
+				console.log("Intentando fallback de JSON genérico para tallas...");
+				const jsonPattern = /"attr_value_name":"(.*?)"/g;
+				const jsonSizes = [...data.matchAll(jsonPattern)].map(match => match[1]);
+				sizes.push(...jsonSizes);
+			}
+
+			// INTENTO 4: Fallback a HTML 
+			if (sizes.length === 0) {
+				console.log("Intentando fallback de HTML para tallas...");
+				const htmlSizePatterns = [
+					/data-attr_id="87".*?data-attr_value_name="(.*?)"/g,
+					/<p class="product-intro__size-radio-inner.*?>(.*?)<\/p>/g
+				];
+
+				const htmlSizes = htmlSizePatterns.flatMap(pattern =>
+					[...data.matchAll(pattern)].map(match => match[1])
+				);
+				sizes.push(...htmlSizes);
+			}
+
+			// Limpieza final
+			const finalSizes = [...new Set(sizes.filter(s => s && s.trim() !== ''))];
+			// --- Fin Lógica de Tallas ---
+
+			// --- Verificación y guardado (Sin cambios) ---
+			if (image && sku && priceAppStr && title) {
+				if (!image.startsWith("http")) {
+					image = "https:" + image;
+				}
+
+				image = image.replace(/_thumbnail_\d+x\d+\.webp/i, '_thumbnail_900x.webp');
+
+				const priceApp = parseFloat(priceAppStr);
+
+				const item = {
+					image: image,
+					title: title,
+					sku: sku,
+					priceApp: priceApp,
+					priceLempiras: calculatePriceInLempiras(parseFloat(priceApp)),
+					// LIMPIEZA 6: 'percentage' eliminado
+					sizes: finalSizes,
+					selectedSize: "",
+					enlace: enlace,
+					color: '#ffffff'
+				};
+
+				items.push(item);
+				saveToLocalStorage();
+				updateTable();
+
+				showMessage("Datos cargados con éxito.", 'success');
+				return true; // <--- DEVOLVER ÉXITO
+			} else {
+				console.log("Faltaron datos clave:", {
+					image: !!image,
+					sku: !!sku,
+					priceAppStr: !!priceAppStr,
+					title: !!title
+				});
+
+				return false; // <--- DEVOLVER FRACASO (para que fetchWithRetry reintente)
+			}
+		}
+
+		// Calcular precio en lempiras
+		function calculatePriceInLempiras(priceApp) {
+			const priceWithISV = priceApp * 1.07;
+			return (priceWithISV * 26.3).toFixed(2);
+		}
+
+		// Generar Tallas
+		function generateSizeSelect(index, item) {
+			const sizeOptions = item.sizes.map(size =>
+				`<option value="${size}" ${size === item.selectedSize ? 'selected' : ''}>${size}</option>`
+			).join("");
+			return `<select id="sizeSelect${index}" class="small-select" onchange="updateSelectedSize(${index})">
+				<option value="">Seleccionar Talla</option>
+				${sizeOptions}
+			</select>`;
+		}
+
+		// --- IMAGEN CLICKEABLE (Punto 2) ---
+		// Nueva función para ser llamada desde la imagen
+		function toggleCheckbox(index) {
+			const checkbox = document.querySelector(`.itemCheckbox[data-index="${index}"]`);
+			if (checkbox) {
+				checkbox.checked = !checkbox.checked; // Invierte el estado del check
+				updateButtonStates(); // Actualiza los botones
+			}
+		}
+
+		// Actualizar la tabla
+		function updateTable() {
+			const tableBody = document.getElementById("itemTableBody");
+			tableBody.innerHTML = "";
+			items.forEach((item, index) => {
+				const row = document.createElement("tr");
+
+				if (item.color) {
+					row.style.backgroundColor = item.color;
+				}
+
+				const precioPersonalizado = item.precioPersonalizado || 0;
+				const priceLempiras = parseFloat(item.priceLempiras) || 0;
+				const precioStyle = precioPersonalizado < priceLempiras ?
+					'style="background-color: #ff0000; color: white;"' :
+					'style="background-color: white; color: black;"';
+
+				// --- IMAGEN CLICKEABLE (Punto 2) ---
+				// Se añadió onclick="toggleCheckbox(${index})" y style="... cursor: pointer;" a la <img>
+				row.innerHTML =
+					`<td>
+						<div style="position: relative; display: inline-block;">
+							<img src="${item.image}" alt="${item.title}" style="width:50px; cursor: pointer;" onclick="toggleCheckbox(${index})">
+							<input type="checkbox" class="itemCheckbox" data-index="${index}" onchange="updateButtonStates()" style="position: absolute; top: 0; right: 0;">
+						</div>
+					</td>
+					<td class="hidden-column">${item.title}</td>
+					<td>${generateSizeSelect(index, item)}</td>
+					<td class="hidden-column">${item.sku}</td>
+					<td class="preview-hidden">
+						<div style="display: flex; align-items: center; gap: 5px;">
+							<button onclick="toggleEditPrice(${index})">
+								${item.editingPrice ? '<i class="fas fa-save"></i>' : '<i class="fas fa-pencil-alt"></i>'}
+							</button>
+							${item.editingPrice ? `<input type="number" id="priceAppInput${index}" value="${item.priceApp.toFixed(2)}" class="small-input editable">` : item.priceApp.toFixed(2)}
+						</div>
+					</td>
+					<td class="preview-hidden">${item.priceLempiras}</td>
+					<td><input type="number" id="customPriceInput${index}" class="small-input" value="${item.precioPersonalizado}" placeholder="Precio" oninput="updateCustomPrice(${index})" ${precioStyle}></td>
+					<td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>`;
+
+				tableBody.appendChild(row);
+			});
+			updateButtonStates();
+		}
+
+		// LIMPIEZA 4: Eliminado el bloque JS que creaba estilos
+
+		// Actualizar talla seleccionada
+		function updateSelectedSize(index) {
+			const selectedSize = document.getElementById(`sizeSelect${index}`).value;
+			items[index].selectedSize = selectedSize;
+			saveToLocalStorage();
+		}
+
+		// Deshacer eliminación
+		function undoDelete() {
+			document.getElementById("dropdownMenu").classList.remove("show");
+			if (lastDeletedItems.length > 0) {
+				items = items.concat(lastDeletedItems);
+				lastDeletedItems = [];
+				saveToLocalStorage();
+				updateTable();
+				showMessage("Se recuperó la última eliminación con éxito.", 'success');
+			}
+		}
+
+		// Borrar Texto de Enlace (MODIFICADO)
+		function clearInput() {
+			document.getElementById("enlace").value = "";
+			document.getElementById("resultado").innerText = "";
+			resetUI(); // Asegura que la UI esté reseteada
+		}
+
+		// NUEVA función para resetear la UI (Request 1 y 3)
+		function resetUI() {
+			const enlaceInput = document.getElementById("enlace");
+			// Busca el botón, ya sea que diga "Borrar" o "Cancelar"
+			const clearButton = document.querySelector("button[onclick='clearInput()'], button[onclick*='currentFetchController']");
+			const addButton = document.querySelector("button[onclick='obtenerFuente()']"); // (Req 1)
+
+			enlaceInput.disabled = false;
+			enlaceInput.style.animation = "none";
+
+			if (clearButton) {
+				clearButton.innerHTML = '<i class="fas fa-eraser"></i>';
+				clearButton.onclick = clearInput; // Restaura la función original de "Borrar"
+				clearButton.classList.remove('cancel-button'); // (Req 3)
+			}
+
+			if (addButton) { // (Req 1)
+				addButton.style.display = 'inline-flex'; // Muestra el botón "+"
+			}
+
+			if (currentFetchController) {
+				currentFetchController.abort(); // Cancela cualquier fetch si aún estuviera activo
+			}
+			currentFetchController = null; // Limpia el controlador
+		}
+
+		// Copiar Filas Seleccionadas Para Exportar
+		function copySelectedRows() {
+			document.getElementById("dropdownMenu").classList.remove("show");
+			const selectedItems = Array.from(document.querySelectorAll('.itemCheckbox:checked')).map(checkbox => {
+				const index = checkbox.getAttribute('data-index');
+				const item = items[index];
+				const imageFormula = `=IMAGE("${item.image}")`;
+				const detailFormula = `=HYPERLINK("${item.enlace}", "Ver detalle")`;
+				const selectedSize = item.selectedSize || '""';
+				const customPriceInput = document.getElementById(`customPriceInput${index}`);
+				const customPrice = customPriceInput ? customPriceInput.value.trim() : '';
+				const priceToCopy = customPrice !== '' ? customPrice : item.priceApp.toFixed(2);
+				const decodedTitle = decodeHtmlEntities(item.title);
+
+				// LIMPIEZA 6: 'porcentaje' eliminado
+				
+				// Fórmula corregida a RC[-1]
+				const priceLempirasFormula = `=INDIRECT("RC[-1]", 0) * 1.07 * 26.3`;
+
+				return [
+					imageFormula,
+					decodedTitle,
+					`${selectedSize}`,
+					item.sku,
+					item.priceApp.toFixed(2),
+					priceLempirasFormula,
+					detailFormula,
+					'',
+					customPrice
+				].join('\t');
+			});
+
+			if (selectedItems.length === 0) {
+				alert("Por favor, seleccione al menos un artículo para copiar.");
+				return;
+			}
+
+			const textToCopy = selectedItems.join('\n');
+
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(textToCopy).then(() => {
+					showMessage("Datos copiados al portapapeles.", 'success');
+				}).catch(err => {
+					console.error('Error al copiar: ', err);
+					alert("No se pudo copiar automáticamente. Prueba de nuevo o copia manually.");
+					showManualCopyModal(textToCopy);
+				});
+			} else {
+				const textArea = document.createElement("textarea");
+				textArea.value = textToCopy;
+				textArea.style.position = "fixed";
+				textArea.style.opacity = "0";
+				document.body.appendChild(textArea);
+				textArea.select();
+
+				try {
+					const successful = document.execCommand('copy');
+					if (successful) {
+						showMessage("Datos copiados al portapapeles.", 'success');
+					} else {
+						showMessage("No se pudo copiar automáticamente. Prueba de nuevo o copia manually.", 'error');
+						showManualCopyModal(textToCopy);
+					}
+				} catch (err) {
+					console.error('Error al copiar (fallback): ', err);
+					showMessage("No se pudo copiar automáticamente. Prueba de nuevo o copia manually.", 'error');
+					showManualCopyModal(textToCopy);
+				}
+
+				document.body.removeChild(textArea);
+			}
+		}
+
+		// Función para mostrar el modal con el texto a copiar manually
+		function showManualCopyModal(text) {
+			const modal = document.getElementById('manualCopyModal');
+			const textArea = document.getElementById('manualCopyTextArea');
+			textArea.value = text;
+			modal.style.display = 'block';
+		}
+
+		// Función para copiar manually desde el área de texto del modal
+		function copyTextAreaContent() {
+			const textArea = document.getElementById('manualCopyTextArea');
+			textArea.select();
+			document.execCommand('copy');
+			alert("Texto copiado al portapapeles.");
+		}
+
+		// Función para cerrar el modal
+		function closeManualCopyModal() {
+			const modal = document.getElementById('manualCopyModal');
+			modal.style.display = 'none';
+		}
+
+		// Función para decodificar entidades HTML
+		function decodeHtmlEntities(str) {
+			const textarea = document.createElement('textarea');
+			textarea.innerHTML = str;
+			return textarea.value;
+		}
+
+		// Función para Actualizar el Estado de los Botones
+		function updateButtonStates() {
+			const selectedItemsCount = document.querySelectorAll('.itemCheckbox:checked').length;
+			const exportButton = document.querySelector('button[onclick="exportSelectedRows()"]');
+			const colorClientsButton = document.querySelector('button[onclick="showColorClientsModal()"]');
+			const groupByColorButton = document.querySelector('button[onclick="groupByColor()"]');
+			const previewButton = document.querySelector('button[onclick="togglePreview()"]');
+
+			const hasItems = items.length > 0;
+
+			exportButton.style.display = selectedItemsCount === 0 ? 'none' : 'flex';
+
+			colorClientsButton.style.display = hasItems ? 'flex' : 'none';
+			groupByColorButton.style.display = hasItems ? 'flex' : 'none';
+			previewButton.style.display = hasItems ? 'flex' : 'none';
+
+			document.querySelector('button[onclick="openColorPicker(event)"]').disabled = selectedItemsCount === 0;
+			document.querySelector('button[onclick="copySelectedRows()"]').disabled = selectedItemsCount === 0;
+			document.querySelector('button[onclick="duplicateSelectedRow()"]').disabled = selectedItemsCount === 0;
+			document.querySelector('button[onclick="undoDelete()"]').disabled = lastDeletedItems.length === 0;
+			document.querySelector('button[onclick="deleteSelectedItems()"]').disabled = selectedItemsCount === 0;
+		}
+
+		// --- FUNCIÓN DE MENSAJE (Punto 1) ---
+		// Actualizada para manejar el spinner sin caja
+		function showMessage(message, type) {
+			const resultDiv = document.getElementById("resultado");
+			resultDiv.innerHTML = ""; // Limpiar
+
+			if (type === "processing") {
+				// Sin fondo, sin padding, solo el spinner
+				resultDiv.style.backgroundColor = 'transparent';
+				resultDiv.style.padding = '10px 15px'; // Padding para mantener la posición
+				resultDiv.style.color = 'white'; // Oculta texto residual
+				resultDiv.innerHTML = `<div class="loader"></div>`;
+			} else {
+				// Con fondo y padding para mensajes
+				resultDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+				resultDiv.style.padding = '10px 15px';
+				resultDiv.style.color = 'white';
+				resultDiv.textContent = message;
+			}
+
+			resultDiv.style.display = 'block'; // Mostrarlo
+
+			if (type !== "processing") {
+				// Ocultar mensajes de éxito/error
+				if (messageTimeout) clearTimeout(messageTimeout);
+				messageTimeout = setTimeout(() => {
+					resultDiv.style.display = 'none';
+				}, 2000);
+			}
+		}
+
+		// Botón de Check de Encabezado para marcar y desmarcar todas las filas
+		function toggleSelectAll() {
+			document.getElementById("dropdownMenu").classList.remove("show");
+
+			allChecked = !allChecked;
+			document.querySelectorAll('.itemCheckbox').forEach(checkbox => {
+				checkbox.checked = allChecked;
+			});
+
+			updateButtonStates();
+
+			const selectAllButton = document.getElementById("selectAllButton");
+			selectAllButton.innerText = allChecked ? "☐" : "☑";
+		}
+
+		// Función para editar precios de App
+		function toggleEditPrice(index) {
+			document.getElementById("dropdownMenu").classList.remove("show");
+
+			if (items[index].editingPrice) {
+				const newPrice = parseFloat(document.getElementById(`priceAppInput${index}`).value);
+				if (newPrice !== items[index].priceApp) {
+					items[index].priceApp = newPrice;
+					// LIMPIEZA 6: 'percentage' eliminado
+					items[index].priceLempiras = calculatePriceInLempiras(newPrice);
+					showMessage("Precio de App actualizado con éxito.", 'success');
+				}
+			}
+
+			items[index].editingPrice = !items[index].editingPrice;
+			saveToLocalStorage();
+			updateTable();
+		}
+
+		// Función para eliminar filas seleccionadas
+		function deleteSelectedItems() {
+			document.getElementById("dropdownMenu").classList.remove("show");
+
+			lastDeletedItems = items.filter((_, index) => document.querySelector(`.itemCheckbox[data-index="${index}"]`).checked);
+			items = items.filter((_, index) => !document.querySelector(`.itemCheckbox[data-index="${index}"]`).checked);
+
+			saveToLocalStorage();
+			updateTable();
+			updateButtonStates();
+			showMessage("Filas eliminadas con éxito.", 'success');
+		}
+
+		// Función para Guardar el precio editado
+		function updateCustomPrice(index) {
+			const customPriceInput = document.getElementById(`customPriceInput${index}`);
+			const customPrice = customPriceInput.value;
+			items[index].precioPersonalizado = customPrice;
+
+			const priceLempiras = parseFloat(items[index].priceLempiras) || 0;
+			const precioPersonalizado = parseFloat(customPrice) || 0;
+
+			if (precioPersonalizado < priceLempiras) {
+				customPriceInput.style.backgroundColor = '#ff0000';
+				customPriceInput.style.color = 'white';
+			} else {
+				customPriceInput.style.backgroundColor = 'white';
+				customPriceInput.style.color = 'black';
+			}
+
+			saveToLocalStorage();
+		}
+
+		// Función para la vista previa
+		function togglePreview() {
+			document.getElementById("dropdownMenu").classList.remove("show");
+
+			const tableBody = document.getElementById("itemTableBody");
+			const dropdownToggle = document.querySelector(".dropdown-toggle.with-icon");
+			const body = document.body;
+			const tableHeaders = document.querySelectorAll("#itemTable thead th");
+
+			const columnsToHide = [4, 5];
+
+			const enlaceInput = document.getElementById("enlace");
+			const addButton = document.querySelector("button[onclick='obtenerFuente()']");
+			const clearButton = document.querySelector("button[onclick='clearInput()'], button[onclick*='currentFetchController']"); // Modificado para encontrarlo siempre
+			const openColorPicker2Button = document.getElementById("openColorPicker2");
+			const downloadTableImageButton = document.getElementById("downloadTableImage");
+
+			const totalRow = document.getElementById("totalRow");
+
+			if (!previewMode) {
+				body.classList.add("preview-mode");
+
+				Array.from(tableBody.rows).forEach(row => {
+					columnsToHide.forEach(index => {
+						if (row.cells[index]) {
+							row.cells[index].classList.add("col-hidden");
+						}
+					});
+				});
+
+				tableHeaders.forEach((header, index) => {
+					if (columnsToHide.includes(index)) {
+						header.classList.add("header-hidden");
+					}
+				});
+
+				// LIMPIEZA 5: 'title' (h2) eliminado
+				if (enlaceInput) enlaceInput.style.display = 'none';
+				if (addButton) addButton.style.display = 'none';
+				if (clearButton) clearButton.style.display = 'none';
+
+				if (totalRow) {
+					totalRow.style.display = 'none';
+				}
+
+				openColorPicker2Button.style.display = 'inline-block';
+				downloadTableImageButton.style.display = 'inline-block';
+
+				dropdownToggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
+				dropdownToggle.onclick = togglePreview;
+			} else {
+				body.classList.remove("preview-mode");
+
+				Array.from(tableBody.rows).forEach(row => {
+					columnsToHide.forEach(index => {
+						if (row.cells[index]) {
+							row.cells[index].classList.remove("col-hidden");
+						}
+					});
+				});
+
+				tableHeaders.forEach((header, index) => {
+					if (columnsToHide.includes(index)) {
+						header.classList.remove("header-hidden");
+					}
+				});
+
+				Array.from(tableBody.rows).forEach(row => {
+					row.style.display = '';
+				});
+
+				// LIMPIEZA 5: 'title' (h2) eliminado
+				if (enlaceInput) enlaceInput.style.display = '';
+				if (addButton) addButton.style.display = '';
+				if (clearButton) clearButton.style.display = '';
+
+				if (totalRow) {
+					totalRow.style.display = 'none';
+				}
+
+				openColorPicker2Button.style.display = 'none';
+				downloadTableImageButton.style.display = 'none';
+
+				dropdownToggle.innerHTML = '<i class="fas fa-bars"></i>';
+				dropdownToggle.onclick = toggleDropdown;
+			}
+
+			previewMode = !previewMode;
+		}
+
+		// Función para duplicar filas seleccionadas
+		function duplicateSelectedRow() {
+			document.getElementById("dropdownMenu").classList.remove("show");
+
+			const selectedCheckbox = document.querySelector('.itemCheckbox:checked');
+			if (!selectedCheckbox) {
+				showMessage("Por favor, seleccione una fila para duplicar.", 'error');
+				return;
+			}
+
+			const index = parseInt(selectedCheckbox.getAttribute('data-index'));
+			const itemToDuplicate = items[index];
+			const newItem = { ...itemToDuplicate
+			};
+			items.splice(index + 1, 0, newItem);
+
+			saveToLocalStorage();
+			updateTable();
+			showMessage("Fila duplicada con éxito.", 'success');
+		}
+
+		// Función del menú desplegable 
+		function toggleDropdown() {
+			const dropdownMenu = document.getElementById("dropdownMenu");
+			dropdownMenu.classList.toggle("show");
+		}
+
+		document.addEventListener("click", function (event) {
+			var dropdown = document.querySelector(".floating-dropdown");
+			var menu = document.getElementById("dropdownMenu");
+
+			if (!dropdown.contains(event.target)) {
+				menu.classList.remove("show");
+			}
+		});
+
+		// LIMPIEZA 7: Eliminada función handleMenuClick
+
+		// Función para abrir el selector de colores
+		function openColorPicker(event) {
+			event.stopPropagation();
+			const colorPicker = document.getElementById("colorPicker");
+			colorPicker.classList.toggle("show");
+		}
+
+		// Función para aplicar el color seleccionado a las filas
+		function applyColorToSelectedRows(color) {
+			const selectedCheckboxes = document.querySelectorAll('.itemCheckbox:checked');
+			selectedCheckboxes.forEach(checkbox => {
+				const index = checkbox.getAttribute('data-index');
+				const row = document.querySelector(`#itemTableBody tr:nth-child(${parseInt(index) + 1})`);
+				if (row) {
+					row.style.backgroundColor = color;
+					const imageCell = row.querySelector('td:first-child');
+					if (imageCell) {
+						imageCell.style.backgroundColor = color;
+					}
+					items[index].color = color;
+				}
+			});
+			saveToLocalStorage();
+			closeColorPicker();
+		}
+
+		// Función para cerrar el selector de colores
+		function closeColorPicker() {
+			const colorPicker = document.getElementById("colorPicker");
+			colorPicker.classList.remove("show");
+		}
+
+		// Cerrar el menú de colores al hacer clic fuera de él
+		document.addEventListener("click", function (event) {
+			const colorPicker = document.getElementById("colorPicker");
+			const colorButton = document.getElementById("colorButton");
+			if (!colorPicker.contains(event.target) && !colorButton.contains(event.target)) {
+				closeColorPicker();
+			}
+		});
+
+		// Función para agrupar filas por colores
+		function groupByColor() {
+			document.getElementById("dropdownMenu").classList.remove("show");
+
+			const groupedItems = {};
+			items.forEach(item => {
+				const color = item.color || '#ffffff';
+				if (!groupedItems[color]) {
+					groupedItems[color] = [];
+				}
+				groupedItems[color].push(item);
+			});
+
+			const newItems = [];
+			Object.keys(groupedItems).forEach(color => {
+				newItems.push(...groupedItems[color]);
+			});
+
+			items = newItems;
+
+			saveToLocalStorage();
+			updateTable();
+			showMessage("Todas las filas agrupadas por colores con éxito.", 'success');
+		}
+
+		// Función para abrir la segunda paleta de colores
+		function openColorPicker2(event) {
+			event.stopPropagation();
+			const colorPicker2 = document.getElementById("colorPicker2");
+			colorPicker2.classList.toggle("show");
+		}
+
+		// Función para filtrar las filas por color
+		function filterRowsByColor(color) {
+			const rows = document.querySelectorAll("#itemTableBody tr");
+			const filteredRows = [];
+
+			rows.forEach((row, index) => {
+				const itemColor = items[index].color || '#ffffff';
+
+				if (itemColor.toLowerCase() === color.toLowerCase()) {
+					row.style.display = '';
+					filteredRows.push(row);
+				} else {
+					row.style.display = 'none';
+				}
+			});
+
+			const total = calculateTotalPrice(filteredRows);
+			showTotalRow(total);
+			closeColorPicker2();
+		}
+
+		// Función para cerrar la segunda paleta de colores
+		function closeColorPicker2() {
+			const colorPicker2 = document.getElementById("colorPicker2");
+			colorPicker2.classList.remove("show");
+		}
+
+		// Cerrar la paleta al hacer clic fuera de ella
+		document.addEventListener("click", function (event) {
+			const colorPicker2 = document.getElementById("colorPicker2");
+			const openColorPicker2Button = document.getElementById("openColorPicker2");
+			if (!colorPicker2.contains(event.target) && !openColorPicker2Button.contains(event.target)) {
+				closeColorPicker2();
+			}
+		});
+
+		function calculateTotalPrice(filteredRows) {
+			let totalPrice = 0;
+
+			filteredRows.forEach(row => {
+				const priceCell = row.querySelector("td:nth-child(7)");
+				if (priceCell) {
+					const input = priceCell.querySelector("input");
+					if (input) {
+						let priceText = input.value.trim().replace(/\s+/g, "");
+						const price = parseFloat(priceText) || 0;
+						totalPrice += price;
+					}
+				}
+			});
+
+			return {
+				totalPrice
+			};
+		}
+
+		function showTotalRow(totals) {
+			const tableBody = document.getElementById("itemTableBody");
+			let totalRow = document.getElementById("totalRow");
+
+			if (totalRow) {
+				totalRow.remove();
+			}
+
+			totalRow = document.createElement("tr");
+			totalRow.id = "totalRow";
+
+			totalRow.innerHTML = `
+				<td colspan="2" style="text-align: center; font-weight: bold; background-color: #f4f4f4;">Total en Lempiras:</td> 
+				<td class="hidden-cell"></td> 
+				<td class="hidden-cell"></td> 
+				<td class="hidden-cell"></td> 
+				<td class="hidden-cell"></td> 
+				<td style="font-weight: bold; background-color: #f4f4f4;">${totals.totalPrice.toFixed(2)}</td> 
+				<td class="hidden-cell"></td> 
+			`;
+
+			tableBody.appendChild(totalRow);
+		}
+
+		// --- FUNCIÓN DE RESPALDO PARA DESCARGAR ---
+		function downloadFallback(canvas) {
+			const image = canvas.toDataURL("image/png", 1.0);
+			const link = document.createElement("a");
+			link.href = image;
+			link.download = "Detalle.png"; // Nombre del archivo
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		}
+
+		// --- FUNCIÓN DE DESCARGA ACTUALIZADA PARA COMPARTIR (Punto 2) ---
+		function downloadTableImage() {
+			const table = document.getElementById("itemTable");
+			const tableContainer = document.querySelector(".table-container");
+
+			tableContainer.scrollTop = 0;
+
+			setTimeout(() => {
+				const options = {
+					scale: window.devicePixelRatio * 2,
+					useCORS: true,
+					backgroundColor: "#ffffff",
+					logging: false
+				};
+
+				html2canvas(table, options).then(canvas => {
+					// Convierte el canvas a un Blob (archivo en memoria)
+					canvas.toBlob(blob => {
+						const file = new File([blob], "Detalle.png", {
+							type: "image/png"
+						});
+						const shareData = {
+							files: [file],
+							title: 'Detalle de Pedido',
+							text: 'Aquí está el detalle de la tabla.'
+						};
+
+						// Comprueba si el navegador PUEDE compartir este tipo de datos
+						if (navigator.canShare && navigator.canShare(shareData)) {
+							// Intenta abrir el diálogo de compartir
+							navigator.share(shareData)
+								.then(() => console.log('Imagen compartida con éxito.'))
+								.catch(error => {
+									// Si el usuario cierra el diálogo o hay un error, usa el fallback
+									console.log('Error al compartir o diálogo cancelado:', error);
+									downloadFallback(canvas); // Llama a la función de descarga original
+								});
+						} else {
+							// Si el navegador no soporta 'navigator.share' (ej. PC), descarga directamente
+							console.log('API de compartir no soportada, usando descarga directa.');
+							downloadFallback(canvas);
+						}
+					}, 'image/png');
+
+				}).catch(error => {
+					console.error("Error al capturar la tabla:", error);
+					alert("Hubo un error al generar la imagen. Inténtalo de nuevo.");
+				});
+			}, 100);
+		}
+
+		// Función para exportar filas seleccionadas como texto
+		function exportSelectedRows() {
+			const selectedItems = Array.from(document.querySelectorAll('.itemCheckbox:checked')).map(checkbox => {
+				const index = checkbox.getAttribute('data-index');
+				const item = items[index];
+				return JSON.stringify({
+					...item,
+					clientName: item.clientName || '',
+					clientPayment: item.clientPayment || 0,
+					color: item.color || '#ffffff'
+				});
+			}).join('\n---ITEM---\n');
+
+			if (navigator.clipboard) {
+				navigator.clipboard.writeText(selectedItems).then(() => {
+					showMessage("Datos exportados al portapapeles.", 'success');
+				}).catch(err => {
+					console.error('Error al copiar:', err);
+					showManualCopyModal(selectedItems);
+				});
+			} else {
+				showManualCopyModal(selectedItems);
+			}
+		}
+
+		// Función para mostrar el modal de importación
+		function showImportModal() {
+			document.getElementById("importModal").style.display = "block";
+			document.getElementById("importDataTextArea").value = "";
+			document.getElementById("importDataTextArea").focus();
+		}
+
+		// Función para cerrar el modal de importación
+		function closeImportModal() {
+			document.getElementById("importModal").style.display = "none";
+		}
+
+		// Función para importar datos
+		function importData() {
+			const importText = document.getElementById("importDataTextArea").value.trim();
+			if (!importText) {
+				showMessage("No hay datos para importar.", 'error');
+				return;
+			}
+
+			try {
+				let importedItems = [];
+
+				if (importText.startsWith('{') || importText.startsWith('[') || importText.includes('---ITEM---')) {
+					// Formato JSON (el actual)
+					importedItems = importText.split('\n---ITEM---\n').map(itemStr => {
+						try {
+							return JSON.parse(itemStr);
+						} catch (e) {
+							console.error("Error parsing item:", itemStr);
+							return null;
+						}
+					}).filter(item => item !== null);
+				} else {
+					// Formato Excel (nuevo)
+					importedItems = parseExcelFormat(importText);
+				}
+
+				if (importedItems.length === 0) {
+					showMessage("No se encontraron datos válidos para importar.", 'error');
+					return;
+				}
+
+				importedItems.forEach(item => {
+					if (item.color && (item.clientName || item.clientPayment !== undefined)) {
+						colorClients[item.color] = {
+							name: item.clientName || '',
+							payment: item.clientPayment || 0
+						};
+					}
+
+					if (!item.priceLempiras && item.priceApp) {
+						item.priceLempiras = calculatePriceInLempiras(item.priceApp);
+					}
+				});
+
+				items.unshift(...importedItems);
+				saveColorClients();
+				saveToLocalStorage();
+				updateTable();
+				closeImportModal();
+				showMessage(`${importedItems.length} items importados con éxito.`, 'success');
+			} catch (error) {
+				console.error("Error importing data:", error);
+				showMessage("Error al importar datos. Verifica el formato.", 'error');
+			}
+		}
+
+		function parseExcelFormat(text) {
+			const lines = text.split('\n').filter(line => line.trim() !== '');
+			const items = [];
+
+			for (const line of lines) {
+				try {
+					const columns = line.split('\t');
+
+					let imageUrl = columns[0].replace(/^=IMAGE\("|"\)$/g, '');
+					const title = columns[1];
+					const size = columns[2];
+					const sku = columns[3];
+					const priceApp = parseFloat(columns[4]) || 0;
+					const customPrice = parseFloat(columns[columns.length - 1]) || '';
+
+					let link = '';
+					const linkColumnIndex = 7;
+					if (columns[linkColumnIndex] && columns[linkColumnIndex].includes('HYPERLINK')) {
+						link = columns[linkColumnIndex].replace(/^=HYPERLINK\("|".*$/g, '');
+					}
+
+					const newItem = {
+						image: imageUrl,
+						title: title,
+						sizes: [size],
+						selectedSize: size,
+						sku: sku,
+						priceApp: priceApp,
+						priceLempiras: calculatePriceInLempiras(priceApp),
+						enlace: link || `https://us.shein.com/search?keywords=${sku}`,
+						precioPersonalizado: customPrice,
+						color: '#ffffff'
+					};
+
+					items.push(newItem);
+				} catch (e) {
+					console.error("Error parsing line:", line, e);
+				}
+			}
+
+			return items;
+		}
+
+		// Objeto para guardar la asociación de colores con clientes
+		let colorClients = {};
+
+		// Cargar los clientes desde localStorage al iniciar
+		function loadColorClients() {
+			const savedColorClients = localStorage.getItem("colorClients");
+			if (savedColorClients) {
+				try {
+					colorClients = JSON.parse(savedColorClients);
+
+					for (const color in colorClients) {
+						if (typeof colorClients[color] === 'string') {
+							colorClients[color] = {
+								name: colorClients[color],
+								payment: 0
+							};
+						}
+					}
+				} catch (e) {
+					console.error("Error parsing colorClients:", e);
+					colorClients = {};
+				}
+			}
+		}
+
+		// Mostrar el modal de gestión de clientes por color
+		function showColorClientsModal() {
+			const modal = document.getElementById("colorClientsModal");
+			const listContainer = document.getElementById("colorClientsList");
+
+			const colors = items.map(item => item.color).filter(color => color !== undefined);
+			const usedColors = [...new Set(colors)];
+
+			if (usedColors.length === 0) {
+				listContainer.innerHTML = '<p>No hay colores asignados todavía.</p>';
+				modal.style.display = 'block';
+				return;
+			}
+
+			listContainer.innerHTML = '';
+
+			usedColors.forEach(color => {
+				// 1. Contenedor principal de la fila
+				const colorDiv = document.createElement("div");
+				colorDiv.className = 'client-row'; // <-- NUEVA CLASE
+
+				// 2. Caja de color
+				const colorBox = document.createElement("div");
+				colorBox.className = 'client-color-box'; // <-- NUEVA CLASE
+				colorBox.style.backgroundColor = color; // <-- Único estilo inline necesario
+
+				// 3. Contenedor para los inputs
+				const inputsContainer = document.createElement("div");
+				inputsContainer.className = 'client-inputs'; // <-- NUEVA CLASE
+
+				// 4. Input de Nombre
+				const clientNameInput = document.createElement("input");
+				clientNameInput.type = 'text';
+				clientNameInput.value = (colorClients[color] && colorClients[color].name) || '';
+				clientNameInput.placeholder = 'Nombre del cliente';
+				clientNameInput.disabled = true;
+
+				// 5. Input de Monto
+				const clientPaymentInput = document.createElement("input");
+				clientPaymentInput.type = 'number';
+				clientPaymentInput.placeholder = 'Monto (ej: 500)';
+				clientPaymentInput.disabled = true;
+
+				if (colorClients[color] && colorClients[color].payment !== 0) {
+					clientPaymentInput.value = colorClients[color].payment;
+				}
+
+				clientPaymentInput.addEventListener('focus', () => {
+					if (clientPaymentInput.value === '0') {
+						clientPaymentInput.value = '';
+					}
+				});
+
+				// 6. Botón de Editar/Guardar
+				const editButton = document.createElement("button");
+				editButton.className = 'client-edit-btn'; // <-- NUEVA CLASE
+				editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+				editButton.title = 'Editar'; // Tooltip
+
+				// Lógica del botón (sin cambios, solo se actualiza el ícono y el title)
+				editButton.onclick = function () {
+					if (clientNameInput.disabled) {
+						clientNameInput.disabled = false;
+						clientPaymentInput.disabled = false;
+						clientNameInput.focus();
+						editButton.innerHTML = '<i class="fas fa-save"></i>'; // Icono de Guardar
+						editButton.title = 'Guardar';
+					} else {
+						clientNameInput.disabled = true;
+						clientPaymentInput.disabled = true;
+
+						const paymentValue = clientPaymentInput.value.trim() === '' ? undefined : parseFloat(clientPaymentInput.value);
+
+						colorClients[color] = {
+							name: clientNameInput.value.trim(),
+							payment: paymentValue
+						};
+
+						saveColorClients();
+
+						items.forEach(item => {
+							if (item.color === color) {
+								item.clientName = colorClients[color].name;
+								item.clientPayment = colorClients[color].payment;
+							}
+						});
+
+						saveToLocalStorage();
+						editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>'; // Icono de Editar
+						editButton.title = 'Editar';
+
+						if (clientPaymentInput.value === '0' || clientPaymentInput.value.trim() === '') {
+							clientPaymentInput.value = '';
+						}
+
+						showMessage("Datos del cliente guardados.", 'success');
+					}
+				};
+
+				// 7. Armar la fila (Añadiendo los inputs al contenedor de inputs)
+				inputsContainer.appendChild(clientNameInput);
+				inputsContainer.appendChild(clientPaymentInput);
+
+				colorDiv.appendChild(colorBox);
+				colorDiv.appendChild(inputsContainer);
+				colorDiv.appendChild(editButton);
+
+				listContainer.appendChild(colorDiv);
+			});
+
+			modal.style.display = 'block';
+		}
+
+		// Cerrar el modal de clientes por color
+		function closeColorClientsModal() {
+			document.getElementById("colorClientsModal").style.display = 'none';
+		}
+
+		// Guardar los nombres de clientes en localStorage
+		function saveColorClients() {
+			localStorage.setItem("colorClients", JSON.stringify(colorClients));
+		}
+
+		// Reemplaza la función original
+		function confirmClearAllClients() {
+			// Oculta el botón principal "Eliminar Todos"
+			document.getElementById('clearAllClientsBtn').style.display = 'none';
+			// Muestra el contenedor de "Confirmar" / "Cancelar"
+			document.getElementById('confirmClearBox').style.display = 'flex';
+		}
+
+		// Nueva función para el botón "Cancelar"
+		function cancelClearAction() {
+			// Oculta el contenedor de "Confirmar" / "Cancelar"
+			document.getElementById('confirmClearBox').style.display = 'none';
+			// Muestra el botón principal "Eliminar Todos"
+			document.getElementById('clearAllClientsBtn').style.display = 'block';
+		}
+
+		// Busca esta función y AÑADE las 2 últimas líneas
+		function clearAllClients() {
+			for (const color in colorClients) {
+				colorClients[color] = {
+					name: '',
+					payment: 0
+				};
+			}
+
+			items.forEach(item => {
+				if (item.color) {
+					item.clientName = '';
+					item.clientPayment = 0;
+				}
+			});
+
+			saveColorClients();
+			saveToLocalStorage();
+			showColorClientsModal();
+			showMessage("Todos los clientes y pagos han sido eliminados.", 'success');
+
+			// --- AÑADE ESTAS DOS LÍNEAS AL FINAL ---
+			document.getElementById('confirmClearBox').style.display = 'none';
+			document.getElementById('clearAllClientsBtn').style.display = 'block';
+		}
+	</script>
 
 </head>
 
 <body>
 
-    <div class="fixed-header">
-        <h2>‎ </h2>
+	<div class="fixed-header">
+		<!-- LIMPIEZA 5: 'h2' eliminado -->
 
-        <div class="controls">
-            <input type="text" id="enlace" placeholder="Enlace del artículo" style="height: 40px; width: 200px; padding: 5px;" autocomplete="off">
+		<div class="controls">
+			<input type="text" id="enlace" placeholder="Enlace del artículo" style="height: 40px; width: 200px; padding: 5px;" autocomplete="off">
 
-            <select id="percentageSelect" style="display: none;">
-                <option value="20">20%</option>
-                <option value="25">25%</option>
-                <option value="35">35%</option>
-            </select>
-            <button onclick="obtenerFuente()"><i class="fas fa-plus"></i></button>
-            <button onclick="clearInput()"><i class="fas fa-eraser"></i></button>
-        </div>
+			<!-- LIMPIEZA 6: 'percentageSelect' eliminado -->
+			<button onclick="obtenerFuente()"><i class="fas fa-plus"></i></button>
+			<button onclick="clearInput()"><i class="fas fa-eraser"></i></button>
+		</div>
 
-        <div class="floating-dropdown">
-            <button class="dropdown-toggle with-icon" onclick="toggleDropdown()">
-                <i class="fas fa-bars"></i> 
-            </button>
+		<div class="floating-dropdown">
+			<button class="dropdown-toggle with-icon" onclick="toggleDropdown()">
+				<i class="fas fa-bars"></i>
+			</button>
 
-<div class="floating-menu" id="dropdownMenu">
-                <button id="groupByColorButton" class="with-icon" onclick="groupByColor()" title="Agrupar por Color">
-                    <i class="fas fa-sort-amount-down"></i>
-                    <span>Agrupar</span>
-                </button>
-                <button id="colorButton" class="with-icon" onclick="openColorPicker(event)" disabled title="Asignar Color">
-                    <i class="fas fa-palette"></i>
-                    <span>Color</span>
-               </button>
-                <button id="duplicateButton" class="with-icon" onclick="duplicateSelectedRow()" disabled title="Duplicar Fila">
-                    <i class="fas fa-layer-group fa-lg"></i>
-                    <span>Duplicar</span>
-                </button>
-                <button id="copyButton" class="with-icon" onclick="copySelectedRows()" disabled title="Copiar Filas">
-                    <i class="fas fa-copy"></i>
-                    <span>Copiar</span>
-                </button>
-                <button id="deleteButton" class="with-icon" onclick="deleteSelectedItems()" disabled title="Eliminar Filas">
-                    <i class="fas fa-trash-alt"></i>
-                    <span>Eliminar</span>
-                </button>
-                <button id="undoButton" class="with-icon" onclick="undoDelete()" disabled title="Deshacer">
-                    <i class="fas fa-undo"></i>
-                    <span>Deshacer</span>
-                </button>
-                <button id="previewButton" class="with-icon" onclick="togglePreview()" title="Vista Previa">
-                    <i class="fas fa-eye"></i>
-                    <span>Vista</span>
-                </button>
-                <button id="exportButton" class="with-icon" onclick="exportSelectedRows()" title="Exportar Datos">
-                    <i class="fas fa-file-export"></i>
-                    <span>Exportar</span>
-                </button>
-                <button id="importButton" class="with-icon" onclick="showImportModal()" title="Importar Datos">
-                    <i class="fas fa-file-import"></i>
-                    <span>Importar</span>
-                </button>
-                <button id="colorClientsButton" class="with-icon" onclick="showColorClientsModal()" title="Gestionar Clientes">
-                    <i class="fas fa-address-book"></i>
-                    <span>Clientes</span>
-                </button>
-            </div>
-        </div>
+			<div class="floating-menu" id="dropdownMenu">
+				<button id="groupByColorButton" class="with-icon" onclick="groupByColor()" title="Agrupar por Color">
+					<i class="fas fa-sort-amount-down"></i>
+					<span>Agrupar</span>
+				</button>
+				<button id="colorButton" class="with-icon" onclick="openColorPicker(event)" disabled title="Asignar Color">
+					<i class="fas fa-palette"></i>
+					<span>Color</span>
+				</button>
+				<button id="duplicateButton" class="with-icon" onclick="duplicateSelectedRow()" disabled title="Duplicar Fila">
+					<i class="fas fa-layer-group fa-lg"></i>
+					<span>Duplicar</span>
+				</button>
+				<button id="copyButton" class="with-icon" onclick="copySelectedRows()" disabled title="Copiar Filas">
+					<i class="fas fa-copy"></i>
+					<span>Copiar</span>
+				</button>
+				<button id="deleteButton" class="with-icon" onclick="deleteSelectedItems()" disabled title="Eliminar Filas">
+					<i class="fas fa-trash-alt"></i>
+					<span>Eliminar</span>
+				</button>
+				<button id="undoButton" class="with-icon" onclick="undoDelete()" disabled title="Deshacer">
+					<i class="fas fa-undo"></i>
+					<span>Deshacer</span>
+				</button>
+				<button id="previewButton" class="with-icon" onclick="togglePreview()" title="Vista Previa">
+					<i class="fas fa-eye"></i>
+					<span>Vista</span>
+				</button>
+				<button id="exportButton" class="with-icon" onclick="exportSelectedRows()" title="Exportar Datos">
+					<i class="fas fa-file-export"></i>
+					<span>Exportar</span>
+				</button>
+				<button id="importButton" class="with-icon" onclick="showImportModal()" title="Importar Datos">
+					<i class="fas fa-file-import"></i>
+					<span>Importar</span>
+				</button>
+				<button id="colorClientsButton" class="with-icon" onclick="showColorClientsModal()" title="Gestionar Clientes">
+					<i class="fas fa-address-book"></i>
+					<span>Clientes</span>
+				</button>
+			</div>
+		</div>
 
-        <div id="resultado" style="display: none;"></div>
+		<div id="resultado" style="display: none;"></div>
 
-<div class="table-container">
-    <table id="itemTable">
-        <thead>
-            <tr>
-                <th class="preview-hidden"><button onclick="toggleSelectAll()" id="selectAllButton">☑</button></th>
-                <th>Título</th>
-                <th>Talla</th>
-                <th>SKU</th>
-                <th class="preview-hidden">Precio App</th>
-                <th class="preview-hidden">Precio Lempiras</th>
-                <th>Precio</th>
-                <th>Enlace</th>
-            </tr>
-        </thead>
-        <tbody id="itemTableBody"></tbody>
-    </table>
-</div>
+		<div class="table-container">
+			<table id="itemTable">
+				<thead>
+					<tr>
+						<th class="preview-hidden"><button onclick="toggleSelectAll()" id="selectAllButton">☑</button></th>
+						<th>Título</th>
+						<th>Talla</th>
+						<th>SKU</th>
+						<th class="preview-hidden">Precio App</th>
+						<th class="preview-hidden">Precio Lempiras</th>
+						<th>Precio</th>
+						<th>Enlace</th>
+					</tr>
+				</thead>
+				<tbody id="itemTableBody"></tbody>
+			</table>
+		</div>
 
-        <div id="manualCopyModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000;">
-            <p>Texto para copiar:</p>
-            <textarea id="manualCopyTextArea" style="width: 100%; height: 100px;" readonly></textarea>
-            <button onclick="copyTextAreaContent()">Copiar manualmente</button>
-            <button onclick="closeManualCopyModal()">Cerrar</button>
-        </div>
+		<div id="manualCopyModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; border: 1px solid #ccc; z-index: 1000;">
+			<p>Texto para copiar:</p>
+			<textarea id="manualCopyTextArea" style="width: 100%; height: 100px;" readonly></textarea>
+			<button onclick="copyTextAreaContent()">Copiar manualmente</button>
+			<button onclick="closeManualCopyModal()">Cerrar</button>
+		</div>
 
-    </div>
+	</div>
 
 
-<div class="color-picker" id="colorPicker">
-    <div class="color-option" style="background-color: #ffffff;" onclick="applyColorToSelectedRows('#ffffff')"></div>
-    <div class="color-option" style="background-color: #D32F2F;" onclick="applyColorToSelectedRows('#D32F2F')"></div>
-    <div class="color-option" style="background-color: #F57C00;" onclick="applyColorToSelectedRows('#F57C00')"></div>
-    <div class="color-option" style="background-color: #FBC02D;" onclick="applyColorToSelectedRows('#FBC02D')"></div>
-    <div class="color-option" style="background-color: #388E3C;" onclick="applyColorToSelectedRows('#388E3C')"></div>
-    <div class="color-option" style="background-color: #00897B;" onclick="applyColorToSelectedRows('#00897B')"></div>
-    <div class="color-option" style="background-color: #1976D2;" onclick="applyColorToSelectedRows('#1976D2')"></div>
-    <div class="color-option" style="background-color: #512DA8;" onclick="applyColorToSelectedRows('#512DA8')"></div>
-    <div class="color-option" style="background-color: #7B1FA2;" onclick="applyColorToSelectedRows('#7B1FA2')"></div>
-    <div class="color-option" style="background-color: #C2185B;" onclick="applyColorToSelectedRows('#C2185B')"></div>
-    <div class="color-option" style="background-color: #795548;" onclick="applyColorToSelectedRows('#795548')"></div>
-    <div class="color-option" style="background-color: #616161;" onclick="applyColorToSelectedRows('#616161')"></div>
-</div>
+	<div class="color-picker" id="colorPicker">
+		<div class="color-option" style="background-color: #ffffff;" onclick="applyColorToSelectedRows('#ffffff')"></div>
+		<div class="color-option" style="background-color: #D32F2F;" onclick="applyColorToSelectedRows('#D32F2F')"></div>
+		<div class="color-option" style="background-color: #F57C00;" onclick="applyColorToSelectedRows('#F57C00')"></div>
+		<div class="color-option" style="background-color: #FBC02D;" onclick="applyColorToSelectedRows('#FBC02D')"></div>
+		<div class="color-option" style="background-color: #388E3C;" onclick="applyColorToSelectedRows('#388E3C')"></div>
+		<div class="color-option" style="background-color: #00897B;" onclick="applyColorToSelectedRows('#00897B')"></div>
+		<div class="color-option" style="background-color: #1976D2;" onclick="applyColorToSelectedRows('#1976D2')"></div>
+		<div class="color-option" style="background-color: #512DA8;" onclick="applyColorToSelectedRows('#512DA8')"></div>
+		<div class="color-option" style="background-color: #7B1FA2;" onclick="applyColorToSelectedRows('#7B1FA2')"></div>
+		<div class="color-option" style="background-color: #C2185B;" onclick="applyColorToSelectedRows('#C2185B')"></div>
+		<div class="color-option" style="background-color: #795548;" onclick="applyColorToSelectedRows('#795548')"></div>
+		<div class="color-option" style="background-color: #616161;" onclick="applyColorToSelectedRows('#616161')"></div>
+	</div>
 
-<button id="openColorPicker2" class="with-icon" onclick="openColorPicker2(event)" style="display: none; position: fixed; bottom: 20px; left: 70px;">
-    <i class="fas fa-filter"></i>
-</button>
+	<button id="openColorPicker2" class="with-icon" onclick="openColorPicker2(event)" style="display: none; position: fixed; bottom: 20px; left: 70px;">
+		<i class="fas fa-filter"></i>
+	</button>
 
-<div class="color-picker" id="colorPicker2">
-    <div class="color-option" style="background-color: #ffffff;" onclick="filterRowsByColor('#ffffff')"></div>
-    <div class="color-option" style="background-color: #D32F2F;" onclick="filterRowsByColor('#D32F2F')"></div>
-    <div class="color-option" style="background-color: #F57C00;" onclick="filterRowsByColor('#F57C00')"></div>
-    <div class="color-option" style="background-color: #FBC02D;" onclick="filterRowsByColor('#FBC02D')"></div>
-    <div class="color-option" style="background-color: #388E3C;" onclick="filterRowsByColor('#388E3C')"></div>
-    <div class="color-option" style="background-color: #00897B;" onclick="filterRowsByColor('#00897B')"></div>
-    <div class="color-option" style="background-color: #1976D2;" onclick="filterRowsByColor('#1976D2')"></div>
-    <div class="color-option" style="background-color: #512DA8;" onclick="filterRowsByColor('#512DA8')"></div>
-    <div class="color-option" style="background-color: #7B1FA2;" onclick="filterRowsByColor('#7B1FA2')"></div>
-    <div class="color-option" style="background-color: #C2185B;" onclick="filterRowsByColor('#C2185B')"></div>
-    <div class="color-option" style="background-color: #795548;" onclick="filterRowsByColor('#795548')"></div>
-    <div class="color-option" style="background-color: #616161;" onclick="filterRowsByColor('#616161')"></div>
-</div>
+	<div class="color-picker" id="colorPicker2">
+		<div class="color-option" style="background-color: #ffffff;" onclick="filterRowsByColor('#ffffff')"></div>
+		<div class="color-option" style="background-color: #D32F2F;" onclick="filterRowsByColor('#D32F2F')"></div>
+		<div class="color-option" style="background-color: #F57C00;" onclick="filterRowsByColor('#F57C00')"></div>
+		<div class="color-option" style="background-color: #FBC02D;" onclick="filterRowsByColor('#FBC02D')"></div>
+		<div class="color-option" style="background-color: #388E3C;" onclick="filterRowsByColor('#388E3C')"></div>
+		<div class="color-option" style="background-color: #00897B;" onclick="filterRowsByColor('#00897B')"></div>
+		<div class="color-option" style="background-color: #1976D2;" onclick="filterRowsByColor('#1976D2')"></div>
+		<div class="color-option" style="background-color: #512DA8;" onclick="filterRowsByColor('#512DA8')"></div>
+		<div class="color-option" style="background-color: #7B1FA2;" onclick="filterRowsByColor('#7B1FA2')"></div>
+		<div class="color-option" style="background-color: #C2185B;" onclick="filterRowsByColor('#C2185B')"></div>
+		<div class="color-option" style="background-color: #795548;" onclick="filterRowsByColor('#795548')"></div>
+		<div class="color-option" style="background-color: #616161;" onclick="filterRowsByColor('#616161')"></div>
+	</div>
 
-<button id="downloadTableImage" class="with-icon" onclick="downloadTableImage()" style="display: none; position: fixed; bottom: 20px; left: 120px;" title="Compartir/Descargar Imagen">
-    <i class="fas fa-share-alt"></i> </button>
-
-
-<div id="importModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;">
-    
-    <div class="modal-content">
-        <button class="modal-close-btn" onclick="closeImportModal()" title="Cerrar">&times;</button>
-        
-        <h3>Importar Datos</h3>
-        <p>Pega aquí los datos copiados de otra instancia:</p>
-        
-        <textarea id="importDataTextArea"></textarea>
-        
-<div class="modal-actions">
-            <button onclick="importData()">
-                <i class="fas fa-file-import"></i> Importar
-            </button>
-        </div>
-    </div>
-
-</div>
+	<button id="downloadTableImage" class="with-icon" onclick="downloadTableImage()" style="display: none; position: fixed; bottom: 20px; left: 120px;" title="Compartir/Descargar Imagen">
+		<i class="fas fa-share-alt"></i>
+	</button>
 
 
+	<div id="importModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;">
 
-<div id="colorClientsModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;">
-    
-<div class="modal-content">
-    
-    <button class="modal-close-btn" onclick="closeColorClientsModal()" title="Cerrar">&times;</button>
-    
-    <h3>Asociar Clientes a Colores</h3>
-    
-    <button id="clearAllClientsBtn" onclick="confirmClearAllClients()">
-            <i class="fas fa-trash-alt"></i> Eliminar Todos los Clientes
-        </button>
-        
-        <div id="confirmClearBox" style="display: none;">
-            <button id="confirmClearBtn" onclick="clearAllClients()">
-                <i class="fas fa-check"></i> Confirmar
-            </button>
-            <button id="cancelClearBtn" onclick="cancelClearAction()">
-                <i class="fas fa-times"></i> Cancelar
-            </button>
-        </div>
+		<div class="modal-content">
+			<button class="modal-close-btn" onclick="closeImportModal()" title="Cerrar">&times;</button>
 
-        <div id="colorClientsList">
-            </div>
-        
-        </div>
+			<h3>Importar Datos</h3>
+			<p>Pega aquí los datos copiados de otra instancia:</p>
 
-</div>
+			<textarea id="importDataTextArea"></textarea>
+
+			<div class="modal-actions">
+				<button onclick="importData()">
+					<i class="fas fa-file-import"></i> Importar
+				</button>
+			</div>
+		</div>
+
+	</div>
+
+	<div id="colorClientsModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;">
+
+		<div class="modal-content">
+
+			<button class="modal-close-btn" onclick="closeColorClientsModal()" title="Cerrar">&times;</button>
+
+			<h3>Asociar Clientes a Colores</h3>
+
+			<button id="clearAllClientsBtn" onclick="confirmClearAllClients()">
+				<i class="fas fa-trash-alt"></i> Eliminar Todos los Clientes
+			</button>
+
+			<div id="confirmClearBox" style="display: none;">
+				<button id="confirmClearBtn" onclick="clearAllClients()">
+					<i class="fas fa-check"></i> Confirmar
+				</button>
+				<button id="cancelClearBtn" onclick="cancelClearAction()">
+					<i class="fas fa-times"></i> Cancelar
+				</button>
+			</div>
+
+			<div id="colorClientsList">
+			</div>
+
+		</div>
+
+	</div>
 
 </body>
 
