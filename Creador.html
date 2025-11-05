@@ -489,12 +489,15 @@
 		}
 
 		/* --- ESTILO SPINNER (Punto 1) --- */
-		/* --- MODIFICADO: Posición inferior central (Req 2) --- */
+		/* --- MODIFICADO: Posición inferior esquina (Req 2) --- */
 		#resultado {
 			position: fixed;
 			bottom: 20px;
-			left: 50%;
-			transform: translateX(-50%);
+			left: auto;
+			/* Centrado -> Esquina */
+			right: 20px;
+			transform: none;
+			/* Eliminamos el translateX */
 			top: auto;
 			z-index: 1000;
 			display: none;
@@ -504,8 +507,8 @@
 			/* Auto-ancho */
 			max-width: 400px;
 			/* Ancho máximo */
-			text-align: center;
-			/* Texto centrado */
+			text-align: right;
+			/* Texto alineado a la derecha */
 		}
 
 		/* Media queries para dispositivos móviles */
@@ -522,13 +525,22 @@
 
 			/* LIMPIEZA 2: Eliminado .dropdown-menu */
 
-			/* --- MODIFICADO: Posición inferior (Req 2) --- */
+			/* --- MODIFICADO: Posición y ancho de mensajes (Req 1) --- */
 			#resultado {
-				width: 90%;
-				/* Ancho en móvil */
-				max-width: 400px;
+				/* width: 90%; */
+				/* Ancho en móvil -> Eliminado */
+				left: 50%;
+				/* Inicia en la mitad */
+				right: 10px;
+				/* Termina en el borde (10px margen) */
+				width: auto;
+				/* Ancho automático */
+				max-width: none;
+				/* Sin ancho máximo */
 				padding: 8px;
 				font-size: 10px;
+				text-align: center;
+				/* Texto centrado en el recuadro */
 			}
 
 			/* LIMPIEZA 3: Eliminado p, h3, button de #resultado */
