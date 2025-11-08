@@ -11,7 +11,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
-    <style>
+<style>
         :root {
             --primary-color: #e91e63;
             --primary-dark: #c2185b;
@@ -466,13 +466,13 @@
                 padding: 8px 10px; 
             }
             
-            /* --- Novedad 2: "Gestionar Productos" 2 Columnas --- */
+            /* "Gestionar Productos" 2 Columnas */
             .product-container {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 10px;
             }
             .product-card img {
-                height: 130px; /* Reducir altura de imagen */
+                height: 130px; 
             }
             .product-card .details {
                 padding: 10px;
@@ -507,35 +507,35 @@
                 grid-template-columns: 1fr; 
             }
             .edit-form-grid .image-form-group {
-                align-items: center;
+                align-items: center; 
             }
             .edit-form-grid #edit-image-preview {
                 width: 100px;
                 height: 100px;
             }
-            /* Novedad 1: Corrección de scroll en galería de modal */
             .edit-form-grid .full-width {
-                min-width: 0; /* Permite que el 'overflow-x' del hijo funcione */
+                min-width: 0; 
             }
             
-            /* Formulario "Añadir Producto" */
+            /* --- Formulario "Añadir Producto" --- */
             .formulario-item {
                 padding: 15px;
             }
+            /* Novedad: Corregido tamaño de imagen en "Añadir" */
             .formulario-item .image-preview-container {
-                width: 100%;
-                height: 250px;
+                width: 100px;
+                height: 100px;
             }
             
             /* Botones de "Añadir" y "Guardar" */
             #form-registrar-productos .d-flex.justify-content-center {
-                flex-direction: row; /* Novedad: Poner en fila */
+                flex-direction: row; 
                 align-items: center; 
                 gap: 10px !important;
             }
             #form-registrar-productos .d-flex.justify-content-center .btn {
-                width: auto; /* Novedad: Ancho automático */
-                flex-grow: 1; /* Novedad: Compartir espacio */
+                width: auto; 
+                flex-grow: 1; 
                 margin: 0;
             }
             
