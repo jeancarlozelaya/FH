@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Catálogo FH</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900&family=Montserrat:ital,wght@0,100..900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #e91e63;
+            --primary-dark: #c2185b;
+            --secondary-color: #007bff;
+            --danger-color: #dc3545;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12; /* Novedad */
+            --dark-color: #34495e;
+            --text-color: #333;
+            --border-color: #ddd;
+            --light-gray: #f5f7fa;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--light-gray);
+            margin: 0;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--dark-color), #2c3e50);
+            color: white;
+            text-align: center;
+            padding: 18px 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: var(--shadow);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 25px auto;
+            padding: 0 15px;
+        }
+        .card {
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: none;
+            margin-bottom: 25px;
+        }
+        .card-header {
+            background: linear-gradient(135deg, var(--dark-color), #2c3e50);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 18px 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .nav-tabs .nav-link {
+            color: var(--dark-color);
+            font-weight: 500;
+            border: none;
+            padding: 12px 20px;
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            background-color: transparent;
+        }
+        .tab-content {
+            padding: 25px;
+            background-color: white;
+            border-radius: 0 0 12px 12px;
+        }
+        .tab-title {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            padding: 10px 0 20px 0;
+            position: relative;
+        }
+        .tab-title h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        .tab-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: 2px;
+        }
+
+        /* --- Estilos de Formulario --- */
+        .formulario-item {
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            position: relative;
+            background-color: #fdfdfd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .btn-quitar-item {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 8px;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(233, 30, 99, 0.15);
+        }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+            border: none;
+            font-weight: 600;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 50px;
+            transition: var(--transition);
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.2);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(233, 30, 99, 0.3);
+        }
+        .btn-success {
+            background: linear-gradient(45deg, var(--success-color), #28b463);
+            border: none;
+            font-weight: 600;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 50px;
+            transition: var(--transition);
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2);
+        }
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.3);
+        }
+        
+        /* Novedad: Botón de Migración */
+        .btn-warning {
+             background: linear-gradient(45deg, var(--warning-color), #f1c40f);
+             border: none;
+             color: var(--dark-color) !important;
+             font-weight: 600;
+             box-shadow: 0 4px 15px rgba(243, 156, 18, 0.2);
+        }
+        .btn-warning:hover {
+             transform: translateY(-3px);
+             box-shadow: 0 6px 20px rgba(243, 156, 18, 0.3);
+        }
+        
+        /* --- Estilos de Subida de Archivos --- */
+        .image-preview-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border: 2px dashed var(--border-color);
+            border-radius: 5px;
+            background: var(--light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+        .image-preview-container:hover { border-color: var(--primary-color); }
+        .image-preview-container img { width: 100%; height: 100%; object-fit: cover; }
+        .image-preview-placeholder { color: var(--dark-gray); font-size: 14px; text-align: center; padding: 10px; }
+        .remove-image-btn {
+            position: absolute; top: 5px; right: 5px;
+            background: rgba(220, 53, 69, 0.8); color: white;
+            border: none; border-radius: 50%;
+            width: 25px; height: 25px; font-size: 14px;
+            font-weight: bold; cursor: pointer; padding: 0;
+            line-height: 25px; display: none;
+        }
+        .image-preview-container:hover .remove-image-btn { display: block; }
+        
+        .thumbnails-grid {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 10px;
+            background: var(--light-gray);
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            margin-top: 10px;
+        }
+        .thumbnail-preview {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            flex-shrink: 0;
+            margin-right: 10px;
+        }
+        .thumbnail-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; border: 1px solid var(--border-color); }
+        .thumbnail-preview .remove-thumb-btn { top: -5px; right: -5px; width: 22px; height: 22px; line-height: 22px; }
+        .add-thumbnail-btn {
+            width: 100px;
+            height: 100px;
+            border: 2px dashed var(--border-color);
+            border-radius: 5px;
+            background: var(--light-gray);
+            color: var(--dark-gray);
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+            margin-right: 10px;
+        }
+        .add-thumbnail-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: #fff; }
+        
+        .file-input { display: none; }
+        
+        .btn-secondary { background-color: var(--dark-gray); color: white; margin-top: 10px; }
+        .btn-secondary:hover { background-color: #5a6268; }
+
+        /* --- Estilos de Tarjeta de Producto (Admin) --- */
+        #loader {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--dark-gray);
+        }
+        .product-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .product-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+            transition: var(--transition);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .product-card img { width: 100%; height: 200px; object-fit: cover; }
+        .product-card .details { padding: 15px; width: 100%; }
+        .product-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0 0 5px;
+            color: var(--dark-color);
+            min-height: 44px;
+        }
+        .product-card p { font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: var(--dark-gray); margin: 0; }
+        .product-card p.size { font-size: 0.8rem; color: #999; margin-bottom: 10px; }
+        .product-card .price {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-top: 10px;
+        }
+        .product-card .stock-label {
+            position: absolute; top: 10px; right: 10px;
+            background-color: rgba(40, 167, 69, 0.9);
+            color: #fff; font-weight: bold; font-size: 0.8rem;
+            padding: 5px 8px; border-radius: 5px; z-index: 10;
+        }
+        .admin-button-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background-color: var(--border-color);
+            margin-top: 15px;
+        }
+        .btn-edit, .btn-delete, .btn-confirm, .btn-cancel {
+            padding: 12px; font-size: 0.9rem;
+            background-color: #fff; color: #333;
+            border-radius: 0; border: none; cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-weight: 600;
+        }
+        .btn-edit { color: var(--secondary-color); }
+        .btn-delete { color: var(--danger-color); }
+        .btn-confirm { color: var(--danger-color); }
+        .btn-cancel { color: var(--dark-gray); }
+        
+        .btn-edit:hover, .btn-delete:hover, .btn-confirm:hover, .btn-cancel:hover { background-color: #f8f9fa; }
+
+        /* --- Pantalla de Carga (Overlay) --- */
+        #overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        .spinner {
+            width: 60px; height: 60px;
+            border: 5px solid rgba(233, 30, 99, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loadingMessage { text-align: center; color: var(--dark-color); }
+        #loadingMessage h4 { margin: 0 0 10px; font-size: 1.3rem; font-weight: bold; }
+        #loadingMessage p { margin: 0; color: #7f8c8d; font-weight: normal; }
+    </style>
+</head>
+<body>
+
+    <div class="header">Administrador de Catálogo</div>
+    
+    <div id="overlay">
+        <div class="spinner"></div>
+        <div id="loadingMessage">
+            <h4>Por favor espera...</h4>
+            <p>Procesando solicitud.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-body p-0">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="add-product-tab-btn" data-bs-toggle="tab" data-bs-target="#add-product-tab" type="button" role="tab">
+                            <i class="fas fa-plus-circle me-2"></i>Añadir Productos
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="manage-products-tab-btn" data-bs-toggle="tab" data-bs-target="#manage-products-tab" type="button" role="tab">
+                            <i class="fas fa-tasks me-2"></i>Gestionar Productos
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="add-product-tab" role="tabpanel">
+                        <div class="tab-title">
+                            <h2>Añadir Nuevos Productos</h2>
+                        </div>
+                        <form id="form-registrar-productos">
+                            <div id="contenedor-formularios-producto">
+                                </div>
+                            <div class="d-flex justify-content-center gap-2 mt-4">
+                                <button type="button" class="btn btn-success" id="btn-agregar-formulario">
+                                    <i class="fas fa-plus me-2"></i>Añadir Otro Producto
+                                </button>
+                                <button type="submit" class="btn btn-primary" id="btn-registrar-productos">
+                                    <i class="fas fa-save me-2"></i>Guardar Todo
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade" id="manage-products-tab" role="tabpanel">
+                        <div class="tab-title">
+                            <h2>Gestionar Productos</h2>
+                            <button class="btn btn-warning" id="btn-migrate-all" style="position: absolute; right: 25px; top: 18px; font-size: 0.9rem; padding: 8px 15px;">
+                                <i class="fas fa-server me-2"></i> Migrar Enlaces
+                            </button>
+                        </div>
+                        <div id="loader">Cargando productos...</div>
+                        <div class="product-container" id="admin-product-grid">
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="file-main-image-edit" class="file-input" accept="image/*">
+    <input type="file" id="file-thumbnails-edit" class="file-input" accept="image/*" multiple>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2WKDZDEQZ4rs1BJ_Q06CJA9Z9ThIK79kUZBy7J5ECoH6QgwaVDLbRzw2I-bklHrHh/exec";
+        
+        // Elementos del DOM
+        const formRegistrar = document.getElementById('form-registrar-productos');
+        const loader = document.getElementById('loader');
+        const productGrid = document.getElementById('admin-product-grid');
+        const contenedorFormularios = document.getElementById('contenedor-formularios-producto');
+        const btnAgregarFormulario = document.getElementById('btn-agregar-formulario');
+        const overlay = document.getElementById('overlay');
+        const loadingMessage = document.getElementById('loadingMessage').querySelector('p');
+        const btnMigrateAll = document.getElementById('btn-migrate-all'); // Novedad
+
+        let products = [];
+        let nextProductId = 1;
+        
+        // --- 1. Carga Inicial ---
+        window.onload = function() {
+            showLoader('Cargando datos iniciales...');
+            fetchProducts();
+            
+            btnAgregarFormulario.onclick = () => {
+                agregarFormularioProducto(nextProductId++);
+            };
+            
+            formRegistrar.onsubmit = (e) => {
+                e.preventDefault();
+                registrarProductos();
+            };
+
+            // Novedad: Listener para el botón de migración
+            btnMigrateAll.onclick = startMigration;
+        };
+
+        function fetchProducts() {
+            fetch(SCRIPT_URL)
+                .then(response => response.json())
+                .then(data => {
+                    products = data;
+                    renderProductGrid(products);
+                    setNextProductId();
+                    if (contenedorFormularios.children.length === 0) {
+                        agregarFormularioProducto(nextProductId++);
+                    }
+                    hideLoader();
+                })
+                .catch(error => {
+                    console.error('Error al cargar productos:', error);
+                    loader.innerText = 'Error al cargar. Revisa la consola.';
+                    hideLoader();
+                });
+        }
+        
+        // --- 2. Lógica de Pestaña "Gestionar" ---
+        function renderProductGrid(products) {
+            productGrid.innerHTML = '';
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                const priceNum = parseFloat(product.price);
+                const price = isNaN(priceNum) ? "Lps. (Error)" : `Lps. ${priceNum.toFixed(2)}`;
+                
+                // Novedad: Eliminado el 'onerror'
+                card.innerHTML = `
+                    <div>
+                        <div class="stock-label">${product.stock} disponibles</div>
+                        <img src="${product.image}" alt="${product.title}">
+                        <div class="details">
+                            <h3>${product.title}</h3>
+                            <p class="size">Talla: ${product.size}</p>
+                            <p class="price">${price}</p>
+                            <p class="size" style="font-size: 10px; color: #aaa; word-break: break-all;">ID: ${product.id}</p>
+                        </div>
+                    </div>
+                    <div class="admin-button-container">
+                        <button class="btn btn-edit" onclick="openEditModal('${product.id}')"><i class="fas fa-edit me-1"></i> Editar</button>
+                        <button class="btn btn-delete" onclick="startDeleteProcess(this, '${product.id}')"><i class="fas fa-trash me-1"></i> Eliminar</button>
+                    </div>
+                `;
+                productGrid.appendChild(card);
+            });
+        }
+
+        // --- 3. Lógica de Pestaña "Añadir" (Multi-Formulario) ---
+
+        function setNextProductId() {
+            if (products.length === 0) {
+                nextProductId = 1;
+                return;
+            }
+            const maxId = products.reduce((max, p) => {
+                if (p && p.id) {
+                    const idNum = parseInt(String(p.id).replace(/[^0-9]/g, ''), 10);
+                    if (!isNaN(idNum) && idNum > max) {
+                        return idNum;
+                    }
+                }
+                return max;
+            }, 0);
+            nextProductId = maxId + 1;
+        }
+
+
+        function agregarFormularioProducto(idNum) {
+            const formItemId = `form-item-${idNum}`;
+            const formItem = document.createElement('div');
+            formItem.className = 'formulario-item';
+            formItem.id = formItemId;
+            
+            formItem.innerHTML = `
+                <button type="button" class="btn btn-danger btn-quitar-item" title="Quitar" onclick="document.getElementById('${formItemId}').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="id-${idNum}" class="form-label">ID (Automático)</label>
+                        <input type="text" class="form-control" id="id-${idNum}" name="id" value="product${idNum}" readonly required>
+                    </div>
+                    <div class="col-md-8 mb-3">
+                        <label for="title-${idNum}" class="form-label">Título</label>
+                        <input type="text" class="form-control" id="title-${idNum}" name="title" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Imagen Principal</label>
+                        <div id="image-preview-${idNum}" class="image-preview-container" onclick="document.getElementById('file-main-image-${idNum}').click()">
+                            <span class="image-preview-placeholder">Clic para subir imagen</span>
+                            <img src="" alt="Vista previa" style="display: none;">
+                            <button type="button" class="remove-image-btn" id="remove-main-image-${idNum}" style="display: none;">X</button>
+                        </div>
+                        <input type="file" id="file-main-image-${idNum}" class="file-input" accept="image/*" required>
+                        <input type="hidden" class="main-image-data-hidden" name="mainImage">
+                    </div>
+                    
+                    <div class="col-md-8 mb-3">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="price-${idNum}" class="form-label">Precio (Solo número)</label>
+                                <input type="number" step="0.01" class="form-control" id="price-${idNum}" name="price" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="stock-${idNum}" class="form-label">Stock</label>
+                                <input type="number" class="form-control" id="stock-${idNum}" name="stock" value="1" required>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="size-${idNum}" class="form-label">Talla (o "N/A")</label>
+                                <input type="text" class="form-control" id="size-${idNum}" name="size" value="N/A" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12 form-group">
+                        <label class="form-label">Imágenes de Galería (Thumbnails)</label>
+                        <div class="thumbnails-grid" id="thumbnails-grid-${idNum}">
+                            <button type="button" class="add-thumbnail-btn" onclick="document.getElementById('file-thumbnails-${idNum}').click()">+</button>
+                        </div>
+                        <input type="file" id="file-thumbnails-${idNum}" class="file-input" accept="image/*" multiple>
+                        <input type="hidden" class="thumbnails-data-hidden" name="thumbnails">
+                    </div>
+                </div>
+            `;
+            
+            contenedorFormularios.appendChild(formItem);
+            setupDynamicFormListeners(idNum);
+        }
+
+        function setupDynamicFormListeners(idNum) {
+            const mainImageInput = document.getElementById(`file-main-image-${idNum}`);
+            const mainImagePreview = document.getElementById(`image-preview-${idNum}`);
+            const mainImageImg = mainImagePreview.querySelector('img');
+            const mainImagePlaceholder = mainImagePreview.querySelector('.image-preview-placeholder');
+            const mainImageRemoveBtn = document.getElementById(`remove-main-image-${idNum}`);
+            const mainImageDataHidden = mainImagePreview.parentElement.querySelector('.main-image-data-hidden');
+
+            mainImageInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    fileToBase64(file).then(data => {
+                        mainImageImg.src = data.base64DataUrl;
+                        mainImageImg.style.display = 'block';
+                        mainImagePlaceholder.style.display = 'none';
+                        mainImageRemoveBtn.style.display = 'block';
+                        mainImageDataHidden.value = JSON.stringify(data.payload);
+                    });
+                }
+            };
+            
+            mainImageRemoveBtn.onclick = (e) => {
+                e.stopPropagation();
+                mainImageImg.src = '';
+                mainImageImg.style.display = 'none';
+                mainImagePlaceholder.style.display = 'block';
+                mainImageRemoveBtn.style.display = 'none';
+                mainImageDataHidden.value = '';
+                mainImageInput.value = '';
+            };
+            
+            const thumbnailsInput = document.getElementById(`file-thumbnails-${idNum}`);
+            const thumbnailsGrid = document.getElementById(`thumbnails-grid-${idNum}`);
+            const thumbnailsDataHidden = thumbnailsGrid.parentElement.querySelector('.thumbnails-data-hidden');
+            let currentThumbnails = []; 
+
+            thumbnailsInput.onchange = (e) => {
+                const files = Array.from(e.target.files);
+                Promise.all(files.map(fileToBase64)).then(results => {
+                    results.forEach(data => {
+                        currentThumbnails.push(data.payload);
+                        createThumbnailPreview(thumbnailsGrid, data.base64DataUrl, data.payload, currentThumbnails, thumbnailsDataHidden);
+                    });
+                    thumbnailsDataHidden.value = JSON.stringify(currentThumbnails);
+                });
+            };
+        }
+
+        function createThumbnailPreview(gridElement, src, dataPayload, thumbnailsArray, hiddenInput) {
+            const preview = document.createElement('div');
+            preview.className = 'thumbnail-preview';
+            preview.innerHTML = `
+                <img src="${src}" alt="Thumbnail">
+                <button type="button" class="remove-image-btn remove-thumb-btn" style="display: block;">X</button>
+            `;
+            
+            preview.querySelector('.remove-thumb-btn').onclick = (e) => {
+                e.stopPropagation();
+                const index = thumbnailsArray.indexOf(dataPayload);
+                if (index > -1) thumbnailsArray.splice(index, 1);
+                hiddenInput.value = JSON.stringify(thumbnailsArray);
+                preview.remove();
+            };
+            
+            gridElement.insertBefore(preview, gridElement.querySelector('.add-thumbnail-btn'));
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const base64DataUrl = e.target.result;
+                    resolve({
+                        base64DataUrl: base64DataUrl,
+                        payload: {
+                            isNew: true,
+                            name: file.name,
+                            mimeType: file.type,
+                            base64Data: base64DataUrl.split(',')[1] // Solo la data
+                        }
+                    });
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // --- 4. Lógica de Envío de Datos ---
+
+        function registrarProductos() {
+            const formularios = contenedorFormularios.querySelectorAll('.formulario-item');
+            if (formularios.length === 0) {
+                Swal.fire('Vacío', 'Añada al menos un producto para guardar.', 'info');
+                return;
+            }
+
+            showLoader('Guardando productos...');
+            let payloads = [];
+            let esValido = true;
+
+            formularios.forEach(formItem => {
+                const id = formItem.querySelector('input[name="id"]').value;
+                const title = formItem.querySelector('input[name="title"]').value;
+                const price = formItem.querySelector('input[name="price"]').value;
+                const mainImage = formItem.querySelector('.main-image-data-hidden').value;
+
+                if (!id || !title || !price || !mainImage) {
+                    esValido = false;
+                }
+                
+                const thumbData = formItem.querySelector('.thumbnails-data-hidden').value;
+
+                payloads.push({
+                    id: id,
+                    title: title,
+                    size: formItem.querySelector('input[name="size"]').value,
+                    price: price,
+                    stock: formItem.querySelector('input[name="stock"]').value,
+                    mainImage: JSON.parse(mainImage),
+                    thumbnails: thumbData ? JSON.parse(thumbData) : []
+                });
+            });
+
+            if (!esValido) {
+                hideLoader();
+                Swal.fire('Error', 'Revise todos los formularios. Faltan campos obligatorios (ID, Título, Precio, Imagen Principal).', 'error');
+                return;
+            }
+
+            sendData('create_multiple', payloads);
+        }
+        
+        function openEditModal(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            let thumbsHtml = '';
+            let currentThumbnails = []; 
+            product.thumbnails.forEach(url => {
+                const dataPayload = { isNew: false, url: url };
+                currentThumbnails.push(dataPayload);
+                // Novedad: Corregido bug. 'img src' debe usar 'url'
+                thumbsHtml += `
+                    <div class="thumbnail-preview" data-imagedata='${JSON.stringify(dataPayload)}'>
+                        <img src="${url}" alt="Thumbnail" onerror="this.style.display='none'; this.parentElement.innerHTML += '<small>Error</small>';">
+                        <button type="button" class="remove-image-btn remove-thumb-btn" style="display: block;">X</button>
+                    </div>`;
+            });
+            
+            const modalHtml = `
+                <div class="form-grid text-start">
+                    <div class="form-group">
+                        <label class="form-label">ID</label>
+                        <input type="text" class="form-control" id="edit-id" value="${product.id}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Título</label>
+                        <input type="text" class="form-control" id="edit-title" value="${product.title}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Imagen Principal</label>
+                        <div id="edit-image-preview" class="image-preview-container" onclick="document.getElementById('file-main-image-edit').click()">
+                            <span class="image-preview-placeholder" style="display: none;"></span>
+                            <img src="${product.image}" alt="Vista previa" style="display: block;" onerror="this.style.display='none'; this.parentElement.querySelector('.image-preview-placeholder').style.display='block';">
+                            <button type="button" class="remove-image-btn" id="edit-remove-main-image" style="display: block;">X</button>
+                        </div>
+                        <input type="hidden" id="edit-main-image-data">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Precio</label>
+                        <input type="number" step="0.01" class="form-control" id="edit-price" value="${product.price}" required>
+                        
+                        <label class="form-label mt-3">Stock</label>
+                        <input type="number" class="form-control" id="edit-stock" value="${product.stock}" required>
+                        
+                        <label class="form-label mt-3">Talla</label>
+                        <input type="text" class="form-control" id="edit-size" value="${product.size}" required>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label">Imágenes de Galería</label>
+                        <div class="thumbnails-grid" id="edit-thumbnails-grid">
+                            ${thumbsHtml}
+                            <button type="button" class="add-thumbnail-btn" onclick="document.getElementById('file-thumbnails-edit').click()">+</button>
+                        </div>
+                        <input type="hidden" id="edit-thumbnails-data">
+                    </div>
+                </div>
+            `;
+            
+            Swal.fire({
+                title: 'Editar Producto',
+                html: modalHtml,
+                width: '800px',
+                showCancelButton: true,
+                confirmButtonText: 'Guardar Cambios',
+                cancelButtonText: 'Cancelar',
+                didOpen: () => {
+                    const editMainImageData = document.getElementById('edit-main-image-data');
+                    const editMainImageInput = document.getElementById('file-main-image-edit');
+                    const editMainImagePreview = document.getElementById('edit-image-preview');
+                    const editMainImageImg = editMainImagePreview.querySelector('img');
+                    const editMainImagePlaceholder = editMainImagePreview.querySelector('.image-preview-placeholder');
+                    const editMainImageRemoveBtn = document.getElementById('edit-remove-main-image');
+                    
+                    const editThumbnailsData = document.getElementById('edit-thumbnails-data');
+                    const editThumbnailsInput = document.getElementById('file-thumbnails-edit');
+                    const editThumbnailsGrid = document.getElementById('edit-thumbnails-grid');
+                    
+                    editMainImageData.value = JSON.stringify({ isNew: false, url: product.image });
+                    editThumbnailsData.value = JSON.stringify(currentThumbnails);
+                    
+                    editMainImageInput.onchange = (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            fileToBase64(file).then(data => {
+                                editMainImageImg.src = data.base64DataUrl;
+                                editMainImageData.value = JSON.stringify(data.payload);
+                            });
+                        }
+                    };
+                    editMainImageRemoveBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        editMainImageImg.src = '';
+                        editMainImageImg.style.display = 'none';
+                        editMainImagePlaceholder.style.display = 'block';
+                        editMainImageRemoveBtn.style.display = 'none';
+                        editMainImageData.value = '';
+                        editMainImageInput.value = '';
+                    };
+                    
+                    editThumbnailsInput.onchange = (e) => {
+                        const files = Array.from(e.target.files);
+                        Promise.all(files.map(fileToBase64)).then(results => {
+                            results.forEach(data => {
+                                currentThumbnails.push(data.payload);
+                                createThumbnailPreview(editThumbnailsGrid, data.base64DataUrl, data.payload, currentThumbnails, editThumbnailsData);
+                            });
+                            editThumbnailsData.value = JSON.stringify(currentThumbnails);
+                        });
+                    };
+                    
+                    editThumbnailsGrid.querySelectorAll('.thumbnail-preview').forEach(preview => {
+                        preview.querySelector('.remove-thumb-btn').onclick = (e) => {
+                            e.stopPropagation();
+                            const dataPayload = JSON.parse(preview.dataset.imagedata);
+                            const index = currentThumbnails.findIndex(item => item.url === dataPayload.url);
+                            if (index > -1) currentThumbnails.splice(index, 1);
+                            editThumbnailsData.value = JSON.stringify(currentThumbnails);
+                            preview.remove();
+                        };
+                    });
+                },
+                preConfirm: () => {
+                    const payload = {
+                        id: document.getElementById('edit-id').value,
+                        title: document.getElementById('edit-title').value,
+                        size: document.getElementById('edit-size').value,
+                        price: document.getElementById('edit-price').value,
+                        stock: document.getElementById('edit-stock').value,
+                        mainImage: JSON.parse(document.getElementById('edit-main-image-data').value || 'null'),
+                        thumbnails: JSON.parse(document.getElementById('edit-thumbnails-data').value || '[]')
+                    };
+                    
+                    if (!payload.title || !payload.price || !payload.mainImage) {
+                        Swal.showValidationMessage('Título, Precio e Imagen Principal son obligatorios.');
+                        return false;
+                    }
+                    
+                    return payload;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    showLoader('Actualizando producto...');
+                    sendData('update', result.value);
+                }
+            });
+        }
+        
+        function startDeleteProcess(btn, id) {
+            const container = btn.closest('.admin-button-container');
+            container.dataset.originalHtml = container.innerHTML;
+            container.innerHTML = `
+                <button class="btn btn-confirm" onclick="confirmDeleteProcess(this, '${id}')"><i class="fas fa-check me-1"></i> Confirmar</button>
+                <button class="btn btn-cancel" onclick="cancelDelete(this)"><i class="fas fa-times me-1"></i> Cancelar</button>
+            `;
+        }
+
+        function cancelDelete(btn) {
+            const container = btn.closest('.admin-button-container');
+            if (container.dataset.originalHtml) {
+                container.innerHTML = container.dataset.originalHtml;
+            }
+        }
+
+        function confirmDeleteProcess(btn, id) {
+            showLoader('Eliminando producto...');
+            btn.closest('.admin-button-container').innerHTML = '<p style="padding: 12px; margin: 0; font-size: 0.9rem;">Eliminando...</p>';
+            sendData('delete', { id: id });
+        }
+
+        // Novedad: Función Asíncrona para la migración
+        function sendDataAsync(action, payload) {
+            return new Promise((resolve, reject) => {
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action, payload })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        resolve(result);
+                    } else {
+                        reject(new Error(result.message));
+                    }
+                })
+                .catch(error => {
+                    reject(error);
+                });
+            });
+        }
+        
+        // Novedad: Lógica de Migración
+        async function startMigration() {
+            if (!confirm('Esto migrará TODAS las imágenes externas a Google Drive. El proceso puede tardar varios minutos y no debe cerrarse. ¿Continuar?')) {
+                return;
+            }
+
+            const productsToMigrate = products.filter(p => p.image && !p.image.includes('googleusercontent.com'));
+            
+            if (productsToMigrate.length === 0) {
+                Swal.fire('¡Todo listo!', 'No se encontraron productos con enlaces externos para migrar.', 'info');
+                return;
+            }
+
+            showLoader('Iniciando migración...');
+            const total = productsToMigrate.length;
+            let processed = 0;
+            let errors = [];
+
+            for (const product of productsToMigrate) {
+                processed++;
+                showLoader(`Migrando ${product.id} (${processed} de ${total})...`);
+                
+                try {
+                    // Usar la nueva acción 'migrate_one_product'
+                    await sendDataAsync('migrate_one_product', { id: product.id });
+                } catch (error) {
+                    console.error(`Error migrando ${product.id}:`, error);
+                    errors.push(product.id);
+                }
+            }
+
+            hideLoader();
+            if (errors.length > 0) {
+                Swal.fire('Migración Parcial', `Migración completada, pero ${errors.length} productos fallaron: ${errors.join(', ')}. Revisa la consola.`, 'warning');
+            } else {
+                Swal.fire('¡Éxito!', `Migración de ${total} productos completada.`, 'success');
+            }
+            
+            // Recargar todo
+            fetchProducts();
+            contenedorFormularios.innerHTML = '';
+        }
+
+        /**
+         * Función central para enviar datos (POST) al script
+         */
+        function sendData(action, payload) {
+            showLoader(`Procesando...`);
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action, payload })
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('Respuesta del servidor:', result);
+                if (result.status === 'success') {
+                    Swal.fire('¡Éxito!', result.message, 'success').then(() => {
+                        fetchProducts(); 
+                        contenedorFormularios.innerHTML = '';
+                    });
+                } else {
+                    Swal.fire('Error', `Error: ${result.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error en la solicitud POST:', error);
+                Swal.fire('Error', 'Ocurrió un error grave. Revisa la consola.', 'error');
+            })
+            .finally(() => {
+                hideLoader();
+            });
+        }
+        
+        // --- 5. Utilidades (Loader, etc.) ---
+        function showLoader(message) {
+            loadingMessage.innerText = message || 'Procesando...';
+            overlay.style.display = 'flex';
+        }
+        function hideLoader() {
+            overlay.style.display = 'none';
+        }
+
+    </script>
+</body>
+</html>
