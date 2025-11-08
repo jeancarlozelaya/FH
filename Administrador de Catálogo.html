@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900&family=Montserrat:ital,wght@0,100..900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <style>
         :root {
@@ -17,7 +18,8 @@
             --secondary-color: #007bff;
             --danger-color: #dc3545;
             --success-color: #2ecc71;
-            --warning-color: #f39c12; /* Novedad */
+            --warning-color: #f39c12;
+            --info-color: #0dcaf0;
             --dark-color: #34495e;
             --text-color: #333;
             --border-color: #ddd;
@@ -172,7 +174,6 @@
             box-shadow: 0 6px 20px rgba(46, 204, 113, 0.3);
         }
         
-        /* Novedad: Botón de Migración */
         .btn-warning {
              background: linear-gradient(45deg, var(--warning-color), #f1c40f);
              border: none;
@@ -183,6 +184,18 @@
         .btn-warning:hover {
              transform: translateY(-3px);
              box-shadow: 0 6px 20px rgba(243, 156, 18, 0.3);
+        }
+        
+        .btn-info {
+             background: linear-gradient(45deg, var(--info-color), #0aa3c2);
+             border: none;
+             color: white !important;
+             font-weight: 600;
+             box-shadow: 0 4px 15px rgba(13, 202, 240, 0.2);
+        }
+        .btn-info:hover {
+             transform: translateY(-3px);
+             box-shadow: 0 6px 20px rgba(13, 202, 240, 0.3);
         }
         
         /* --- Estilos de Subida de Archivos --- */
@@ -251,7 +264,7 @@
         
         .file-input { display: none; }
         
-        .btn-secondary { background-color: var(--dark-gray); color: white; margin-top: 10px; }
+        .btn-secondary { background-color: #6c757d; color: white; margin-top: 10px; }
         .btn-secondary:hover { background-color: #5a6268; }
 
         /* --- Estilos de Tarjeta de Producto (Admin) --- */
@@ -284,7 +297,15 @@
             transform: translateY(-5px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
-        .product-card img { width: 100%; height: 200px; object-fit: cover; }
+        
+        /* --- Novedad: Imagen de Tarjeta Mejorada --- */
+        .product-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: contain; /* Cambiado de 'cover' a 'contain' */
+            background-color: var(--light-gray); /* Fondo para rellenar */
+        }
+        
         .product-card .details { padding: 15px; width: 100%; }
         .product-card h3 {
             font-family: 'Playfair Display', serif;
@@ -328,6 +349,53 @@
         .btn-cancel { color: var(--dark-gray); }
         
         .btn-edit:hover, .btn-delete:hover, .btn-confirm:hover, .btn-cancel:hover { background-color: #f8f9fa; }
+
+        /* --- Estilos de Reordenación --- */
+        .sortable-ghost {
+            opacity: 0.4;
+            background: #f0f0f0;
+            border: 2px dashed var(--primary-color);
+        }
+        .product-card.reorder-mode {
+            cursor: grab;
+            border: 2px dashed var(--secondary-color);
+            box-shadow: 0 0 0 rgba(0,0,0,0);
+        }
+        .product-card.reorder-mode:active {
+            cursor: grabbing;
+        }
+        .product-card.reorder-mode .admin-button-container {
+            display: none;
+        }
+
+        /* --- Novedad: Estilos para el Modal de Edición --- */
+        .swal2-html-container {
+            overflow: visible;
+            padding: 0 1em !important;
+            margin: 0;
+        }
+        .edit-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Dos columnas */
+            gap: 15px 20px;
+            text-align: left;
+            padding-top: 10px;
+        }
+        .edit-form-grid .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .edit-form-grid .full-width {
+            grid-column: 1 / -1; /* Ocupa ambas columnas */
+        }
+        .edit-form-grid #edit-image-preview {
+            width: 100%;
+            height: 200px; /* Un poco más alto para el modal */
+        }
+        .edit-form-grid .form-label {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
 
         /* --- Pantalla de Carga (Overlay) --- */
         #overlay {
@@ -387,7 +455,7 @@
                         <div class="tab-title">
                             <h2>Añadir Nuevos Productos</h2>
                         </div>
-                        <form id="form-registrar-productos">
+                        <form id="form-registrar-productos" novalidate>
                             <div id="contenedor-formularios-producto">
                                 </div>
                             <div class="d-flex justify-content-center gap-2 mt-4">
@@ -404,9 +472,20 @@
                     <div class="tab-pane fade" id="manage-products-tab" role="tabpanel">
                         <div class="tab-title">
                             <h2>Gestionar Productos</h2>
-                            <button class="btn btn-warning" id="btn-migrate-all" style="position: absolute; right: 25px; top: 18px; font-size: 0.9rem; padding: 8px 15px;">
-                                <i class="fas fa-server me-2"></i> Migrar Enlaces
-                            </button>
+                            <div id="manage-buttons-container" style="position: absolute; right: 25px; top: 18px; display: flex; gap: 10px;">
+                                <button class="btn btn-warning" id="btn-migrate-all" style="font-size: 0.9rem; padding: 8px 15px;">
+                                    <i class="fas fa-server me-2"></i> Migrar Enlaces
+                                </button>
+                                <button class="btn btn-info" id="btn-reorder-start" style="font-size: 0.9rem; padding: 8px 15px;">
+                                    <i class="fas fa-arrows-alt me-2"></i> Reordenar
+                                </button>
+                                <button class="btn btn-success" id="btn-reorder-save" style="display: none; font-size: 0.9rem; padding: 8px 15px;">
+                                    <i class="fas fa-save me-2"></i> Guardar Orden
+                                </button>
+                                <button class="btn btn-secondary" id="btn-reorder-cancel" style="display: none; font-size: 0.9rem; padding: 8px 15px; margin-top: 0;">
+                                    <i class="fas fa-times me-2"></i> Cancelar
+                                </button>
+                            </div>
                         </div>
                         <div id="loader">Cargando productos...</div>
                         <div class="product-container" id="admin-product-grid">
@@ -432,7 +511,12 @@
         const btnAgregarFormulario = document.getElementById('btn-agregar-formulario');
         const overlay = document.getElementById('overlay');
         const loadingMessage = document.getElementById('loadingMessage').querySelector('p');
-        const btnMigrateAll = document.getElementById('btn-migrate-all'); // Novedad
+        const btnMigrateAll = document.getElementById('btn-migrate-all');
+        
+        const btnReorderStart = document.getElementById('btn-reorder-start');
+        const btnReorderSave = document.getElementById('btn-reorder-save');
+        const btnReorderCancel = document.getElementById('btn-reorder-cancel');
+        let sortableInstance = null;
 
         let products = [];
         let nextProductId = 1;
@@ -451,8 +535,11 @@
                 registrarProductos();
             };
 
-            // Novedad: Listener para el botón de migración
             btnMigrateAll.onclick = startMigration;
+            
+            btnReorderStart.onclick = startReordering;
+            btnReorderSave.onclick = saveReordering;
+            btnReorderCancel.onclick = cancelReordering;
         };
 
         function fetchProducts() {
@@ -480,10 +567,11 @@
             products.forEach(product => {
                 const card = document.createElement('div');
                 card.className = 'product-card';
+                card.dataset.id = product.id; 
+                
                 const priceNum = parseFloat(product.price);
                 const price = isNaN(priceNum) ? "Lps. (Error)" : `Lps. ${priceNum.toFixed(2)}`;
                 
-                // Novedad: Eliminado el 'onerror'
                 card.innerHTML = `
                     <div>
                         <div class="stock-label">${product.stock} disponibles</div>
@@ -492,7 +580,6 @@
                             <h3>${product.title}</h3>
                             <p class="size">Talla: ${product.size}</p>
                             <p class="price">${price}</p>
-                            <p class="size" style="font-size: 10px; color: #aaa; word-break: break-all;">ID: ${product.id}</p>
                         </div>
                     </div>
                     <div class="admin-button-container">
@@ -503,7 +590,7 @@
                 productGrid.appendChild(card);
             });
         }
-
+        
         // --- 3. Lógica de Pestaña "Añadir" (Multi-Formulario) ---
 
         function setNextProductId() {
@@ -552,7 +639,7 @@
                             <img src="" alt="Vista previa" style="display: none;">
                             <button type="button" class="remove-image-btn" id="remove-main-image-${idNum}" style="display: none;">X</button>
                         </div>
-                        <input type="file" id="file-main-image-${idNum}" class="file-input" accept="image/*" required>
+                        <input type="file" id="file-main-image-${idNum}" class="file-input" accept="image/*">
                         <input type="hidden" class="main-image-data-hidden" name="mainImage">
                     </div>
                     
@@ -684,9 +771,9 @@
                 return;
             }
 
-            showLoader('Guardando productos...');
             let payloads = [];
             let esValido = true;
+            let primerFormInvalido = null;
 
             formularios.forEach(formItem => {
                 const id = formItem.querySelector('input[name="id"]').value;
@@ -696,6 +783,9 @@
 
                 if (!id || !title || !price || !mainImage) {
                     esValido = false;
+                    if (!primerFormInvalido) {
+                        primerFormInvalido = formItem;
+                    }
                 }
                 
                 const thumbData = formItem.querySelector('.thumbnails-data-hidden').value;
@@ -706,17 +796,23 @@
                     size: formItem.querySelector('input[name="size"]').value,
                     price: price,
                     stock: formItem.querySelector('input[name="stock"]').value,
-                    mainImage: JSON.parse(mainImage),
+                    mainImage: mainImage ? JSON.parse(mainImage) : null,
                     thumbnails: thumbData ? JSON.parse(thumbData) : []
                 });
             });
 
             if (!esValido) {
                 hideLoader();
-                Swal.fire('Error', 'Revise todos los formularios. Faltan campos obligatorios (ID, Título, Precio, Imagen Principal).', 'error');
+                Swal.fire('Error', 'Revise todos los formularios. Faltan campos obligatorios (Título, Precio, Imagen Principal).', 'error');
+                if (primerFormInvalido) {
+                    primerFormInvalido.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    primerFormInvalido.style.borderColor = 'var(--danger-color)';
+                    setTimeout(() => { primerFormInvalido.style.borderColor = 'var(--border-color)'; }, 2500);
+                }
                 return;
             }
 
+            showLoader('Guardando productos...');
             sendData('create_multiple', payloads);
         }
         
@@ -726,25 +822,27 @@
 
             let thumbsHtml = '';
             let currentThumbnails = []; 
-            product.thumbnails.forEach(url => {
-                const dataPayload = { isNew: false, url: url };
-                currentThumbnails.push(dataPayload);
-                // Novedad: Corregido bug. 'img src' debe usar 'url'
-                thumbsHtml += `
-                    <div class="thumbnail-preview" data-imagedata='${JSON.stringify(dataPayload)}'>
-                        <img src="${url}" alt="Thumbnail" onerror="this.style.display='none'; this.parentElement.innerHTML += '<small>Error</small>';">
-                        <button type="button" class="remove-image-btn remove-thumb-btn" style="display: block;">X</button>
-                    </div>`;
-            });
+            if (product.thumbnails && Array.isArray(product.thumbnails)) {
+                product.thumbnails.forEach(url => {
+                    const dataPayload = { isNew: false, url: url };
+                    currentThumbnails.push(dataPayload);
+                    thumbsHtml += `
+                        <div class="thumbnail-preview" data-imagedata='${JSON.stringify(dataPayload)}'>
+                            <img src="${url}" alt="Thumbnail" onerror="this.style.display='none'; this.parentElement.innerHTML += '<small>Error</small>';">
+                            <button type="button" class="remove-image-btn remove-thumb-btn" style="display: block;">X</button>
+                        </div>`;
+                });
+            }
             
+            // --- Novedad: HTML del Modal Reestructurado ---
             const modalHtml = `
-                <div class="form-grid text-start">
+                <div class="edit-form-grid">
                     <div class="form-group">
-                        <label class="form-label">ID</label>
+                        <label class="form-label" for="edit-id">ID</label>
                         <input type="text" class="form-control" id="edit-id" value="${product.id}" readonly>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Título</label>
+                        <label class="form-label" for="edit-title">Título</label>
                         <input type="text" class="form-control" id="edit-title" value="${product.title}" required>
                     </div>
                     
@@ -759,13 +857,13 @@
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Precio</label>
+                        <label class="form-label" for="edit-price">Precio</label>
                         <input type="number" step="0.01" class="form-control" id="edit-price" value="${product.price}" required>
                         
-                        <label class="form-label mt-3">Stock</label>
+                        <label class="form-label mt-3" for="edit-stock">Stock</label>
                         <input type="number" class="form-control" id="edit-stock" value="${product.stock}" required>
                         
-                        <label class="form-label mt-3">Talla</label>
+                        <label class="form-label mt-3" for="edit-size">Talla</label>
                         <input type="text" class="form-control" id="edit-size" value="${product.size}" required>
                     </div>
 
@@ -783,7 +881,8 @@
             Swal.fire({
                 title: 'Editar Producto',
                 html: modalHtml,
-                width: '800px',
+                width: '90vw', // Novedad: Ancho responsivo
+                maxWidth: '700px', // Novedad: Ancho máximo (más compacto)
                 showCancelButton: true,
                 confirmButtonText: 'Guardar Cambios',
                 cancelButtonText: 'Cancelar',
@@ -891,7 +990,6 @@
             sendData('delete', { id: id });
         }
 
-        // Novedad: Función Asíncrona para la migración
         function sendDataAsync(action, payload) {
             return new Promise((resolve, reject) => {
                 fetch(SCRIPT_URL, {
@@ -913,9 +1011,19 @@
             });
         }
         
-        // Novedad: Lógica de Migración
         async function startMigration() {
-            if (!confirm('Esto migrará TODAS las imágenes externas a Google Drive. El proceso puede tardar varios minutos y no debe cerrarse. ¿Continuar?')) {
+            const result = await Swal.fire({
+                title: '¿Confirmar Migración?',
+                text: "Esto migrará TODAS las imágenes externas a Google Drive. El proceso puede tardar varios minutos y no debe cerrarse. ¿Continuar?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, ¡migrar!',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!result.isConfirmed) {
                 return;
             }
 
@@ -936,7 +1044,6 @@
                 showLoader(`Migrando ${product.id} (${processed} de ${total})...`);
                 
                 try {
-                    // Usar la nueva acción 'migrate_one_product'
                     await sendDataAsync('migrate_one_product', { id: product.id });
                 } catch (error) {
                     console.error(`Error migrando ${product.id}:`, error);
@@ -951,14 +1058,71 @@
                 Swal.fire('¡Éxito!', `Migración de ${total} productos completada.`, 'success');
             }
             
-            // Recargar todo
             fetchProducts();
             contenedorFormularios.innerHTML = '';
         }
 
-        /**
-         * Función central para enviar datos (POST) al script
-         */
+        // --- Funciones para Reordenar ---
+        
+        function startReordering() {
+            btnReorderStart.style.display = 'none';
+            btnMigrateAll.style.display = 'none';
+            btnReorderSave.style.display = 'inline-block';
+            btnReorderCancel.style.display = 'inline-block';
+
+            productGrid.querySelectorAll('.product-card').forEach(card => {
+                card.classList.add('reorder-mode');
+            });
+
+            sortableInstance = new Sortable(productGrid, {
+                animation: 150,
+                ghostClass: 'sortable-ghost'
+            });
+        }
+
+        function saveReordering() {
+            if (!sortableInstance) return;
+
+            const orderedIds = Array.from(productGrid.querySelectorAll('.product-card'))
+                                    .map(card => card.dataset.id);
+            
+            showLoader('Guardando nuevo orden...');
+            sendDataAsync('reorder_products', { orderedIds: orderedIds })
+                .then(result => {
+                    Swal.fire('¡Éxito!', 'Orden de productos actualizado.', 'success');
+                    products = orderedIds.map(id => products.find(p => p.id === id));
+                    cancelReordering(true);
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'No se pudo guardar el orden. ' + error.message, 'error');
+                })
+                .finally(() => {
+                    hideLoader();
+                });
+        }
+
+        function cancelReordering(skipRender = false) {
+            if (sortableInstance) {
+                sortableInstance.destroy();
+                sortableInstance = null;
+            }
+
+            btnReorderStart.style.display = 'inline-block';
+            btnMigrateAll.style.display = 'inline-block';
+            btnReorderSave.style.display = 'none';
+            btnReorderCancel.style.display = 'none';
+
+            productGrid.querySelectorAll('.product-card').forEach(card => {
+                card.classList.remove('reorder-mode');
+            });
+
+            if (!skipRender) {
+                renderProductGrid(products);
+            }
+        }
+
+        // --- 5. Funciones Centrales y Utilidades ---
+
         function sendData(action, payload) {
             showLoader(`Procesando...`);
 
@@ -988,7 +1152,6 @@
             });
         }
         
-        // --- 5. Utilidades (Loader, etc.) ---
         function showLoader(message) {
             loadingMessage.innerText = message || 'Procesando...';
             overlay.style.display = 'flex';
