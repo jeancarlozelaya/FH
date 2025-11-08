@@ -33,7 +33,7 @@
             margin: 0;
             color: var(--text-color);
             line-height: 1.6;
-            zoom: 0.9; /* Novedad: Zoom del 90% */
+            zoom: 0.9; 
         }
         .header {
             background: linear-gradient(135deg, var(--dark-color), #2c3e50);
@@ -391,7 +391,6 @@
         .edit-form-grid .image-form-group {
             align-items: center;
         }
-        /* Novedad: Tamaño de imagen 100x100 */
         .edit-form-grid #edit-image-preview {
             width: 100px;
             height: 100px;
@@ -467,17 +466,56 @@
                 padding: 8px 10px; 
             }
             
-            /* Modal de Edición */
+            /* --- Novedad 2: "Gestionar Productos" 2 Columnas --- */
+            .product-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .product-card img {
+                height: 130px; /* Reducir altura de imagen */
+            }
+            .product-card .details {
+                padding: 10px;
+            }
+            .product-card h3 {
+                font-size: 0.9rem;
+                min-height: 36px;
+                margin-bottom: 0;
+            }
+            .product-card p.size {
+                font-size: 0.75rem;
+                margin-bottom: 5px;
+            }
+            .product-card .price {
+                font-size: 1rem;
+                margin-top: 5px;
+            }
+            .product-card .stock-label {
+                font-size: 0.7rem;
+                padding: 3px 5px;
+            }
+            .admin-button-container {
+                margin-top: 10px;
+            }
+            .btn-edit, .btn-delete {
+                padding: 10px;
+                font-size: 0.8rem;
+            }
+            
+            /* --- Modal de Edición --- */
             .edit-form-grid {
                 grid-template-columns: 1fr; 
             }
             .edit-form-grid .image-form-group {
-                align-items: center; /* Novedad: Centrarlo en móvil */
+                align-items: center;
             }
-            /* Novedad: Tamaño de imagen 100x100 en móvil */
             .edit-form-grid #edit-image-preview {
                 width: 100px;
                 height: 100px;
+            }
+            /* Novedad 1: Corrección de scroll en galería de modal */
+            .edit-form-grid .full-width {
+                min-width: 0; /* Permite que el 'overflow-x' del hijo funcione */
             }
             
             /* Formulario "Añadir Producto" */
@@ -489,15 +527,15 @@
                 height: 250px;
             }
             
-            /* Novedad: Botones de "Añadir" y "Guardar" en fila */
+            /* Botones de "Añadir" y "Guardar" */
             #form-registrar-productos .d-flex.justify-content-center {
-                flex-direction: row; /* Poner en fila */
-                align-items: center; /* Alinear verticalmente */
+                flex-direction: row; /* Novedad: Poner en fila */
+                align-items: center; 
                 gap: 10px !important;
             }
             #form-registrar-productos .d-flex.justify-content-center .btn {
-                width: auto; /* Ancho automático */
-                flex-grow: 1; /* Compartir espacio */
+                width: auto; /* Novedad: Ancho automático */
+                flex-grow: 1; /* Novedad: Compartir espacio */
                 margin: 0;
             }
             
