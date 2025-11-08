@@ -33,6 +33,7 @@
             margin: 0;
             color: var(--text-color);
             line-height: 1.6;
+            zoom: 0.9; /* Novedad: Zoom del 90% */
         }
         .header {
             background: linear-gradient(135deg, var(--dark-color), #2c3e50);
@@ -298,12 +299,11 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
         
-        /* --- Novedad: Imagen de Tarjeta Mejorada --- */
         .product-card img {
             width: 100%;
             height: 200px;
-            object-fit: contain; /* Cambiado de 'cover' a 'contain' */
-            background-color: var(--light-gray); /* Fondo para rellenar */
+            object-fit: contain; 
+            background-color: var(--light-gray); 
         }
         
         .product-card .details { padding: 15px; width: 100%; }
@@ -368,7 +368,7 @@
             display: none;
         }
 
-        /* --- Novedad: Estilos para el Modal de Edición --- */
+        /* --- Estilos para el Modal de Edición --- */
         .swal2-html-container {
             overflow: visible;
             padding: 0 1em !important;
@@ -376,7 +376,7 @@
         }
         .edit-form-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* Dos columnas */
+            grid-template-columns: 1fr 1fr;
             gap: 15px 20px;
             text-align: left;
             padding-top: 10px;
@@ -386,11 +386,15 @@
             flex-direction: column;
         }
         .edit-form-grid .full-width {
-            grid-column: 1 / -1; /* Ocupa ambas columnas */
+            grid-column: 1 / -1;
         }
+        .edit-form-grid .image-form-group {
+            align-items: center;
+        }
+        /* Novedad: Tamaño de imagen 100x100 */
         .edit-form-grid #edit-image-preview {
-            width: 100%;
-            height: 200px; /* Un poco más alto para el modal */
+            width: 100px;
+            height: 100px;
         }
         .edit-form-grid .form-label {
             margin-bottom: 5px;
@@ -420,6 +424,96 @@
         #loadingMessage { text-align: center; color: var(--dark-color); }
         #loadingMessage h4 { margin: 0 0 10px; font-size: 1.3rem; font-weight: bold; }
         #loadingMessage p { margin: 0; color: #7f8c8d; font-weight: normal; }
+        
+        
+        /* --- Estilos Responsivos (Móvil) --- */
+        @media (max-width: 768px) {
+            .container {
+                margin-top: 15px;
+                padding: 0 10px;
+            }
+            
+            .tab-content {
+                padding: 15px;
+            }
+            
+            .tab-title {
+                text-align: left;
+                padding-bottom: 10px;
+            }
+            .tab-title h2 {
+                font-size: 1.5rem;
+                text-align: center;
+            }
+            .tab-title:after {
+                display: none;
+            }
+
+            /* Botones de "Gestionar" en fila */
+            #manage-buttons-container {
+                position: static !important;
+                flex-direction: row; 
+                flex-wrap: wrap;
+                justify-content: center; 
+                width: 100%;
+                margin-top: 20px;
+                gap: 10px; 
+            }
+            #manage-buttons-container .btn {
+                width: auto; 
+                flex-grow: 1; 
+                margin: 0 !important;
+                font-size: 0.8rem; 
+                padding: 8px 10px; 
+            }
+            
+            /* Modal de Edición */
+            .edit-form-grid {
+                grid-template-columns: 1fr; 
+            }
+            .edit-form-grid .image-form-group {
+                align-items: center; /* Novedad: Centrarlo en móvil */
+            }
+            /* Novedad: Tamaño de imagen 100x100 en móvil */
+            .edit-form-grid #edit-image-preview {
+                width: 100px;
+                height: 100px;
+            }
+            
+            /* Formulario "Añadir Producto" */
+            .formulario-item {
+                padding: 15px;
+            }
+            .formulario-item .image-preview-container {
+                width: 100%;
+                height: 250px;
+            }
+            
+            /* Novedad: Botones de "Añadir" y "Guardar" en fila */
+            #form-registrar-productos .d-flex.justify-content-center {
+                flex-direction: row; /* Poner en fila */
+                align-items: center; /* Alinear verticalmente */
+                gap: 10px !important;
+            }
+            #form-registrar-productos .d-flex.justify-content-center .btn {
+                width: auto; /* Ancho automático */
+                flex-grow: 1; /* Compartir espacio */
+                margin: 0;
+            }
+            
+            /* Pestañas principales */
+            .nav-tabs .nav-link {
+                padding: 12px 10px;
+                font-size: 0.9rem;
+                flex-grow: 1;
+                text-align: center;
+            }
+            .nav-tabs {
+                display: flex;
+                flex-wrap: nowrap;
+            }
+        }
+        
     </style>
 </head>
 <body>
@@ -834,7 +928,6 @@
                 });
             }
             
-            // --- Novedad: HTML del Modal Reestructurado ---
             const modalHtml = `
                 <div class="edit-form-grid">
                     <div class="form-group">
@@ -846,7 +939,7 @@
                         <input type="text" class="form-control" id="edit-title" value="${product.title}" required>
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-group image-form-group">
                         <label class="form-label">Imagen Principal</label>
                         <div id="edit-image-preview" class="image-preview-container" onclick="document.getElementById('file-main-image-edit').click()">
                             <span class="image-preview-placeholder" style="display: none;"></span>
@@ -881,8 +974,8 @@
             Swal.fire({
                 title: 'Editar Producto',
                 html: modalHtml,
-                width: '90vw', // Novedad: Ancho responsivo
-                maxWidth: '700px', // Novedad: Ancho máximo (más compacto)
+                width: '90vw', 
+                maxWidth: '700px', 
                 showCancelButton: true,
                 confirmButtonText: 'Guardar Cambios',
                 cancelButtonText: 'Cancelar',
@@ -926,6 +1019,7 @@
                             results.forEach(data => {
                                 currentThumbnails.push(data.payload);
                                 createThumbnailPreview(editThumbnailsGrid, data.base64DataUrl, data.payload, currentThumbnails, editThumbnailsData);
+
                             });
                             editThumbnailsData.value = JSON.stringify(currentThumbnails);
                         });
