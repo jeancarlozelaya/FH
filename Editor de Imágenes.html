@@ -571,8 +571,8 @@
         function updatePrice(element) {
             const mosaicItem = element.closest('.mosaic-item');
             const precioApp = parseFloat(mosaicItem.querySelector('.precioApp').value) || 0;
-            // Nueva fórmula: precioApp + (precioApp * 1.07) * 26.3
-            const precioCalculado = (precioApp * 1.07) * 26.3;
+            // Nueva fórmula: precioApp + (precioApp * 1.07) * 26.4
+            const precioCalculado = (precioApp * 1.07) * 26.4;
             const precioLempirasElement = mosaicItem.querySelector('.precioLempiras');
             const precioInput = mosaicItem.querySelector('.precio');
             const precioIngresado = parseFloat(precioInput.value) || 0;
