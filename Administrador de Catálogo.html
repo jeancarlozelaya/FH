@@ -818,7 +818,7 @@
             mainImageInput.onchange = (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    fileToBase64(file).then(data => {
+                    fileToBase64(file).then(data => { // <--- USA LA FUNCIÓN MODIFICADA
                         mainImageImg.src = data.base64DataUrl;
                         mainImageImg.style.display = 'block';
                         mainImagePlaceholder.style.display = 'none';
@@ -845,7 +845,7 @@
 
             thumbnailsInput.onchange = (e) => {
                 const files = Array.from(e.target.files);
-                Promise.all(files.map(fileToBase64)).then(results => {
+                Promise.all(files.map(fileToBase64)).then(results => { // <--- USA LA FUNCIÓN MODIFICADA
                     results.forEach(data => {
                         currentThumbnails.push(data.payload);
                         createThumbnailPreview(thumbnailsGrid, data.base64DataUrl, data.payload, currentThumbnails, thumbnailsDataHidden);
@@ -874,25 +874,98 @@
             gridElement.insertBefore(preview, gridElement.querySelector('.add-thumbnail-btn'));
         }
 
+        // --- INICIO DE LA FUNCIÓN MODIFICADA ---
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
+                
+                // --- 1. Definir constantes de compresión ---
+                const MAX_DIMENSION = 1920; // Max 1920px en el lado más largo
+                const OUTPUT_QUALITY = 0.85; // Calidad JPEG (0.85 es un buen balance)
+                const OUTPUT_MIME_TYPE = 'image/jpeg'; // Siempre convertimos a JPEG por tamaño
+                const MIN_SIZE_TO_COMPRESS = 200 * 1024; // 200KB
+
+                // --- 2. Omitir compresión si no es imagen o es muy pequeña ---
+                if (!file.type.startsWith('image/') || file.size < MIN_SIZE_TO_COMPRESS) {
+                    console.log(`Archivo ${file.name} no se comprimirá (no es imagen o es < 200KB)`);
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const base64DataUrl = e.target.result;
+                        resolve({
+                            base64DataUrl: base64DataUrl,
+                            payload: {
+                                isNew: true,
+                                name: file.name, // Usar nombre original
+                                mimeType: file.type, // Usar MIME original
+                                base64Data: base64DataUrl.split(',')[1]
+                            }
+                        });
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                    return;
+                }
+
+                // --- 3. Proceso de Compresión (Leer archivo) ---
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const base64DataUrl = e.target.result;
-                    resolve({
-                        base64DataUrl: base64DataUrl,
-                        payload: {
-                            isNew: true,
-                            name: file.name,
-                            mimeType: file.type,
-                            base64Data: base64DataUrl.split(',')[1] // Solo la data
+                    const img = new Image();
+                    img.onload = () => {
+                        let { width, height } = img;
+
+                        // --- 4. Calcular nuevo tamaño (redimensionar) ---
+                        if (width > height) {
+                            if (width > MAX_DIMENSION) {
+                                height = Math.round(height * (MAX_DIMENSION / width));
+                                width = MAX_DIMENSION;
+                            }
+                        } else {
+                            if (height > MAX_DIMENSION) {
+                                width = Math.round(width * (MAX_DIMENSION / height));
+                                height = MAX_DIMENSION;
+                            }
                         }
-                    });
+
+                        // --- 5. Dibujar en Canvas ---
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        
+                        // Rellenar fondo de blanco (importante para PNGs con transparencia)
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillRect(0, 0, width, height);
+                        
+                        // Dibujar la imagen redimensionada
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // --- 6. Exportar Canvas a Base64 (Comprimido) ---
+                        const base64DataUrl = canvas.toDataURL(OUTPUT_MIME_TYPE, OUTPUT_QUALITY);
+                        
+                        // Generar un nuevo nombre de archivo
+                        const originalName = file.name.substring(0, file.name.lastIndexOf('.'));
+                        const newName = `${originalName}.jpg`; // Siempre será .jpg
+                        
+                        console.log(`Imagen comprimida: ${file.name} -> ${newName} (Calidad: ${OUTPUT_QUALITY})`);
+
+                        // --- 7. Resolver la promesa con los nuevos datos ---
+                        resolve({
+                            base64DataUrl: base64DataUrl,
+                            payload: {
+                                isNew: true,
+                                name: newName,
+                                mimeType: OUTPUT_MIME_TYPE,
+                                base64Data: base64DataUrl.split(',')[1]
+                            }
+                        });
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result; // Cargar la imagen desde el resultado del reader
                 };
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
         }
+        // --- FIN DE LA FUNCIÓN MODIFICADA ---
         
         // --- 4. Lógica de Envío de Datos ---
 
@@ -1035,7 +1108,7 @@
                     editMainImageInput.onchange = (e) => {
                         const file = e.target.files[0];
                         if (file) {
-                            fileToBase64(file).then(data => {
+                            fileToBase64(file).then(data => { // <--- USA LA FUNCIÓN MODIFICADA
                                 editMainImageImg.src = data.base64DataUrl;
                                 editMainImageData.value = JSON.stringify(data.payload);
                             });
@@ -1053,7 +1126,7 @@
                     
                     editThumbnailsInput.onchange = (e) => {
                         const files = Array.from(e.target.files);
-                        Promise.all(files.map(fileToBase64)).then(results => {
+                        Promise.all(files.map(fileToBase64)).then(results => { // <--- USA LA FUNCIÓN MODIFICADA
                             results.forEach(data => {
                                 currentThumbnails.push(data.payload);
                                 createThumbnailPreview(editThumbnailsGrid, data.base64DataUrl, data.payload, currentThumbnails, editThumbnailsData);
