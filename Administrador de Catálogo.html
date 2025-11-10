@@ -237,6 +237,9 @@
             border-radius: 5px;
             border: 1px solid var(--border-color);
             margin-top: 10px;
+            /* NOVEDAD: Se añade para que el drop funcione en el área */
+            min-height: 122px; 
+            align-items: flex-start;
         }
         .thumbnail-preview {
             position: relative;
@@ -264,6 +267,14 @@
         .add-thumbnail-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: #fff; }
         
         .file-input { display: none; }
+        
+        /* NOVEDAD: Estilo para Drag & Drop */
+        .image-preview-container.drag-over,
+        .thumbnails-grid.drag-over {
+            border-color: var(--primary-color);
+            background-color: #fdf0f4; /* Rosa claro */
+            border-style: solid;
+        }
         
         .btn-secondary { background-color: #6c757d; color: white; margin-top: 10px; }
         .btn-secondary:hover { background-color: #5a6268; }
@@ -391,6 +402,7 @@
         .edit-form-grid .image-form-group {
             align-items: center;
         }
+        /* NOVEDAD: Ajustado tamaño de preview en modal */
         .edit-form-grid #edit-image-preview {
             width: 100px;
             height: 100px;
@@ -448,7 +460,6 @@
                 display: none;
             }
 
-            /* Botones de "Gestionar" en fila */
             #manage-buttons-container {
                 position: static !important;
                 flex-direction: row; 
@@ -466,7 +477,6 @@
                 padding: 8px 10px; 
             }
             
-            /* "Gestionar Productos" 2 Columnas */
             .product-container {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 10px;
@@ -502,7 +512,6 @@
                 font-size: 0.8rem;
             }
             
-            /* --- Modal de Edición --- */
             .edit-form-grid {
                 grid-template-columns: 1fr; 
             }
@@ -517,17 +526,14 @@
                 min-width: 0; 
             }
             
-            /* --- Formulario "Añadir Producto" --- */
             .formulario-item {
                 padding: 15px;
             }
-            /* Novedad: Corregido tamaño de imagen en "Añadir" */
             .formulario-item .image-preview-container {
                 width: 100px;
                 height: 100px;
             }
             
-            /* Botones de "Añadir" y "Guardar" */
             #form-registrar-productos .d-flex.justify-content-center {
                 flex-direction: row; 
                 align-items: center; 
@@ -539,7 +545,6 @@
                 margin: 0;
             }
             
-            /* Pestañas principales */
             .nav-tabs .nav-link {
                 padding: 12px 10px;
                 font-size: 0.9rem;
@@ -589,7 +594,8 @@
                         </div>
                         <form id="form-registrar-productos" novalidate>
                             <div id="contenedor-formularios-producto">
-                                </div>
+                                <!-- Formularios dinámicos se añaden aquí -->
+                            </div>
                             <div class="d-flex justify-content-center gap-2 mt-4">
                                 <button type="button" class="btn btn-success" id="btn-agregar-formulario">
                                     <i class="fas fa-plus me-2"></i>Añadir Otro Producto
@@ -621,13 +627,15 @@
                         </div>
                         <div id="loader">Cargando productos...</div>
                         <div class="product-container" id="admin-product-grid">
-                            </div>
+                            <!-- Productos se cargan aquí -->
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Inputs de archivos para el modal de edición (fuera del modal) -->
     <input type="file" id="file-main-image-edit" class="file-input" accept="image/*">
     <input type="file" id="file-thumbnails-edit" class="file-input" accept="image/*" multiple>
 
@@ -767,7 +775,7 @@
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Imagen Principal</label>
                         <div id="image-preview-${idNum}" class="image-preview-container" onclick="document.getElementById('file-main-image-${idNum}').click()">
-                            <span class="image-preview-placeholder">Clic para subir imagen</span>
+                            <span class="image-preview-placeholder">Clic o arrastra para subir</span>
                             <img src="" alt="Vista previa" style="display: none;">
                             <button type="button" class="remove-image-btn" id="remove-main-image-${idNum}" style="display: none;">X</button>
                         </div>
@@ -818,7 +826,7 @@
             mainImageInput.onchange = (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    fileToBase64(file).then(data => { // <--- USA LA FUNCIÓN MODIFICADA
+                    fileToBase64(file).then(data => { 
                         mainImageImg.src = data.base64DataUrl;
                         mainImageImg.style.display = 'block';
                         mainImagePlaceholder.style.display = 'none';
@@ -845,14 +853,19 @@
 
             thumbnailsInput.onchange = (e) => {
                 const files = Array.from(e.target.files);
-                Promise.all(files.map(fileToBase64)).then(results => { // <--- USA LA FUNCIÓN MODIFICADA
+                Promise.all(files.map(fileToBase64)).then(results => { 
                     results.forEach(data => {
                         currentThumbnails.push(data.payload);
                         createThumbnailPreview(thumbnailsGrid, data.base64DataUrl, data.payload, currentThumbnails, thumbnailsDataHidden);
                     });
                     thumbnailsDataHidden.value = JSON.stringify(currentThumbnails);
+                    thumbnailsInput.value = ''; // Limpiar input
                 });
             };
+            
+            // NOVEDAD: Configurar Drag & Drop
+            setupDragDrop(mainImagePreview, mainImageInput, false);
+            setupDragDrop(thumbnailsGrid, thumbnailsInput, true);
         }
 
         function createThumbnailPreview(gridElement, src, dataPayload, thumbnailsArray, hiddenInput) {
@@ -878,13 +891,11 @@
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 
-                // --- 1. Definir constantes de compresión ---
-                const MAX_DIMENSION = 1920; // Max 1920px en el lado más largo
-                const OUTPUT_QUALITY = 0.85; // Calidad JPEG (0.85 es un buen balance)
-                const OUTPUT_MIME_TYPE = 'image/jpeg'; // Siempre convertimos a JPEG por tamaño
-                const MIN_SIZE_TO_COMPRESS = 200 * 1024; // 200KB
+                const MAX_DIMENSION = 1920; 
+                const OUTPUT_QUALITY = 0.85; 
+                const OUTPUT_MIME_TYPE = 'image/jpeg'; 
+                const MIN_SIZE_TO_COMPRESS = 200 * 1024; 
 
-                // --- 2. Omitir compresión si no es imagen o es muy pequeña ---
                 if (!file.type.startsWith('image/') || file.size < MIN_SIZE_TO_COMPRESS) {
                     console.log(`Archivo ${file.name} no se comprimirá (no es imagen o es < 200KB)`);
                     const reader = new FileReader();
@@ -894,8 +905,8 @@
                             base64DataUrl: base64DataUrl,
                             payload: {
                                 isNew: true,
-                                name: file.name, // Usar nombre original
-                                mimeType: file.type, // Usar MIME original
+                                name: file.name, 
+                                mimeType: file.type, 
                                 base64Data: base64DataUrl.split(',')[1]
                             }
                         });
@@ -905,14 +916,12 @@
                     return;
                 }
 
-                // --- 3. Proceso de Compresión (Leer archivo) ---
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const img = new Image();
                     img.onload = () => {
                         let { width, height } = img;
 
-                        // --- 4. Calcular nuevo tamaño (redimensionar) ---
                         if (width > height) {
                             if (width > MAX_DIMENSION) {
                                 height = Math.round(height * (MAX_DIMENSION / width));
@@ -925,29 +934,23 @@
                             }
                         }
 
-                        // --- 5. Dibujar en Canvas ---
                         const canvas = document.createElement('canvas');
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         
-                        // Rellenar fondo de blanco (importante para PNGs con transparencia)
                         ctx.fillStyle = '#FFFFFF';
                         ctx.fillRect(0, 0, width, height);
                         
-                        // Dibujar la imagen redimensionada
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        // --- 6. Exportar Canvas a Base64 (Comprimido) ---
                         const base64DataUrl = canvas.toDataURL(OUTPUT_MIME_TYPE, OUTPUT_QUALITY);
                         
-                        // Generar un nuevo nombre de archivo
                         const originalName = file.name.substring(0, file.name.lastIndexOf('.'));
-                        const newName = `${originalName}.jpg`; // Siempre será .jpg
+                        const newName = `${originalName}.jpg`; 
                         
                         console.log(`Imagen comprimida: ${file.name} -> ${newName} (Calidad: ${OUTPUT_QUALITY})`);
 
-                        // --- 7. Resolver la promesa con los nuevos datos ---
                         resolve({
                             base64DataUrl: base64DataUrl,
                             payload: {
@@ -959,7 +962,7 @@
                         });
                     };
                     img.onerror = reject;
-                    img.src = e.target.result; // Cargar la imagen desde el resultado del reader
+                    img.src = e.target.result; 
                 };
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
@@ -1039,6 +1042,7 @@
                 });
             }
             
+            // NOVEDAD: Se corrigió la lógica del placeholder, img y botón
             const modalHtml = `
                 <div class="edit-form-grid">
                     <div class="form-group">
@@ -1053,9 +1057,9 @@
                     <div class="form-group image-form-group">
                         <label class="form-label">Imagen Principal</label>
                         <div id="edit-image-preview" class="image-preview-container" onclick="document.getElementById('file-main-image-edit').click()">
-                            <span class="image-preview-placeholder" style="display: none;"></span>
-                            <img src="${product.image}" alt="Vista previa" style="display: block;" onerror="this.style.display='none'; this.parentElement.querySelector('.image-preview-placeholder').style.display='block';">
-                            <button type="button" class="remove-image-btn" id="edit-remove-main-image" style="display: block;">X</button>
+                            <span class="image-preview-placeholder" style="display: ${product.image ? 'none' : 'block'};">Clic o arrastra para subir</span>
+                            <img src="${product.image || ''}" alt="Vista previa" style="display: ${product.image ? 'block' : 'none'};" onerror="this.style.display='none'; this.parentElement.querySelector('.image-preview-placeholder').style.display='block';">
+                            <button type="button" class="remove-image-btn" id="edit-remove-main-image" style="display: ${product.image ? 'block' : 'none'};">X</button>
                         </div>
                         <input type="hidden" id="edit-main-image-data">
                     </div>
@@ -1102,18 +1106,29 @@
                     const editThumbnailsInput = document.getElementById('file-thumbnails-edit');
                     const editThumbnailsGrid = document.getElementById('edit-thumbnails-grid');
                     
-                    editMainImageData.value = JSON.stringify({ isNew: false, url: product.image });
+                    // Setear valor inicial
+                    if (product.image) {
+                        editMainImageData.value = JSON.stringify({ isNew: false, url: product.image });
+                    }
                     editThumbnailsData.value = JSON.stringify(currentThumbnails);
                     
+                    // NOVEDAD: Se corrigió el onchange para manejar la UI
                     editMainImageInput.onchange = (e) => {
                         const file = e.target.files[0];
                         if (file) {
-                            fileToBase64(file).then(data => { // <--- USA LA FUNCIÓN MODIFICADA
+                            fileToBase64(file).then(data => { 
                                 editMainImageImg.src = data.base64DataUrl;
                                 editMainImageData.value = JSON.stringify(data.payload);
+                                // --- CORRECCIÓN ---
+                                editMainImageImg.style.display = 'block';
+                                editMainImagePlaceholder.style.display = 'none';
+                                editMainImageRemoveBtn.style.display = 'block';
+                                // --- FIN CORRECCIÓN ---
                             });
                         }
                     };
+                    
+                    // NOVEDAD: Se corrigió el onclick del botón de remover
                     editMainImageRemoveBtn.onclick = (e) => {
                         e.stopPropagation();
                         editMainImageImg.src = '';
@@ -1126,13 +1141,14 @@
                     
                     editThumbnailsInput.onchange = (e) => {
                         const files = Array.from(e.target.files);
-                        Promise.all(files.map(fileToBase64)).then(results => { // <--- USA LA FUNCIÓN MODIFICADA
+                        Promise.all(files.map(fileToBase64)).then(results => { 
                             results.forEach(data => {
                                 currentThumbnails.push(data.payload);
                                 createThumbnailPreview(editThumbnailsGrid, data.base64DataUrl, data.payload, currentThumbnails, editThumbnailsData);
 
                             });
                             editThumbnailsData.value = JSON.stringify(currentThumbnails);
+                            editThumbnailsInput.value = ''; // Limpiar
                         });
                     };
                     
@@ -1146,6 +1162,10 @@
                             preview.remove();
                         };
                     });
+                    
+                    // NOVEDAD: Configurar Drag & Drop para el modal
+                    setupDragDrop(editMainImagePreview, editMainImageInput, false);
+                    setupDragDrop(editThumbnailsGrid, editThumbnailsInput, true);
                 },
                 preConfirm: () => {
                     const payload = {
@@ -1327,6 +1347,45 @@
         }
 
         // --- 5. Funciones Centrales y Utilidades ---
+        
+        // NOVEDAD: Funciones para Drag & Drop
+        function handleFileDrop(e, inputElement, isMultiple = false) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.classList.remove('drag-over');
+
+            const files = e.dataTransfer.files;
+            if (files.length === 0) return;
+
+            // Asignamos los archivos al input
+            inputElement.files = files;
+
+            // Despachamos el evento 'change' manualmente
+            // Esto reutiliza toda la lógica que ya teníamos en 'onchange'
+            const changeEvent = new Event('change', { bubbles: true });
+            inputElement.dispatchEvent(changeEvent);
+        }
+
+        function setupDragDrop(container, inputElement, isMultiple = false) {
+            // Evitar comportamiento por defecto
+            container.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.classList.add('drag-over');
+            });
+
+            container.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.classList.remove('drag-over');
+            });
+
+            container.addEventListener('drop', (e) => {
+                handleFileDrop(e, inputElement, isMultiple);
+            });
+        }
+        // --- FIN Funciones Drag & Drop ---
+
 
         function sendData(action, payload) {
             showLoader(`Procesando...`);
