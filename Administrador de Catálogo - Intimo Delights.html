@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Catálogo FH</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900&family=Montserrat:ital,wght@0,100..900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
+<style>
+        :root {
+            --primary-color: #e91e63;
+            --primary-dark: #c2185b;
+            --secondary-color: #007bff;
+            --danger-color: #dc3545;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --info-color: #0dcaf0;
+            --dark-color: #34495e;
+            --text-color: #333;
+            --border-color: #ddd;
+            --light-gray: #f5f7fa;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--light-gray);
+            margin: 0;
+            color: var(--text-color);
+            line-height: 1.6;
+            zoom: 0.9; 
+        }
+        .header {
+            background: linear-gradient(135deg, var(--dark-color), #2c3e50);
+            color: white;
+            text-align: center;
+            padding: 18px 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: var(--shadow);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 25px auto;
+            padding: 0 15px;
+        }
+        .card {
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: none;
+            margin-bottom: 25px;
+        }
+        .card-header {
+            background: linear-gradient(135deg, var(--dark-color), #2c3e50);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 18px 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .nav-tabs .nav-link {
+            color: var(--dark-color);
+            font-weight: 500;
+            border: none;
+            padding: 12px 20px;
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            background-color: transparent;
+        }
+        .tab-content {
+            padding: 25px;
+            background-color: white;
+            border-radius: 0 0 12px 12px;
+        }
+        .tab-title {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            padding: 10px 0 20px 0;
+            position: relative;
+        }
+        .tab-title h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        .tab-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: 2px;
+        }
+
+        /* --- Estilos de Formulario --- */
+        .formulario-item {
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            position: relative;
+            background-color: #fdfdfd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .btn-quitar-item {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 8px;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(233, 30, 99, 0.15);
+        }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+            border: none;
+            font-weight: 600;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 50px;
+            transition: var(--transition);
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.2);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(233, 30, 99, 0.3);
+        }
+        .btn-success {
+            background: linear-gradient(45deg, var(--success-color), #28b463);
+            border: none;
+            font-weight: 600;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 50px;
+            transition: var(--transition);
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2);
+        }
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-warning {
+             background: linear-gradient(45deg, var(--warning-color), #f1c40f);
+             border: none;
+             color: var(--dark-color) !important;
+             font-weight: 600;
+             box-shadow: 0 4px 15px rgba(243, 156, 18, 0.2);
+        }
+        .btn-warning:hover {
+             transform: translateY(-3px);
+             box-shadow: 0 6px 20px rgba(243, 156, 18, 0.3);
+        }
+        
+        .btn-info {
+             background: linear-gradient(45deg, var(--info-color), #0aa3c2);
+             border: none;
+             color: white !important;
+             font-weight: 600;
+             box-shadow: 0 4px 15px rgba(13, 202, 240, 0.2);
+        }
+        .btn-info:hover {
+             transform: translateY(-3px);
+             box-shadow: 0 6px 20px rgba(13, 202, 240, 0.3);
+        }
+        
+        /* --- Estilos de Subida de Archivos --- */
+        .image-preview-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border: 2px dashed var(--border-color);
+            border-radius: 5px;
+            background: var(--light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+        .image-preview-container:hover { border-color: var(--primary-color); }
+        .image-preview-container img { width: 100%; height: 100%; object-fit: cover; }
+        .image-preview-placeholder { color: var(--dark-gray); font-size: 14px; text-align: center; padding: 10px; }
+        .remove-image-btn {
+            position: absolute; top: 5px; right: 5px;
+            background: rgba(220, 53, 69, 0.8); color: white;
+            border: none; border-radius: 50%;
+            width: 25px; height: 25px; font-size: 14px;
+            font-weight: bold; cursor: pointer; padding: 0;
+            line-height: 25px; display: none;
+        }
+        .image-preview-container:hover .remove-image-btn { display: block; }
+        
+        .thumbnails-grid {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 10px;
+            background: var(--light-gray);
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            margin-top: 10px;
+            /* NOVEDAD: Se añade para que el drop funcione en el área */
+            min-height: 122px; 
+            align-items: flex-start;
+        }
+        .thumbnail-preview {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            flex-shrink: 0;
+            margin-right: 10px;
+        }
+        .thumbnail-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; border: 1px solid var(--border-color); }
+        .thumbnail-preview .remove-thumb-btn { top: -5px; right: -5px; width: 22px; height: 22px; line-height: 22px; }
+        .add-thumbnail-btn {
+            width: 100px;
+            height: 100px;
+            border: 2px dashed var(--border-color);
+            border-radius: 5px;
+            background: var(--light-gray);
+            color: var(--dark-gray);
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+            margin-right: 10px;
+        }
+        .add-thumbnail-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: #fff; }
+        
+        .file-input { display: none; }
+        
+        /* NOVEDAD: Estilo para Drag & Drop */
+        .image-preview-container.drag-over,
+        .thumbnails-grid.drag-over {
+            border-color: var(--primary-color);
+            background-color: #fdf0f4; /* Rosa claro */
+            border-style: solid;
+        }
+        
+        .btn-secondary { background-color: #6c757d; color: white; margin-top: 10px; }
+        .btn-secondary:hover { background-color: #5a6268; }
+
+        /* --- Estilos de Tarjeta de Producto (Admin) --- */
+        #loader {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--dark-gray);
+        }
+        .product-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .product-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+            transition: var(--transition);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .product-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: contain; 
+            background-color: var(--light-gray); 
+        }
+        
+        .product-card .details { padding: 15px; width: 100%; }
+        .product-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0 0 5px;
+            color: var(--dark-color);
+            min-height: 44px;
+        }
+        .product-card p { font-family: 'Montserrat', sans-serif; font-size: 0.9rem; color: var(--dark-gray); margin: 0; }
+        .product-card p.size { font-size: 0.8rem; color: #999; margin-bottom: 10px; }
+        .product-card .price {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-top: 10px;
+        }
+        .product-card .stock-label {
+            position: absolute; top: 10px; right: 10px;
+            background-color: rgba(40, 167, 69, 0.9);
+            color: #fff; font-weight: bold; font-size: 0.8rem;
+            padding: 5px 8px; border-radius: 5px; z-index: 10;
+        }
+        
+        /* --- ESTILO MODIFICADO: Estilo para la etiqueta de "Usado" --- */
+        .product-card .details .condition-label {
+            background-color: var(--warning-color);
+            color: #fff;
+            font-weight: bold;
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 5px;
+            display: inline-block; /* Para que no ocupe todo el ancho */
+            margin-bottom: 10px; /* Espacio antes del título */
+        }
+        /* --- FIN MODIFICACIÓN --- */
+
+        .admin-button-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background-color: var(--border-color);
+            margin-top: 15px;
+        }
+        .btn-edit, .btn-delete, .btn-confirm, .btn-cancel {
+            padding: 12px; font-size: 0.9rem;
+            background-color: #fff; color: #333;
+            border-radius: 0; border: none; cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-weight: 600;
+        }
+        .btn-edit { color: var(--secondary-color); }
+        .btn-delete { color: var(--danger-color); }
+        .btn-confirm { color: var(--danger-color); }
+        .btn-cancel { color: var(--dark-gray); }
+        
+        .btn-edit:hover, .btn-delete:hover, .btn-confirm:hover, .btn-cancel:hover { background-color: #f8f9fa; }
+
+        /* --- Estilos de Reordenación --- */
+        .sortable-ghost {
+            opacity: 0.4;
+            background: #f0f0f0;
+            border: 2px dashed var(--primary-color);
+        }
+        .product-card.reorder-mode {
+            cursor: grab;
+            border: 2px dashed var(--secondary-color);
+            box-shadow: 0 0 0 rgba(0,0,0,0);
+        }
+        .product-card.reorder-mode:active {
+            cursor: grabbing;
+        }
+        .product-card.reorder-mode .admin-button-container {
+            display: none;
+        }
+
+        /* --- Estilos para el Modal de Edición --- */
+        .swal2-html-container {
+            overflow: visible;
+            padding: 0 1em !important;
+            margin: 0;
+        }
+        .edit-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px 20px;
+            text-align: left;
+            padding-top: 10px;
+        }
+        .edit-form-grid .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .edit-form-grid .full-width {
+            grid-column: 1 / -1;
+        }
+        .edit-form-grid .image-form-group {
+            align-items: center;
+        }
+        /* NOVEDAD: Ajustado tamaño de preview en modal */
+        .edit-form-grid #edit-image-preview {
+            width: 100px;
+            height: 100px;
+        }
+        .edit-form-grid .form-label {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        /* --- Pantalla de Carga (Overlay) --- */
+        #overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        .spinner {
+            width: 60px; height: 60px;
+            border: 5px solid rgba(233, 30, 99, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loadingMessage { text-align: center; color: var(--dark-color); }
+        #loadingMessage h4 { margin: 0 0 10px; font-size: 1.3rem; font-weight: bold; }
+        #loadingMessage p { margin: 0; color: #7f8c8d; font-weight: normal; }
+        
+        
+        /* --- Estilos Responsivos (Móvil) --- */
+        @media (max-width: 768px) {
+            .container {
+                margin-top: 15px;
+                padding: 0 10px;
+            }
+            
+            .tab-content {
+                padding: 15px;
+            }
+            
+            .tab-title {
+                text-align: left;
+                padding-bottom: 10px;
+            }
+            .tab-title h2 {
+                font-size: 1.5rem;
+                text-align: center;
+            }
+            .tab-title:after {
+                display: none;
+            }
+
+            #manage-buttons-container {
+                position: static !important;
+                flex-direction: row; 
+                flex-wrap: wrap;
+                justify-content: center; 
+                width: 100%;
+                margin-top: 20px;
+                gap: 10px; 
+            }
+            #manage-buttons-container .btn {
+                width: auto; 
+                flex-grow: 1; 
+                margin: 0 !important;
+                font-size: 0.8rem; 
+                padding: 8px 10px; 
+            }
+            
+            .product-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .product-card img {
+                height: 130px; 
+            }
+            .product-card .details {
+                padding: 10px;
+            }
+            .product-card h3 {
+                font-size: 0.9rem;
+                min-height: 36px;
+                margin-bottom: 0;
+            }
+            .product-card p.size {
+                font-size: 0.75rem;
+                margin-bottom: 5px;
+            }
+            .product-card .price {
+                font-size: 1rem;
+                margin-top: 5px;
+            }
+            .product-card .stock-label {
+                font-size: 0.7rem;
+                padding: 3px 5px;
+            }
+            
+            /* --- ESTILO MODIFICADO: Estilo responsivo para etiqueta "Usado" --- */
+            .product-card .details .condition-label {
+                font-size: 0.7rem;
+                padding: 3px 5px;
+                margin-bottom: 8px; /* Un poco menos de espacio en móvil */
+            }
+            /* --- FIN MODIFICACIÓN --- */
+
+            .admin-button-container {
+                margin-top: 10px;
+            }
+            .btn-edit, .btn-delete {
+                padding: 10px;
+                font-size: 0.8rem;
+            }
+            
+            .edit-form-grid {
+                grid-template-columns: 1fr; 
+            }
+            .edit-form-grid .image-form-group {
+                align-items: center; 
+            }
+            .edit-form-grid #edit-image-preview {
+                width: 100px;
+                height: 100px;
+            }
+            .edit-form-grid .full-width {
+                min-width: 0; 
+            }
+            
+            .formulario-item {
+                padding: 15px;
+            }
+            .formulario-item .image-preview-container {
+                width: 100px;
+                height: 100px;
+            }
+            
+            #form-registrar-productos .d-flex.justify-content-center {
+                flex-direction: row; 
+                align-items: center; 
+                gap: 10px !important;
+            }
+            #form-registrar-productos .d-flex.justify-content-center .btn {
+                width: auto; 
+                flex-grow: 1; 
+                margin: 0;
+            }
+            
+            .nav-tabs .nav-link {
+                padding: 12px 10px;
+                font-size: 0.9rem;
+                flex-grow: 1;
+                text-align: center;
+            }
+            .nav-tabs {
+                display: flex;
+                flex-wrap: nowrap;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="header">Administrador de Catálogo</div>
+    
+    <div id="overlay">
+        <div class="spinner"></div>
+        <div id="loadingMessage">
+            <h4>Por favor espera...</h4>
+            <p>Procesando solicitud.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-body p-0">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="add-product-tab-btn" data-bs-toggle="tab" data-bs-target="#add-product-tab" type="button" role="tab">
+                            <i class="fas fa-plus-circle me-2"></i>Añadir Productos
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="manage-products-tab-btn" data-bs-toggle="tab" data-bs-target="#manage-products-tab" type="button" role="tab">
+                            <i class="fas fa-tasks me-2"></i>Gestionar Productos
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="add-product-tab" role="tabpanel">
+                        <div class="tab-title">
+                            <h2>Añadir Nuevos Productos</h2>
+                        </div>
+                        <form id="form-registrar-productos" novalidate>
+                            <div id="contenedor-formularios-producto">
+                                </div>
+                            <div class="d-flex justify-content-center gap-2 mt-4">
+                                <button type="button" class="btn btn-success" id="btn-agregar-formulario">
+                                    <i class="fas fa-plus me-2"></i>Añadir Otro Producto
+                                </button>
+                                <button type="submit" class="btn btn-primary" id="btn-registrar-productos">
+                                    <i class="fas fa-save me-2"></i>Guardar Todo
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade" id="manage-products-tab" role="tabpanel">
+                        <div class="tab-title">
+                            <h2>Gestionar Productos</h2>
+                            <div id="manage-buttons-container" style="position: absolute; right: 25px; top: 18px; display: flex; gap: 10px;">
+                                <button class="btn btn-warning" id="btn-migrate-all" style="font-size: 0.9rem; padding: 8px 15px;">
+                                    <i class="fas fa-server me-2"></i> Migrar Enlaces
+                                </button>
+                                <button class="btn btn-info" id="btn-reorder-start" style="font-size: 0.9rem; padding: 8px 15px;">
+                                    <i class="fas fa-arrows-alt me-2"></i> Reordenar
+                                </button>
+                                <button class="btn btn-success" id="btn-reorder-save" style="display: none; font-size: 0.9rem; padding: 8px 15px;">
+                                    <i class="fas fa-save me-2"></i> Guardar Orden
+                                </button>
+                                <button class="btn btn-secondary" id="btn-reorder-cancel" style="display: none; font-size: 0.9rem; padding: 8px 15px; margin-top: 0;">
+                                    <i class="fas fa-times me-2"></i> Cancelar
+                                </button>
+                            </div>
+                        </div>
+                        <div id="loader">Cargando productos...</div>
+                        <div class="product-container" id="admin-product-grid">
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="file-main-image-edit" class="file-input" accept="image/*">
+    <input type="file" id="file-thumbnails-edit" class="file-input" accept="image/*" multiple>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyfkmjLeXyd5y3cNrGXO9X0cbVEfepuxUjJ2WQ9Xn16P76ZQiY8Lvj4VWPeIE2Uh1ofFg/exec";
+        
+        // Elementos del DOM
+        const formRegistrar = document.getElementById('form-registrar-productos');
+        const loader = document.getElementById('loader');
+        const productGrid = document.getElementById('admin-product-grid');
+        const contenedorFormularios = document.getElementById('contenedor-formularios-producto');
+        const btnAgregarFormulario = document.getElementById('btn-agregar-formulario');
+        const overlay = document.getElementById('overlay');
+        const loadingMessage = document.getElementById('loadingMessage').querySelector('p');
+        const btnMigrateAll = document.getElementById('btn-migrate-all');
+        
+        const btnReorderStart = document.getElementById('btn-reorder-start');
+        const btnReorderSave = document.getElementById('btn-reorder-save');
+        const btnReorderCancel = document.getElementById('btn-reorder-cancel');
+        let sortableInstance = null;
+
+        let products = [];
+        let nextProductId = 1;
+        
+        // --- 1. Carga Inicial ---
+        window.onload = function() {
+            showLoader('Cargando datos iniciales...');
+            fetchProducts();
+            
+            btnAgregarFormulario.onclick = () => {
+                agregarFormularioProducto(nextProductId++);
+            };
+            
+            formRegistrar.onsubmit = (e) => {
+                e.preventDefault();
+                registrarProductos();
+            };
+
+            btnMigrateAll.onclick = startMigration;
+            
+            btnReorderStart.onclick = startReordering;
+            btnReorderSave.onclick = saveReordering;
+            btnReorderCancel.onclick = cancelReordering;
+        };
+
+        function fetchProducts() {
+            fetch(SCRIPT_URL)
+                .then(response => response.json())
+                .then(data => {
+                    products = data;
+                    renderProductGrid(products);
+                    setNextProductId();
+                    if (contenedorFormularios.children.length === 0) {
+                        agregarFormularioProducto(nextProductId++);
+                    }
+                    hideLoader();
+                })
+                .catch(error => {
+                    console.error('Error al cargar productos:', error);
+                    loader.innerText = 'Error al cargar. Revisa la consola.';
+                    hideLoader();
+                });
+        }
+        
+        // --- 2. Lógica de Pestaña "Gestionar" ---
+        
+        // ***** FUNCIÓN MODIFICADA *****
+        function renderProductGrid(products) {
+            productGrid.innerHTML = '';
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.dataset.id = product.id; 
+                
+                const priceNum = parseFloat(product.price);
+                const price = isNaN(priceNum) ? "Lps. (Error)" : `Lps. ${priceNum.toFixed(2)}`;
+                
+                // --- NUEVA LÓGICA ---
+                // Añade la etiqueta de "Usado" si la condición es 'X'
+                const conditionLabel = product.condition === 'X' 
+                    ? `<div class="condition-label">Usado (Como Nuevo)</div>` 
+                    : '';
+                // --- FIN NUEVA LÓGICA ---
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="stock-label">${product.stock} disponibles</div>
+                        <img src="${product.image}" alt="${product.title}">
+                        <div class="details">
+                            ${conditionLabel} <h3>${product.title}</h3>
+                            <p class="size">Talla: ${product.size}</p>
+                            <p class="price">${price}</p>
+                        </div>
+                    </div>
+                    <div class="admin-button-container">
+                        <button class="btn btn-edit" onclick="openEditModal('${product.id}')"><i class="fas fa-edit me-1"></i> Editar</button>
+                        <button class="btn btn-delete" onclick="startDeleteProcess(this, '${product.id}')"><i class="fas fa-trash me-1"></i> Eliminar</button>
+                    </div>
+                `;
+                productGrid.appendChild(card);
+            });
+        }
+        
+        // --- 3. Lógica de Pestaña "Añadir" (Multi-Formulario) ---
+
+        function setNextProductId() {
+            if (products.length === 0) {
+                nextProductId = 1;
+                return;
+            }
+            const maxId = products.reduce((max, p) => {
+                if (p && p.id) {
+                    const idNum = parseInt(String(p.id).replace(/[^0-9]/g, ''), 10);
+                    if (!isNaN(idNum) && idNum > max) {
+                        return idNum;
+                    }
+                }
+                return max;
+            }, 0);
+            nextProductId = maxId + 1;
+        }
+
+        // ***** FUNCIÓN MODIFICADA (Solo el HTML interno) *****
+        function agregarFormularioProducto(idNum) {
+            const formItemId = `form-item-${idNum}`;
+            const formItem = document.createElement('div');
+            formItem.className = 'formulario-item';
+            formItem.id = formItemId;
+            
+            formItem.innerHTML = `
+                <button type="button" class="btn btn-danger btn-quitar-item" title="Quitar" onclick="document.getElementById('${formItemId}').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="id-${idNum}" class="form-label">ID (Automático)</label>
+                        <input type="text" class="form-control" id="id-${idNum}" name="id" value="product${idNum}" readonly required>
+                    </div>
+                    <div class="col-md-8 mb-3">
+                        <label for="title-${idNum}" class="form-label">Título</label>
+                        <input type="text" class="form-control" id="title-${idNum}" name="title" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Imagen Principal</label>
+                        <div id="image-preview-${idNum}" class="image-preview-container" onclick="document.getElementById('file-main-image-${idNum}').click()">
+                            <span class="image-preview-placeholder">Clic o arrastra para subir</span>
+                            <img src="" alt="Vista previa" style="display: none;">
+                            <button type="button" class="remove-image-btn" id="remove-main-image-${idNum}" style="display: none;">X</button>
+                        </div>
+                        <input type="file" id="file-main-image-${idNum}" class="file-input" accept="image/*">
+                        <input type="hidden" class="main-image-data-hidden" name="mainImage">
+                    </div>
+                    
+                    <div class="col-md-8 mb-3">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="price-${idNum}" class="form-label">Precio (Solo número)</label>
+                                <input type="number" step="0.01" class="form-control" id="price-${idNum}" name="price" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="stock-${idNum}" class="form-label">Stock</label>
+                                <input type="number" class="form-control" id="stock-${idNum}" name="stock" value="1" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="size-${idNum}" class="form-label">Talla (o "N/A")</label>
+                                <input type="text" class="form-control" id="size-${idNum}" name="size" value="N/A" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3 d-flex align-items-end pb-2">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="condition-${idNum}" name="condition">
+                                    <label class="form-check-label" for="condition-${idNum}">Es Usado (Como Nuevo)</label>
+                                </div>
+                            </div>
+                            </div>
+                    </div>
+                    
+                    <div class="col-12 form-group">
+                        <label class="form-label">Imágenes de Galería (Thumbnails)</label>
+                        <div class="thumbnails-grid" id="thumbnails-grid-${idNum}">
+                            <button type="button" class="add-thumbnail-btn" onclick="document.getElementById('file-thumbnails-${idNum}').click()">+</button>
+                        </div>
+                        <input type="file" id="file-thumbnails-${idNum}" class="file-input" accept="image/*" multiple>
+                        <input type="hidden" class="thumbnails-data-hidden" name="thumbnails">
+                    </div>
+                </div>
+            `;
+            
+            contenedorFormularios.appendChild(formItem);
+            setupDynamicFormListeners(idNum);
+        }
+
+        function setupDynamicFormListeners(idNum) {
+            const mainImageInput = document.getElementById(`file-main-image-${idNum}`);
+            const mainImagePreview = document.getElementById(`image-preview-${idNum}`);
+            const mainImageImg = mainImagePreview.querySelector('img');
+            const mainImagePlaceholder = mainImagePreview.querySelector('.image-preview-placeholder');
+            const mainImageRemoveBtn = document.getElementById(`remove-main-image-${idNum}`);
+            const mainImageDataHidden = mainImagePreview.parentElement.querySelector('.main-image-data-hidden');
+
+            mainImageInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    fileToBase64(file).then(data => { 
+                        mainImageImg.src = data.base64DataUrl;
+                        mainImageImg.style.display = 'block';
+                        mainImagePlaceholder.style.display = 'none';
+                        mainImageRemoveBtn.style.display = 'block';
+                        mainImageDataHidden.value = JSON.stringify(data.payload);
+                    });
+                }
+            };
+            
+            mainImageRemoveBtn.onclick = (e) => {
+                e.stopPropagation();
+                mainImageImg.src = '';
+                mainImageImg.style.display = 'none';
+                mainImagePlaceholder.style.display = 'block';
+                mainImageRemoveBtn.style.display = 'none';
+                mainImageDataHidden.value = '';
+                mainImageInput.value = '';
+            };
+            
+            const thumbnailsInput = document.getElementById(`file-thumbnails-${idNum}`);
+            const thumbnailsGrid = document.getElementById(`thumbnails-grid-${idNum}`);
+            const thumbnailsDataHidden = thumbnailsGrid.parentElement.querySelector('.thumbnails-data-hidden');
+            let currentThumbnails = []; 
+
+            thumbnailsInput.onchange = (e) => {
+                const files = Array.from(e.target.files);
+                Promise.all(files.map(fileToBase64)).then(results => { 
+                    results.forEach(data => {
+                        currentThumbnails.push(data.payload);
+                        createThumbnailPreview(thumbnailsGrid, data.base64DataUrl, data.payload, currentThumbnails, thumbnailsDataHidden);
+                    });
+                    thumbnailsDataHidden.value = JSON.stringify(currentThumbnails);
+                    thumbnailsInput.value = ''; // Limpiar input
+                });
+            };
+            
+            // NOVEDAD: Configurar Drag & Drop
+            setupDragDrop(mainImagePreview, mainImageInput, false);
+            setupDragDrop(thumbnailsGrid, thumbnailsInput, true);
+        }
+
+        function createThumbnailPreview(gridElement, src, dataPayload, thumbnailsArray, hiddenInput) {
+            const preview = document.createElement('div');
+            preview.className = 'thumbnail-preview';
+            preview.innerHTML = `
+                <img src="${src}" alt="Thumbnail">
+                <button type="button" class="remove-image-btn remove-thumb-btn" style="display: block;">X</button>
+            `;
+            
+            preview.querySelector('.remove-thumb-btn').onclick = (e) => {
+                e.stopPropagation();
+                const index = thumbnailsArray.indexOf(dataPayload);
+                if (index > -1) thumbnailsArray.splice(index, 1);
+                hiddenInput.value = JSON.stringify(thumbnailsArray);
+                preview.remove();
+            };
+            
+            gridElement.insertBefore(preview, gridElement.querySelector('.add-thumbnail-btn'));
+        }
+
+        // --- INICIO DE LA FUNCIÓN MODIFICADA ---
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                
+                const MAX_DIMENSION = 1920; 
+                const OUTPUT_QUALITY = 0.85; 
+                const OUTPUT_MIME_TYPE = 'image/jpeg'; 
+                const MIN_SIZE_TO_COMPRESS = 200 * 1024; 
+
+                if (!file.type.startsWith('image/') || file.size < MIN_SIZE_TO_COMPRESS) {
+                    console.log(`Archivo ${file.name} no se comprimirá (no es imagen o es < 200KB)`);
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const base64DataUrl = e.target.result;
+                        resolve({
+                            base64DataUrl: base64DataUrl,
+                            payload: {
+                                isNew: true,
+                                name: file.name, 
+                                mimeType: file.type, 
+                                base64Data: base64DataUrl.split(',')[1]
+                            }
+                        });
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let { width, height } = img;
+
+                        if (width > height) {
+                            if (width > MAX_DIMENSION) {
+                                height = Math.round(height * (MAX_DIMENSION / width));
+                                width = MAX_DIMENSION;
+                            }
+                        } else {
+                            if (height > MAX_DIMENSION) {
+                                width = Math.round(width * (MAX_DIMENSION / height));
+                                height = MAX_DIMENSION;
+                            }
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillRect(0, 0, width, height);
+                        
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const base64DataUrl = canvas.toDataURL(OUTPUT_MIME_TYPE, OUTPUT_QUALITY);
+                        
+                        const originalName = file.name.substring(0, file.name.lastIndexOf('.'));
+                        const newName = `${originalName}.jpg`; 
+                        
+                        console.log(`Imagen comprimida: ${file.name} -> ${newName} (Calidad: ${OUTPUT_QUALITY})`);
+
+                        resolve({
+                            base64DataUrl: base64DataUrl,
+                            payload: {
+                                isNew: true,
+                                name: newName,
+                                mimeType: OUTPUT_MIME_TYPE,
+                                base64Data: base64DataUrl.split(',')[1]
+                            }
+                        });
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result; 
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+        // --- FIN DE LA FUNCIÓN MODIFICADA ---
+        
+        // --- 4. Lógica de Envío de Datos ---
+
+        // ***** FUNCIÓN MODIFICADA (Solo el 'payload') *****
+        function registrarProductos() {
+            const formularios = contenedorFormularios.querySelectorAll('.formulario-item');
+            if (formularios.length === 0) {
+                Swal.fire('Vacío', 'Añada al menos un producto para guardar.', 'info');
+                return;
+            }
+
+            let payloads = [];
+            let esValido = true;
+            let primerFormInvalido = null;
+
+            formularios.forEach(formItem => {
+                const id = formItem.querySelector('input[name="id"]').value;
+                const title = formItem.querySelector('input[name="title"]').value;
+                const price = formItem.querySelector('input[name="price"]').value;
+                const mainImage = formItem.querySelector('.main-image-data-hidden').value;
+
+                if (!id || !title || !price || !mainImage) {
+                    esValido = false;
+                    if (!primerFormInvalido) {
+                        primerFormInvalido = formItem;
+                    }
+                }
+                
+                const thumbData = formItem.querySelector('.thumbnails-data-hidden').value;
+
+                payloads.push({
+                    id: id,
+                    title: title,
+                    size: formItem.querySelector('input[name="size"]').value,
+                    price: price,
+                    stock: formItem.querySelector('input[name="stock"]').value,
+                    condition: formItem.querySelector('input[name="condition"]').checked ? 'X' : '', // AÑADIDO
+                    mainImage: mainImage ? JSON.parse(mainImage) : null,
+                    thumbnails: thumbData ? JSON.parse(thumbData) : []
+                });
+            });
+
+            if (!esValido) {
+                hideLoader();
+                Swal.fire('Error', 'Revise todos los formularios. Faltan campos obligatorios (Título, Precio, Imagen Principal).', 'error');
+                if (primerFormInvalido) {
+                    primerFormInvalido.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    primerFormInvalido.style.borderColor = 'var(--danger-color)';
+                    setTimeout(() => { primerFormInvalido.style.borderColor = 'var(--border-color)'; }, 2500);
+                }
+                return;
+            }
+
+            showLoader('Guardando productos...');
+            sendData('create_multiple', payloads);
+        }
+        
+        // ***** FUNCIÓN MODIFICADA (HTML interno y 'preConfirm') *****
+        function openEditModal(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            let thumbsHtml = '';
+            let currentThumbnails = []; 
+            if (product.thumbnails && Array.isArray(product.thumbnails)) {
+                product.thumbnails.forEach(url => {
+                    const dataPayload = { isNew: false, url: url };
+                    currentThumbnails.push(dataPayload);
+                    thumbsHtml += `
+                        <div class="thumbnail-preview" data-imagedata='${JSON.stringify(dataPayload)}'>
+                            <img src="${url}" alt="Thumbnail" onerror="this.style.display='none'; this.parentElement.innerHTML += '<small>Error</small>';">
+                            <button type="button" class="remove-image-btn remove-thumb-btn" style="display: block;">X</button>
+                        </div>`;
+                });
+            }
+            
+            // NOVEDAD: Se corrigió la lógica del placeholder, img y botón
+            const modalHtml = `
+                <div class="edit-form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="edit-id">ID</label>
+                        <input type="text" class="form-control" id="edit-id" value="${product.id}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="edit-title">Título</label>
+                        <input type="text" class="form-control" id="edit-title" value="${product.title}" required>
+                    </div>
+                    
+                    <div class="form-group image-form-group">
+                        <label class="form-label">Imagen Principal</label>
+                        <div id="edit-image-preview" class="image-preview-container" onclick="document.getElementById('file-main-image-edit').click()">
+                            <span class="image-preview-placeholder" style="display: ${product.image ? 'none' : 'block'};">Clic o arrastra para subir</span>
+                            <img src="${product.image || ''}" alt="Vista previa" style="display: ${product.image ? 'block' : 'none'};" onerror="this.style.display='none'; this.parentElement.querySelector('.image-preview-placeholder').style.display='block';">
+                            <button type="button" class="remove-image-btn" id="edit-remove-main-image" style="display: ${product.image ? 'block' : 'none'};">X</button>
+                        </div>
+                        <input type="hidden" id="edit-main-image-data">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="edit-price">Precio</label>
+                        <input type="number" step="0.01" class="form-control" id="edit-price" value="${product.price}" required>
+                        
+                        <label class="form-label mt-3" for="edit-stock">Stock</label>
+                        <input type="number" class="form-control" id="edit-stock" value="${product.stock}" required>
+                        
+                        <label class="form-label mt-3" for="edit-size">Talla</label>
+                        <input type="text" class="form-control" id="edit-size" value="${product.size}" required>
+                        
+                        <div class="form-check form-switch mt-4">
+                            <input class="form-check-input" type="checkbox" role="switch" id="edit-condition" ${product.condition === 'X' ? 'checked' : ''}>
+                            <label class="form-check-label" for="edit-condition">Es Usado (Como Nuevo)</label>
+                        </div>
+                        </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label">Imágenes de Galería</label>
+                        <div class="thumbnails-grid" id="edit-thumbnails-grid">
+                            ${thumbsHtml}
+                            <button type="button" class="add-thumbnail-btn" onclick="document.getElementById('file-thumbnails-edit').click()">+</button>
+                        </div>
+                        <input type="hidden" id="edit-thumbnails-data">
+                    </div>
+                </div>
+            `;
+            
+            Swal.fire({
+                title: 'Editar Producto',
+                html: modalHtml,
+                width: '90vw', 
+                maxWidth: '700px', 
+                showCancelButton: true,
+                confirmButtonText: 'Guardar Cambios',
+                cancelButtonText: 'Cancelar',
+                didOpen: () => {
+                    const editMainImageData = document.getElementById('edit-main-image-data');
+                    const editMainImageInput = document.getElementById('file-main-image-edit');
+                    const editMainImagePreview = document.getElementById('edit-image-preview');
+                    const editMainImageImg = editMainImagePreview.querySelector('img');
+                    const editMainImagePlaceholder = editMainImagePreview.querySelector('.image-preview-placeholder');
+                    const editMainImageRemoveBtn = document.getElementById('edit-remove-main-image');
+                    
+                    const editThumbnailsData = document.getElementById('edit-thumbnails-data');
+                    const editThumbnailsInput = document.getElementById('file-thumbnails-edit');
+                    const editThumbnailsGrid = document.getElementById('edit-thumbnails-grid');
+                    
+                    // Setear valor inicial
+                    if (product.image) {
+                        editMainImageData.value = JSON.stringify({ isNew: false, url: product.image });
+                    }
+                    editThumbnailsData.value = JSON.stringify(currentThumbnails);
+                    
+                    // NOVEDAD: Se corrigió el onchange para manejar la UI
+                    editMainImageInput.onchange = (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            fileToBase64(file).then(data => { 
+                                editMainImageImg.src = data.base64DataUrl;
+                                editMainImageData.value = JSON.stringify(data.payload);
+                                // --- CORRECCIÓN ---
+                                editMainImageImg.style.display = 'block';
+                                editMainImagePlaceholder.style.display = 'none';
+                                editMainImageRemoveBtn.style.display = 'block';
+                                // --- FIN CORRECCIÓN ---
+                            });
+                        }
+                    };
+                    
+                    // NOVEDAD: Se corrigió el onclick del botón de remover
+                    editMainImageRemoveBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        editMainImageImg.src = '';
+                        editMainImageImg.style.display = 'none';
+                        editMainImagePlaceholder.style.display = 'block';
+                        editMainImageRemoveBtn.style.display = 'none';
+                        editMainImageData.value = '';
+                        editMainImageInput.value = '';
+                    };
+                    
+                    editThumbnailsInput.onchange = (e) => {
+                        const files = Array.from(e.target.files);
+                        Promise.all(files.map(fileToBase64)).then(results => { 
+                            results.forEach(data => {
+                                currentThumbnails.push(data.payload);
+                                createThumbnailPreview(editThumbnailsGrid, data.base64DataUrl, data.payload, currentThumbnails, editThumbnailsData);
+
+                            });
+                            editThumbnailsData.value = JSON.stringify(currentThumbnails);
+                            editThumbnailsInput.value = ''; // Limpiar
+                        });
+                    };
+                    
+                    editThumbnailsGrid.querySelectorAll('.thumbnail-preview').forEach(preview => {
+                        preview.querySelector('.remove-thumb-btn').onclick = (e) => {
+                            e.stopPropagation();
+                            const dataPayload = JSON.parse(preview.dataset.imagedata);
+                            const index = currentThumbnails.findIndex(item => item.url === dataPayload.url);
+                            if (index > -1) currentThumbnails.splice(index, 1);
+                            editThumbnailsData.value = JSON.stringify(currentThumbnails);
+                            preview.remove();
+                        };
+                    });
+                    
+                    // NOVEDAD: Configurar Drag & Drop para el modal
+                    setupDragDrop(editMainImagePreview, editMainImageInput, false);
+                    setupDragDrop(editThumbnailsGrid, editThumbnailsInput, true);
+                },
+                preConfirm: () => {
+                    const payload = {
+                        id: document.getElementById('edit-id').value,
+                        title: document.getElementById('edit-title').value,
+                        size: document.getElementById('edit-size').value,
+                        price: document.getElementById('edit-price').value,
+                        stock: document.getElementById('edit-stock').value,
+                        condition: document.getElementById('edit-condition').checked ? 'X' : '', // AÑADIDO
+                        mainImage: JSON.parse(document.getElementById('edit-main-image-data').value || 'null'),
+                        thumbnails: JSON.parse(document.getElementById('edit-thumbnails-data').value || '[]')
+                    };
+                    
+                    if (!payload.title || !payload.price || !payload.mainImage) {
+                        Swal.showValidationMessage('Título, Precio e Imagen Principal son obligatorios.');
+                        return false;
+                    }
+                    
+                    return payload;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    showLoader('Actualizando producto...');
+                    sendData('update', result.value);
+                }
+            });
+        }
+        
+        function startDeleteProcess(btn, id) {
+            const container = btn.closest('.admin-button-container');
+            container.dataset.originalHtml = container.innerHTML;
+            container.innerHTML = `
+                <button class="btn btn-confirm" onclick="confirmDeleteProcess(this, '${id}')"><i class="fas fa-check me-1"></i> Confirmar</button>
+                <button class="btn btn-cancel" onclick="cancelDelete(this)"><i class="fas fa-times me-1"></i> Cancelar</button>
+            `;
+        }
+
+        function cancelDelete(btn) {
+            const container = btn.closest('.admin-button-container');
+            if (container.dataset.originalHtml) {
+                container.innerHTML = container.dataset.originalHtml;
+            }
+        }
+
+        function confirmDeleteProcess(btn, id) {
+            showLoader('Eliminando producto...');
+            btn.closest('.admin-button-container').innerHTML = '<p style="padding: 12px; margin: 0; font-size: 0.9rem;">Eliminando...</p>';
+            sendData('delete', { id: id });
+        }
+
+        function sendDataAsync(action, payload) {
+            return new Promise((resolve, reject) => {
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action, payload })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        resolve(result);
+                    } else {
+                        reject(new Error(result.message));
+                    }
+                })
+                .catch(error => {
+                    reject(error);
+                });
+            });
+        }
+        
+        async function startMigration() {
+            const result = await Swal.fire({
+                title: '¿Confirmar Migración?',
+                text: "Esto migrará TODAS las imágenes externas a Google Drive. El proceso puede tardar varios minutos y no debe cerrarse. ¿Continuar?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, ¡migrar!',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            const productsToMigrate = products.filter(p => p.image && !p.image.includes('googleusercontent.com'));
+            
+            if (productsToMigrate.length === 0) {
+                Swal.fire('¡Todo listo!', 'No se encontraron productos con enlaces externos para migrar.', 'info');
+                return;
+            }
+
+            showLoader('Iniciando migración...');
+            const total = productsToMigrate.length;
+            let processed = 0;
+            let errors = [];
+
+            for (const product of productsToMigrate) {
+                processed++;
+                showLoader(`Migrando ${product.id} (${processed} de ${total})...`);
+                
+                try {
+                    await sendDataAsync('migrate_one_product', { id: product.id });
+                } catch (error) {
+                    console.error(`Error migrando ${product.id}:`, error);
+                    errors.push(product.id);
+                }
+            }
+
+            hideLoader();
+            if (errors.length > 0) {
+                Swal.fire('Migración Parcial', `Migración completada, pero ${errors.length} productos fallaron: ${errors.join(', ')}. Revisa la consola.`, 'warning');
+            } else {
+                Swal.fire('¡Éxito!', `Migración de ${total} productos completada.`, 'success');
+            }
+            
+            fetchProducts();
+            contenedorFormularios.innerHTML = '';
+        }
+
+        // --- Funciones para Reordenar ---
+        
+        function startReordering() {
+            btnReorderStart.style.display = 'none';
+            btnMigrateAll.style.display = 'none';
+            btnReorderSave.style.display = 'inline-block';
+            btnReorderCancel.style.display = 'inline-block';
+
+            productGrid.querySelectorAll('.product-card').forEach(card => {
+                card.classList.add('reorder-mode');
+            });
+
+            sortableInstance = new Sortable(productGrid, {
+                animation: 150,
+                ghostClass: 'sortable-ghost'
+            });
+        }
+
+        function saveReordering() {
+            if (!sortableInstance) return;
+
+            const orderedIds = Array.from(productGrid.querySelectorAll('.product-card'))
+                                    .map(card => card.dataset.id);
+            
+            showLoader('Guardando nuevo orden...');
+            sendDataAsync('reorder_products', { orderedIds: orderedIds })
+                .then(result => {
+                    Swal.fire('¡Éxito!', 'Orden de productos actualizado.', 'success');
+                    products = orderedIds.map(id => products.find(p => p.id === id));
+                    cancelReordering(true);
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'No se pudo guardar el orden. ' + error.message, 'error');
+                })
+                .finally(() => {
+                    hideLoader();
+                });
+        }
+
+        function cancelReordering(skipRender = false) {
+            if (sortableInstance) {
+                sortableInstance.destroy();
+                sortableInstance = null;
+            }
+
+            btnReorderStart.style.display = 'inline-block';
+            btnMigrateAll.style.display = 'inline-block';
+            btnReorderSave.style.display = 'none';
+            btnReorderCancel.style.display = 'none';
+
+            productGrid.querySelectorAll('.product-card').forEach(card => {
+                card.classList.remove('reorder-mode');
+            });
+
+            if (!skipRender) {
+                renderProductGrid(products);
+            }
+        }
+
+        // --- 5. Funciones Centrales y Utilidades ---
+        
+        // NOVEDAD: Funciones para Drag & Drop
+        function handleFileDrop(e, inputElement, isMultiple = false) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.classList.remove('drag-over');
+
+            const files = e.dataTransfer.files;
+            if (files.length === 0) return;
+
+            // Asignamos los archivos al input
+            inputElement.files = files;
+
+            // Despachamos el evento 'change' manualmente
+            // Esto reutiliza toda la lógica que ya teníamos en 'onchange'
+            const changeEvent = new Event('change', { bubbles: true });
+            inputElement.dispatchEvent(changeEvent);
+        }
+
+        function setupDragDrop(container, inputElement, isMultiple = false) {
+            // Evitar comportamiento por defecto
+            container.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.classList.add('drag-over');
+            });
+
+            container.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.classList.remove('drag-over');
+            });
+
+            container.addEventListener('drop', (e) => {
+                handleFileDrop(e, inputElement, isMultiple);
+            });
+        }
+        // --- FIN Funciones Drag & Drop ---
+
+
+        function sendData(action, payload) {
+            showLoader(`Procesando...`);
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action, payload })
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('Respuesta del servidor:', result);
+                if (result.status === 'success') {
+                    Swal.fire('¡Éxito!', result.message, 'success').then(() => {
+                        fetchProducts(); 
+                        contenedorFormularios.innerHTML = '';
+                    });
+                } else {
+                    Swal.fire('Error', `Error: ${result.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error en la solicitud POST:', error);
+                Swal.fire('Error', 'Ocurrió un error grave. Revisa la consola.', 'error');
+            })
+            .finally(() => {
+                hideLoader();
+            });
+        }
+        
+        function showLoader(message) {
+            loadingMessage.innerText = message || 'Procesando...';
+            overlay.style.display = 'flex';
+        }
+        function hideLoader() {
+            overlay.style.display = 'none';
+        }
+
+    </script>
+</body>
+</html>
