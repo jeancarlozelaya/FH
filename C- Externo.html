@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carga y Gestión Masiva</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #e91e63;
+            --primary-dark: #c2185b;
+            --secondary-color: #007bff;
+            --light-gray: #f5f7fa;
+            --dark-color: #34495e;
+            --unsaved-bg: #ffb3b3; /* Rojo más visible */
+            --saved-bg: #e8f5e9;   /* Verde suave */
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--light-gray);
+            color: #333;
+            overflow-x: hidden; 
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--dark-color), #2c3e50);
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            box-shadow: var(--shadow);
+        }
+
+        .container-fluid {
+            max-width: 98%; 
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 85vh; 
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--dark-color);
+            font-weight: 600;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            background: white;
+        }
+
+        .tab-content {
+            padding: 15px;
+            background: white;
+            flex-grow: 1;
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-pane {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Estilos Dropzone */
+        .dropzone {
+            border: 3px dashed #ccc;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background-color: #fafafa;
+            cursor: pointer;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--primary-color);
+            background-color: rgba(233, 30, 99, 0.05);
+        }
+
+        .dropzone i {
+            font-size: 2.5rem;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
+        #file-list {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .file-preview {
+            position: relative;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+            aspect-ratio: 1;
+        }
+
+        .file-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* --- TABLA: SCROLL, STICKY HEADER y ALTO DE FILA --- */
+        .table-wrapper {
+            flex-grow: 1;
+            max-height: calc(85vh - 250px); /* Ajustado para dar espacio a la leyenda */
+            overflow-y: auto; 
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
+        .table {
+            margin-bottom: 0;
+            width: 100%;
+            font-size: 0.85rem; 
+        }
+
+        .table th {
+            background-color: var(--dark-color);
+            color: white;
+            font-weight: 500;
+            text-align: center;
+            vertical-align: middle;
+            position: sticky; 
+            top: 0;
+            z-index: 10;
+            padding: 8px 4px; 
+            box-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        }
+
+        .table td {
+            vertical-align: middle;
+            text-align: center;
+            padding: 10px 4px; 
+            height: 55px; 
+        }
+
+        .img-thumbnail-table {
+            width: 45px; 
+            height: 45px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .img-thumbnail-table:hover {
+            transform: scale(1.2);
+            border: 2px solid var(--primary-color);
+        }
+
+        /* COLORES DE ESTADO */
+        tr.saved-row { background-color: var(--saved-bg) !important; }
+        tr.saved-row td { background-color: var(--saved-bg) !important; }
+        
+        tr.unsaved-row { background-color: var(--unsaved-bg) !important; }
+        tr.unsaved-row td { background-color: var(--unsaved-bg) !important; }
+
+        .form-control-sm {
+            border-radius: 3px;
+            border: 1px solid #ced4da;
+            text-align: center;
+            padding: 2px 4px;
+            font-size: 0.85rem;
+            height: 32px; 
+        }
+
+        .form-control-sm:focus {
+            border-color: var(--primary-color);
+            box-shadow: none; 
+            border-width: 2px;
+        }
+
+        /* Botones y Overlays */
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+            border: none; padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.2);
+        }
+        .btn-pdf {
+            background: linear-gradient(45deg, #ff9800, #f57c00); color: white; 
+            border: none; padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; margin-right: 10px;
+        }
+        .btn-delete {
+            /* Estilos del botón 'X' */
+            color: #dc3545; background: white; border: 1px solid #dc3545; border-radius: 50%; 
+            width: 25px; height: 25px; font-size: 12px; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; margin: 0 auto;
+        }
+        .btn-delete:hover { background: #dc3545; color: white; }
+
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(255, 255, 255, 0.95); display: none;
+            justify-content: center; align-items: center; flex-direction: column; z-index: 9999;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid rgba(233, 30, 99, 0.2);
+            border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s infinite linear;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- PDF TEMPLATE --- */
+        #pdf-template {
+            display: none; 
+            width: 100%; 
+            padding: 15px; 
+            background: white;
+        }
+        
+        .pdf-grid {
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 15px; 
+            justify-content: flex-start;
+            align-items: flex-start; 
+        }
+        
+        .pdf-card {
+            width: 31%; 
+            border: 1px solid #eee; 
+            border-radius: 6px; 
+            padding: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            text-align: center;
+            background: #fff; 
+            height: 230px; /* Altura fija para consistencia */
+            margin-bottom: 12px; 
+            page-break-inside: avoid; 
+        }
+
+        .page-break-force {
+            page-break-before: always;
+            height: 0.1px; 
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            clear: both;
+            display: block; 
+        }
+
+        .pdf-card img {
+            width: 100%; 
+            height: 120px; 
+            object-fit: contain; 
+            margin-bottom: 5px; 
+            border-radius: 3px;
+        }
+        
+        .pdf-title { 
+            font-size: 10px; 
+            font-weight: bold; 
+            color: #333; 
+            margin-bottom: 3px; 
+            height: 24px; 
+            overflow: hidden; 
+            line-height: 1.2;
+        }
+        
+        .pdf-details { 
+            font-size: 9px; 
+            color: #666; 
+            display: flex; 
+            justify-content: space-around; 
+            margin-bottom: 3px;
+        }
+        
+        .pdf-price-row { 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            margin-top: 4px; 
+            border-top: 1px dashed #eee; 
+            padding-top: 4px;
+        }
+        
+        .pdf-price-chino { 
+            font-size: 10px; 
+            color: #1565c0; 
+            font-weight: 600;
+        }
+        
+        .pdf-price-venta { 
+            font-size: 12px; 
+            color: var(--primary-color); 
+            font-weight: bold; 
+        }
+        
+        #preview-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 10000; display: none;
+            justify-content: center; align-items: center;
+        }
+        #preview-modal img {
+            max-width: 90%; max-height: 90%; border-radius: 8px;
+        }
+        #preview-modal .close-preview {
+            position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="overlay">
+        <div class="spinner mb-3"></div>
+        <h4 id="loading-text">Procesando...</h4>
+    </div>
+
+    <div id="preview-modal" onclick="closePreview()">
+        <span class="close-preview">&times;</span>
+        <img id="preview-img-element" src="" alt="Vista Previa">
+    </div>
+
+    <div class="header">
+        Catálogo Externo
+    </div>
+
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header p-0 bg-white">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="upload-tab-btn" data-bs-toggle="tab" data-bs-target="#upload-tab">
+                            <i class="fas fa-cloud-upload-alt me-2"></i>Cargar
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="manage-tab-btn" data-bs-toggle="tab" data-bs-target="#manage-tab">
+                            <i class="fas fa-edit me-2"></i>Gestionar
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="tab-content">
+                
+                <div class="tab-pane fade show active" id="upload-tab">
+                    <div class="text-center mb-3">
+                        <h5 style="color: var(--primary-color); font-weight: 700;">Subida Masiva</h5>
+                    </div>
+
+                    <div class="dropzone" id="dropzone">
+                        <i class="fas fa-images"></i>
+                        <h6>Clic o arrastra fotos aquí</h6>
+                        <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
+                    </div>
+
+                    <div id="file-list"></div>
+
+                    <div class="text-center mt-3">
+                        <button class="btn btn-primary" id="btn-upload" disabled>
+                            <i class="fas fa-paper-plane me-2"></i> Subir Imágenes
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="manage-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 style="color: var(--primary-color); font-weight: 700; margin: 0;">Inventario</h5>
+                        <div>
+                             <button class="btn btn-pdf" onclick="generateCatalogPDF()">
+                                <i class="fas fa-file-pdf me-2"></i> PDF
+                            </button>
+                            <button class="btn btn-primary" onclick="saveAllChanges()">
+                                <i class="fas fa-save me-2"></i> Guardar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-light border text-center py-1 mb-2 small d-flex justify-content-center align-items-center">
+                        <span class="me-4">
+                            <i class="fas fa-square" style="color: var(--saved-bg); border: 1px solid #ccc; margin-right: 5px;"></i> Datos Sincronizados (Guardados)
+                        </span>
+                        <span>
+                            <i class="fas fa-square" style="color: var(--unsaved-bg); border: 1px solid #ff0000; margin-right: 5px;"></i> Cambios Pendientes (No Guardados)
+                        </span>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table class="table table-bordered table-hover table-sm">
+                            <colgroup>
+                                <col style="width: 50px;">  
+                                <col style="width: auto;"> 
+                                <col style="width: 60px;"> 
+                                <col style="width: 80px;"> 
+                                <col style="width: 80px;"> 
+                                <col style="width: 60px;"> 
+                                <col style="width: 40px;"> 
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>Img</th>
+                                    <th>Producto</th>
+                                    <th>Talla</th>
+                                    <th>L. Chino</th>
+                                    <th>L. Venta</th>
+                                    <th>Stock</th>
+                                    <th>Borrar</th> </tr>
+                            </thead>
+                            <tbody id="data-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="no-data-msg" class="text-center p-5 text-muted" style="display: none;">
+                        <p>No hay datos.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pdf-template">
+        <div class="pdf-grid" id="pdf-grid-container">
+            </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // ==========================================
+        // CONFIGURACIÓN JS
+        // ==========================================
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLFXxVcPDA1Pf4tqQ2tXPkuD-tHAx_m5ae0NXje3BrkunbbGVKFuUN9f3X-vNkTrTbhQ/exec"; 
+        const LOCAL_STORAGE_KEY = "catalog_draft_v3"; 
+
+        let selectedFiles = [];
+        let currentData = []; 
+
+        // ==========================================
+        // CARGA DE IMÁGENES (Subida)
+        // ==========================================
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const fileList = document.getElementById('file-list');
+        const btnUpload = document.getElementById('btn-upload');
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+        dropzone.addEventListener('drop', (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+        function handleFiles(files) {
+            const newFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+            selectedFiles = [...selectedFiles, ...newFiles];
+            renderUploadPreviews();
+            updateUploadButton();
+        }
+
+        function renderUploadPreviews() {
+            fileList.innerHTML = '';
+            selectedFiles.forEach((file) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const div = document.createElement('div');
+                    div.className = 'file-preview';
+                    div.innerHTML = `<img src="${e.target.result}">`;
+                    fileList.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function updateUploadButton() {
+            btnUpload.disabled = selectedFiles.length === 0;
+            btnUpload.innerHTML = selectedFiles.length > 0 ? `<i class="fas fa-paper-plane me-2"></i> Subir ${selectedFiles.length}` : '<i class="fas fa-paper-plane me-2"></i> Subir Imágenes';
+        }
+
+        const fileToBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve({ name: file.name, mimeType: file.type, base64: reader.result.split(',')[1] });
+            reader.onerror = error => reject(error);
+        });
+
+        btnUpload.addEventListener('click', async () => {
+            showLoader('Subiendo...');
+            try {
+                const filesBase64 = await Promise.all(selectedFiles.map(fileToBase64));
+                
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'upload_images', files: filesBase64 })
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    Swal.fire('¡Listo!', 'Imágenes subidas.', 'success');
+                    selectedFiles = [];
+                    renderUploadPreviews();
+                    updateUploadButton();
+                    localStorage.removeItem(LOCAL_STORAGE_KEY);
+                } else throw new Error(result.message);
+            } catch (error) { Swal.fire('Error', error.message, 'error'); } 
+            finally { hideLoader(); }
+        });
+
+        // ==========================================
+        // GESTIÓN DE DATOS (Administración)
+        // ==========================================
+        const manageTabBtn = document.getElementById('manage-tab-btn');
+        manageTabBtn.addEventListener('shown.bs.tab', () => {
+            if (currentData.length === 0) loadTableData();
+        });
+
+        async function loadTableData() {
+            showLoader('Cargando...');
+            const tableBody = document.getElementById('data-table-body');
+            const noDataMsg = document.getElementById('no-data-msg');
+            
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const serverData = await response.json();
+                if (serverData.error) throw new Error(serverData.error);
+
+                const localDataMap = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {};
+                tableBody.innerHTML = '';
+                currentData = []; 
+
+                if (!Array.isArray(serverData) || serverData.length === 0) {
+                    noDataMsg.style.display = 'block'; hideLoader(); return;
+                }
+                noDataMsg.style.display = 'none';
+
+                serverData.forEach((serverItem) => {
+                    const rowIndex = serverItem.rowIndex;
+                    const isLocal = !!localDataMap[rowIndex];
+                    const item = isLocal ? localDataMap[rowIndex] : serverItem;
+                    
+                    currentData.push({ ...item, isDirty: isLocal });
+
+                    const row = document.createElement('tr');
+                    row.dataset.rowIndex = rowIndex;
+                    row.className = isLocal ? 'unsaved-row' : 'saved-row'; 
+
+                    const imgUrl = item.image && item.image.includes('http') ? item.image : 'https://via.placeholder.com/45?text=X';
+
+                    row.innerHTML = `
+                        <td><img src="${imgUrl}" class="img-thumbnail-table" onclick="showPreview('${imgUrl}')"></td>
+                        <td><input type="text" class="form-control form-control-sm" value="${item.title || ''}" oninput="handleInput(${rowIndex}, 'title', this.value)"></td>
+                        <td><input type="text" class="form-control form-control-sm" value="${item.size || ''}" oninput="handleInput(${rowIndex}, 'size', this.value)"></td>
+                        <td><input type="number" step="0.01" class="form-control form-control-sm" value="${item.priceChino || ''}" oninput="handleInput(${rowIndex}, 'priceChino', this.value)"></td>
+                        <td><input type="number" step="0.01" class="form-control form-control-sm" value="${item.price || ''}" oninput="handleInput(${rowIndex}, 'price', this.value)"></td>
+                        <td><input type="number" class="form-control form-control-sm" value="${item.stock || ''}" oninput="handleInput(${rowIndex}, 'stock', this.value)"></td>
+                        <td><button class="btn btn-delete" onclick="confirmDelete(${rowIndex})"><i class="fas fa-times"></i></button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+            } catch (error) { Swal.fire('Error', error.message, 'error'); } 
+            finally { hideLoader(); }
+        }
+
+        function handleInput(rowIndex, field, value) {
+            const idx = currentData.findIndex(i => i.rowIndex === rowIndex);
+            if (idx > -1) {
+                currentData[idx][field] = value;
+                currentData[idx].isDirty = true; 
+            }
+            const row = document.querySelector(`tr[data-row-index="${rowIndex}"]`);
+            if (row) {
+                row.classList.remove('saved-row');
+                row.classList.add('unsaved-row');
+            }
+            saveToLocalStorage();
+        }
+
+        function saveToLocalStorage() {
+            const localMap = {};
+            currentData.forEach(item => { if (item.isDirty) localMap[item.rowIndex] = item; });
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(localMap));
+        }
+
+        async function saveAllChanges() {
+            const updates = currentData.filter(item => item.isDirty).map(item => ({
+                rowIndex: item.rowIndex,
+                title: item.title, size: item.size,
+                priceChino: item.priceChino, price: item.price, stock: item.stock
+            }));
+
+            if (updates.length === 0) {
+                Swal.fire('Info', 'No hay cambios rojos para guardar.', 'info'); return;
+            }
+
+            showLoader('Guardando...');
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'update_bulk', updates: updates })
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    Swal.fire({ icon: 'success', title: '¡Guardado!', timer: 1500, showConfirmButton: false });
+                    localStorage.removeItem(LOCAL_STORAGE_KEY);
+                    loadTableData(); 
+                } else throw new Error(result.message);
+            } catch (error) { Swal.fire('Error', error.message, 'error'); } 
+            finally { hideLoader(); }
+        }
+
+        function confirmDelete(rowIndex) {
+            Swal.fire({
+                title: '¿Borrar fila?', icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#d33', confirmButtonText: 'Sí, borrar'
+            }).then((result) => { if (result.isConfirmed) deleteRow(rowIndex); });
+        }
+
+        async function deleteRow(rowIndex) {
+            showLoader('Eliminando...');
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST', body: JSON.stringify({ action: 'delete_row', rowIndex: rowIndex })
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    localStorage.removeItem(LOCAL_STORAGE_KEY);
+                    loadTableData();
+                } else throw new Error(result.message);
+            } catch (error) { Swal.fire('Error', error.message, 'error'); hideLoader(); }
+        }
+
+        // ==========================================
+        // PDF GENERATOR
+        // ==========================================
+        function generateCatalogPDF() {
+            const container = document.getElementById('pdf-grid-container');
+            container.innerHTML = ''; 
+
+            if (currentData.length === 0) {
+                Swal.fire('Atención', 'No hay datos para el PDF.', 'warning'); return;
+            }
+
+            currentData.forEach((prod, index) => {
+                const imgUrl = prod.image && prod.image.includes('http') ? prod.image : 'https://via.placeholder.com/150?text=X';
+                const title = prod.title || 'Sin Nombre';
+                const size = prod.size || '-';
+                const stock = prod.stock || '0';
+                const priceVenta = prod.price ? parseFloat(prod.price).toFixed(2) : '0.00';
+                const priceChino = prod.priceChino ? parseFloat(prod.priceChino).toFixed(2) : '0.00';
+                
+                let cardHTML = '';
+
+                // INYECCIÓN DE SALTO DE PÁGINA
+                if (index > 0 && index % 12 === 0) {
+                    cardHTML += `<div class="page-break-force"></div>`;
+                }
+
+                cardHTML += `
+                    <div class="pdf-card">
+                        <img src="${imgUrl}" crossorigin="anonymous">
+                        <div class="pdf-title">${title}</div>
+                        <div class="pdf-details">
+                            <span>Talla: ${size}</span>
+                            <span>Stock: ${stock}</span>
+                        </div>
+                        <div class="pdf-price-row">
+                            <span class="pdf-price-chino">L. ${priceChino}</span>
+                            <span class="pdf-price-venta">L. ${priceVenta}</span>
+                        </div>
+                    </div>
+                `;
+                
+                container.insertAdjacentHTML('beforeend', cardHTML);
+            });
+
+            const element = document.getElementById('pdf-template');
+            element.style.display = 'block'; 
+
+            const opt = {
+                margin:       0.4, 
+                filename:     'Catalogo.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true }, 
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            showLoader("Creando PDF...");
+            setTimeout(() => {
+                html2pdf().set(opt).from(element).save().then(() => {
+                    element.style.display = 'none';
+                    hideLoader();
+                });
+            }, 1000);
+        }
+
+        // Funciones de Utilidad (Modal y Loader)
+        function showPreview(url) {
+            document.getElementById('preview-img-element').src = url;
+            document.getElementById('preview-modal').style.display = 'flex';
+        }
+        function closePreview() { document.getElementById('preview-modal').style.display = 'none'; }
+        function showLoader(t) { document.getElementById('loading-text').innerText = t; document.getElementById('overlay').style.display = 'flex'; }
+        function hideLoader() { document.getElementById('overlay').style.display = 'none'; }
+
+    </script>
+</body>
+</html>
