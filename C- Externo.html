@@ -650,15 +650,37 @@
         }
 
         // ==========================================
-        // PDF GENERATOR
+        // PDF GENERATOR (MODIFICADO PARA PRECIOS)
         // ==========================================
-        function generateCatalogPDF() {
+        async function generateCatalogPDF() {
             const container = document.getElementById('pdf-grid-container');
             container.innerHTML = ''; 
 
             if (currentData.length === 0) {
                 Swal.fire('Atención', 'No hay datos para el PDF.', 'warning'); return;
             }
+
+            // --- INICIO MODIFICACIÓN: PREGUNTAR PRECIOS ---
+            const { value: selectedOption } = await Swal.fire({
+                title: '¿Qué precios mostrar?',
+                text: "Selecciona qué precio debe aparecer en el catálogo",
+                icon: 'question',
+                input: 'radio',
+                inputOptions: {
+                    'ambos': 'Ambos (Chino y Venta)',
+                    'chino': 'Solo precio Chino',
+                    'venta': 'Solo precio Venta'
+                },
+                inputValue: 'ambos', // Seleccionado por defecto
+                showCancelButton: true,
+                confirmButtonText: 'Generar PDF',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: '#6c757d'
+            });
+
+            if (!selectedOption) return; // Si el usuario cancela, no hacemos nada
+            // --- FIN MODIFICACIÓN ---
 
             currentData.forEach((prod, index) => {
                 const imgUrl = prod.image && prod.image.includes('http') ? prod.image : 'https://via.placeholder.com/150?text=X';
@@ -675,6 +697,25 @@
                     cardHTML += `<div class="page-break-force"></div>`;
                 }
 
+                // --- INICIO MODIFICACIÓN: LÓGICA DE VISUALIZACIÓN DE PRECIOS ---
+                let priceHtml = '';
+                
+                if (selectedOption === 'ambos') {
+                    priceHtml = `
+                        <span class="pdf-price-chino">L. ${priceChino}</span>
+                        <span class="pdf-price-venta">L. ${priceVenta}</span>
+                    `;
+                } else if (selectedOption === 'chino') {
+                    priceHtml = `
+                        <span class="pdf-price-chino" style="font-size: 12px;">L. ${priceChino}</span>
+                    `;
+                } else if (selectedOption === 'venta') {
+                    priceHtml = `
+                        <span class="pdf-price-venta">L. ${priceVenta}</span>
+                    `;
+                }
+                // --- FIN MODIFICACIÓN ---
+
                 cardHTML += `
                     <div class="pdf-card">
                         <img src="${imgUrl}" crossorigin="anonymous">
@@ -684,8 +725,7 @@
                             <span>Stock: ${stock}</span>
                         </div>
                         <div class="pdf-price-row">
-                            <span class="pdf-price-chino">L. ${priceChino}</span>
-                            <span class="pdf-price-venta">L. ${priceVenta}</span>
+                            ${priceHtml}
                         </div>
                     </div>
                 `;
