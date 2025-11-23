@@ -741,17 +741,15 @@
 		}
 
 		/* Contenedor de la lista */
-		#colorClientsList {
-			max-height: 300px;
-			overflow-y: auto;
-			margin-bottom: 20px;
-			background-color: #ffffff;
-			border: 1px solid #ddd;
-			/* Borde sutil alrededor de la lista */
-			border-radius: 8px;
-			overflow: hidden;
-			/* Añadido: para cortar las filas con el borde redondeado */
-		}
+#colorClientsList {
+    max-height: 300px;
+    overflow-y: auto; /* Esto permite hacer scroll si hay muchos colores */
+    margin-bottom: 20px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    /* overflow: hidden; <--- ELIMINA ESTA LÍNEA o COMENTALA */
+}
 
 		/* Fila individual de cliente/color */
 		.client-row {
