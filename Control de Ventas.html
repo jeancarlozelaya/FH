@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor Ventas - Final V8</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900&family=Montserrat:ital,wght@0,100..900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #e91e63;
+            --secondary-color: #007bff;
+            --danger-color: #dc3545;
+            --success-color: #2ecc71;
+            --whatsapp-color: #25D366;
+            --dark-color: #34495e;
+            --light-gray: #f5f7fa;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            
+            --bg-pagado: #d1e7dd;
+            --bg-pendiente: #f8d7da;
+            --border-pagado: #badbcc;
+            --border-pendiente: #f5c6cb;
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--light-gray);
+            margin: 0;
+            color: #333;
+            line-height: 1.6;
+            zoom: 0.9;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--dark-color), #2c3e50);
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            font-size: 1.4rem;
+            font-weight: bold;
+            box-shadow: var(--shadow);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+        
+        /* Panel de Resumen */
+        .summary-panel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .summary-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border-bottom: 4px solid transparent;
+        }
+        .summary-card h5 { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .summary-card .amount { font-size: 1.4rem; font-weight: 700; color: var(--dark-color); }
+        .summary-card.total { border-color: var(--primary-color); }
+        .summary-card.collected { border-color: var(--success-color); }
+        .summary-card.debt { border-color: var(--danger-color); }
+
+        /* Estilos generales */
+        .card {
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: none;
+            margin-bottom: 25px;
+            background: white;
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+        .tab-content { padding: 25px; }
+
+        /* Filtros y Acciones */
+        .actions-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .filter-container {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-filter {
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-weight: 600;
+            border: 1px solid var(--dark-color);
+            background: white;
+            color: var(--dark-color);
+            transition: all 0.3s;
+        }
+        .btn-filter.active {
+            background: var(--dark-color);
+            color: white;
+        }
+        
+        .btn-report {
+            background-color: var(--dark-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        .btn-report:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        /* Grid de Ventas */
+        .sales-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        /* Tarjeta */
+        .sale-card {
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid transparent;
+            position: relative;
+        }
+        .sale-card.state-pagado { background-color: var(--bg-pagado); border-color: var(--border-pagado); }
+        .sale-card.state-pendiente { background-color: var(--bg-pendiente); border-color: var(--border-pendiente); }
+        .sale-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        
+        .sale-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            background-color: white;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Botón Whatsapp */
+        .whatsapp-badge {
+            position: absolute; top: 10px; left: 10px; width: 40px; height: 40px;
+            background-color: var(--whatsapp-color); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 10; transition: transform 0.2s;
+            text-decoration: none;
+        }
+        .whatsapp-badge:hover { transform: scale(1.1); color: white; }
+
+        /* Badge Precio Proveedor */
+        .supplier-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(33, 37, 41, 0.85);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            backdrop-filter: blur(2px);
+        }
+
+        .sale-details { padding: 15px; flex-grow: 1; }
+        
+        .client-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0 0 10px;
+            color: var(--dark-color);
+            text-align: center;
+            line-height: 1.2;
+        }
+        
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem; }
+        .info-label { opacity: 0.7; font-weight: 500; }
+        .info-value { font-weight: 700; }
+        
+        .price-val { color: var(--primary-color); }
+        .paid-val { color: #198754; }
+        .debt-val { color: #dc3545; }
+
+        .status-badge {
+            text-align: center; font-weight: 800; text-transform: uppercase;
+            font-size: 0.75rem; padding: 4px; border-radius: 4px; margin-bottom: 8px; letter-spacing: 1px;
+        }
+        .badge-pagado { color: #0f5132; background-color: rgba(255,255,255,0.5); border: 1px solid #0f5132; }
+        .badge-pendiente { color: #842029; background-color: rgba(255,255,255,0.5); border: 1px solid #842029; }
+
+        .card-actions {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+            background: rgba(0,0,0,0.1);
+        }
+        .btn-action {
+            border: none; background: rgba(255,255,255,0.7); padding: 12px;
+            font-weight: 700; cursor: pointer; transition: background 0.2s; font-size: 0.8rem;
+            text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+        .btn-action:hover { background: white; }
+        .btn-abonar { color: var(--secondary-color); }
+        .btn-eliminar { color: var(--danger-color); }
+
+        /* Preview Imagen */
+        .image-preview-container {
+            width: 100%; height: 220px; border: 2px dashed #ddd; border-radius: 5px;
+            background: #fdfdfd; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; overflow: hidden; position: relative;
+        }
+        .image-preview-container img { width: 100%; height: 100%; object-fit: contain; }
+        .remove-image-btn {
+            position: absolute; top: 5px; right: 5px; background: red; color: white;
+            border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 0 10px; margin-top: 15px; }
+            .summary-panel { grid-template-columns: repeat(3, 1fr) !important; gap: 5px; }
+            .summary-card { padding: 8px 4px; }
+            .summary-card h5 { font-size: 0.6rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 2px; }
+            .summary-card .amount { font-size: 0.85rem; }
+
+            .actions-toolbar { flex-direction: column-reverse; gap: 10px; }
+            .filter-container { width: 100%; justify-content: space-between; }
+            .btn-filter { flex-grow: 1; font-size: 0.8rem; padding: 6px; text-align: center; }
+            .btn-report { width: 100%; justify-content: center; }
+
+            .sales-container { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+            .sale-card img { height: 130px; }
+            .sale-details { padding: 10px; }
+            .client-name { font-size: 0.95rem; margin-bottom: 5px; }
+            .whatsapp-badge { width: 30px; height: 30px; font-size: 1.1rem; }
+            .info-row { font-size: 0.75rem; } 
+            .btn-action { padding: 8px 2px; font-size: 0.65rem; flex-direction: column; gap: 2px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">Control de Ventas</div>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-body p-0">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="registrar-tab-btn" data-bs-toggle="tab" data-bs-target="#registrar-tab" type="button">
+                            <i class="fas fa-plus-circle me-2"></i>Vender
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="historial-tab-btn" data-bs-toggle="tab" data-bs-target="#historial-tab" type="button">
+                            <i class="fas fa-th-large me-2"></i>Historial
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="registrar-tab">
+                        <h4 class="text-center mb-4" style="color:var(--primary-color); font-weight:700;">Nueva Venta</h4>
+                        
+                        <form id="form-venta">
+                            <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                    <div class="card p-4 shadow-sm" style="border:1px solid #eee;">
+                                        <div class="row">
+                                            <div class="col-md-5 mb-3 text-center">
+                                                <label class="form-label fw-bold">Foto del Artículo</label>
+                                                <div id="image-preview" class="image-preview-container" onclick="document.getElementById('file-input').click()">
+                                                    <div class="text-center p-3" id="placeholder-text">
+                                                        <i class="fas fa-camera fa-2x mb-2 text-secondary"></i><br>
+                                                        <span class="text-secondary small">Clic para subir</span>
+                                                    </div>
+                                                    <img src="" id="img-element" style="display: none;">
+                                                    <button type="button" class="remove-image-btn" id="btn-remove-img">X</button>
+                                                </div>
+                                                <input type="file" id="file-input" accept="image/*" style="display: none;">
+                                            </div>
+
+                                            <div class="col-md-7">
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">Nombre del Cliente</label>
+                                                    <input type="text" class="form-control" id="cliente" placeholder="Ej: Maria Lopez" required>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">Teléfono (WhatsApp)</label>
+                                                    <input type="tel" class="form-control" id="telefono" placeholder="Ej: 9999-9999 (Opcional)">
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-6 mb-3">
+                                                        <label class="form-label fw-bold text-muted small">Precio Proveedor (Costo)</label>
+                                                        <input type="number" class="form-control" id="precioProveedor" step="0.01" min="0" placeholder="0.00" required style="border-color:#ccc;">
+                                                    </div>
+                                                    <div class="col-6 mb-3">
+                                                        <label class="form-label fw-bold" style="color:var(--primary-color)">Precio Venta (Cliente)</label>
+                                                        <input type="number" class="form-control" id="precio" step="0.01" min="0" required style="border:2px solid var(--primary-color);">
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">Abono Inicial (Lps)</label>
+                                                    <input type="number" class="form-control" id="abono" step="0.01" min="0" required>
+                                                </div>
+
+                                                <div class="mb-4 text-end">
+                                                    <label class="small text-muted">Saldo Restante (Cliente):</label>
+                                                    <h3 class="text-danger fw-bold" id="restante-display">Lps. 0.00</h3>
+                                                </div>
+
+                                                <div class="d-grid">
+                                                    <button type="submit" class="btn btn-primary" style="background: var(--primary-color); border:none; padding: 12px; font-weight:bold; border-radius:50px;">
+                                                        <i class="fas fa-save me-2"></i>GUARDAR VENTA
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade" id="historial-tab">
+                        
+                        <div class="summary-panel">
+                            <div class="summary-card total">
+                                <h5>Total Vendido</h5>
+                                <div class="amount" id="sum-total">Lps. 0.00</div>
+                            </div>
+                            <div class="summary-card collected">
+                                <h5>Recaudado</h5>
+                                <div class="amount text-success" id="sum-collected">Lps. 0.00</div>
+                            </div>
+                            <div class="summary-card debt">
+                                <h5>Por Cobrar</h5>
+                                <div class="amount text-danger" id="sum-debt">Lps. 0.00</div>
+                            </div>
+                        </div>
+
+                        <div class="actions-toolbar">
+                            <div class="filter-container">
+                                <button class="btn-filter active" onclick="filtrarVentas('todos', this)">Todos</button>
+                                <button class="btn-filter" onclick="filtrarVentas('pagados', this)">Pagados</button>
+                                <button class="btn-filter" onclick="filtrarVentas('pendientes', this)">Pendientes</button>
+                            </div>
+                            <button class="btn-report" onclick="generarReportePDF()">
+                                <i class="fas fa-file-pdf"></i> Reporte PDF
+                            </button>
+                        </div>
+
+                        <div id="loader" class="text-center py-5" style="display:none;">
+                            <div class="spinner-border text-primary" role="status"></div>
+                        </div>
+
+                        <div class="sales-container" id="sales-grid">
+                            </div>
+                        
+                        <div id="no-data" class="text-center py-5 text-secondary" style="display: none;">
+                            <i class="fas fa-box-open fa-3x mb-3"></i>
+                            <p>No hay registros.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- BASE DE DATOS (INDEXEDDB) ---
+        const DB_NAME = "VentasOfflineDB_FinalV8"; 
+        const STORE_NAME = "ventas";
+        let db;
+        let todasLasVentas = []; 
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 1);
+                request.onupgradeneeded = (e) => {
+                    db = e.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true });
+                    }
+                };
+                request.onsuccess = (e) => {
+                    db = e.target.result;
+                    resolve(db);
+                };
+                request.onerror = (e) => reject("Error DB");
+            });
+        }
+
+        async function guardarEnDB(venta) {
+            const tx = db.transaction(STORE_NAME, "readwrite");
+            const store = tx.objectStore(STORE_NAME);
+            store.add(venta);
+            return new Promise(resolve => tx.oncomplete = resolve);
+        }
+
+        async function traerDeDB() {
+            const tx = db.transaction(STORE_NAME, "readonly");
+            const store = tx.objectStore(STORE_NAME);
+            return new Promise(resolve => {
+                const req = store.getAll();
+                req.onsuccess = () => resolve(req.result.reverse());
+            });
+        }
+
+        async function actualizarEnDB(venta) {
+            const tx = db.transaction(STORE_NAME, "readwrite");
+            const store = tx.objectStore(STORE_NAME);
+            store.put(venta);
+            return new Promise(resolve => tx.oncomplete = resolve);
+        }
+
+        async function borrarDeDB(id) {
+            const tx = db.transaction(STORE_NAME, "readwrite");
+            const store = tx.objectStore(STORE_NAME);
+            store.delete(Number(id));
+            return new Promise(resolve => tx.oncomplete = resolve);
+        }
+
+        // --- LÓGICA DE UI ---
+        
+        let currentImageBase64 = null;
+        const inpPrecio = document.getElementById('precio');
+        const inpPrecioProv = document.getElementById('precioProveedor');
+        const inpAbono = document.getElementById('abono');
+        const displayRestante = document.getElementById('restante-display');
+
+        function calcRestante() {
+            const p = parseFloat(inpPrecio.value) || 0;
+            const a = parseFloat(inpAbono.value) || 0;
+            const r = p - a;
+            displayRestante.innerText = `Lps. ${r > 0 ? r.toFixed(2) : '0.00'}`;
+        }
+        inpPrecio.addEventListener('input', calcRestante);
+        inpAbono.addEventListener('input', calcRestante);
+
+        // Manejo de Imagen
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.src = ev.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const MAX_W = 600; 
+                        const scale = MAX_W / img.width;
+                        canvas.width = MAX_W;
+                        canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        currentImageBase64 = canvas.toDataURL('image/jpeg', 0.8);
+                        
+                        const previewImg = document.getElementById('img-element');
+                        previewImg.src = currentImageBase64;
+                        previewImg.style.display = 'block';
+                        document.getElementById('placeholder-text').style.display = 'none';
+                        document.getElementById('btn-remove-img').style.display = 'block';
+                    };
+                };
+            }
+        });
+
+        document.getElementById('btn-remove-img').onclick = (e) => {
+            e.stopPropagation();
+            currentImageBase64 = null;
+            document.getElementById('img-element').style.display = 'none';
+            document.getElementById('placeholder-text').style.display = 'block';
+            document.getElementById('btn-remove-img').style.display = 'none';
+            document.getElementById('file-input').value = '';
+        };
+
+        // Guardar Venta
+        document.getElementById('form-venta').onsubmit = async (e) => {
+            e.preventDefault();
+            const cliente = document.getElementById('cliente').value;
+            const telefono = document.getElementById('telefono').value;
+            const precio = parseFloat(inpPrecio.value);
+            const precioProv = parseFloat(inpPrecioProv.value);
+            const abono = parseFloat(inpAbono.value);
+
+            if (!cliente || isNaN(precio) || isNaN(abono)) {
+                Swal.fire('Error', 'Revise los campos numéricos', 'error');
+                return;
+            }
+
+            const precioProveedorFinal = isNaN(precioProv) ? precio : precioProv;
+
+            const nuevaVenta = {
+                cliente,
+                telefono,
+                precio,             // Precio Cliente 
+                precioProveedor: precioProveedorFinal, // Precio Costo 
+                abono,
+                imagen: currentImageBase64,
+                fecha: new Date().toISOString()
+            };
+
+            await guardarEnDB(nuevaVenta);
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Venta Guardada',
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+            document.getElementById('form-venta').reset();
+            document.getElementById('btn-remove-img').click(); 
+            calcRestante();
+            cargarDatos();
+        };
+
+        async function cargarDatos() {
+            todasLasVentas = await traerDeDB();
+            actualizarResumen();
+            filtrarVentas('todos', document.querySelector('.btn-filter.active')); 
+        }
+
+        function actualizarResumen() {
+            let totalVenta = 0;
+            let totalRecaudado = 0;
+            let totalDeuda = 0;
+
+            todasLasVentas.forEach(v => {
+                totalVenta += v.precio;
+                const abonoReal = v.abono > v.precio ? v.precio : v.abono; 
+                totalRecaudado += abonoReal;
+            });
+            
+            totalDeuda = totalVenta - totalRecaudado;
+            
+            const fmt = (num) => `Lps. ${num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+            document.getElementById('sum-total').innerText = fmt(totalVenta);
+            document.getElementById('sum-collected').innerText = fmt(totalRecaudado);
+            document.getElementById('sum-debt').innerText = fmt(totalDeuda);
+        }
+
+        window.filtrarVentas = function(criterio, btnElement) {
+            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+
+            const grid = document.getElementById('sales-grid');
+            grid.innerHTML = '';
+
+            let ventasFiltradas = [];
+
+            if (criterio === 'todos') {
+                ventasFiltradas = todasLasVentas;
+            } else if (criterio === 'pagados') {
+                ventasFiltradas = todasLasVentas.filter(v => (v.precio - v.abono) <= 0.5);
+            } else if (criterio === 'pendientes') {
+                ventasFiltradas = todasLasVentas.filter(v => (v.precio - v.abono) > 0.5);
+            }
+
+            if (ventasFiltradas.length === 0) {
+                document.getElementById('no-data').style.display = 'block';
+            } else {
+                document.getElementById('no-data').style.display = 'none';
+            }
+
+            ventasFiltradas.forEach(v => {
+                const restante = v.precio - v.abono;
+                const esPagado = restante <= 0.5; 
+                
+                const cardClass = esPagado ? 'state-pagado' : 'state-pendiente';
+                const badgeClass = esPagado ? 'badge-pagado' : 'badge-pendiente';
+                const textoEstado = esPagado ? '<i class="fas fa-check"></i> PAGADO' : '<i class="fas fa-exclamation-circle"></i> PENDIENTE';
+                const imgUrl = v.imagen || 'https://placehold.co/400x300?text=Sin+Foto';
+
+                const costoDisplay = v.precioProveedor ? v.precioProveedor.toFixed(2) : v.precio.toFixed(2);
+
+                let whatsappHtml = '';
+                if(v.telefono && v.telefono.trim() !== '') {
+                    let cleanPhone = v.telefono.replace(/\D/g, '');
+                    if(cleanPhone.length === 8) { cleanPhone = '504' + cleanPhone; }
+                    whatsappHtml = `<a href="https://wa.me/${cleanPhone}" target="_blank" class="whatsapp-badge" title="Enviar WhatsApp a ${v.telefono}">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = `sale-card ${cardClass}`;
+                
+                card.innerHTML = `
+                    <div style="position:relative;">
+                        <img src="${imgUrl}" alt="Producto">
+                        ${whatsappHtml}
+                        <div class="supplier-badge" title="Precio Proveedor">Lps. ${costoDisplay}</div>
+                    </div>
+                    <div class="sale-details">
+                        <div class="status-badge ${badgeClass}">${textoEstado}</div>
+                        <h3 class="client-name">${v.cliente}</h3>
+                        <hr style="opacity:0.2; margin: 8px 0;">
+                        
+                        <div class="info-row">
+                            <span class="info-label">Total:</span>
+                            <span class="info-value price-val">Lps. ${v.precio.toFixed(2)}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Abonado:</span>
+                            <span class="info-value paid-val">Lps. ${v.abono.toFixed(2)}</span>
+                        </div>
+                        <div class="info-row" style="margin-top:5px;">
+                            <span class="info-label">Resta:</span>
+                            <span class="info-value debt-val" style="font-size:1rem">${esPagado ? '0.00' : 'Lps. ' + restante.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-action btn-abonar" onclick="abonar(${v.id})" ${esPagado ? 'disabled style="opacity:0.4; pointer-events:none;"' : ''}>
+                            <i class="fas fa-coins"></i> ABONAR
+                        </button>
+                        <button class="btn-action btn-eliminar" onclick="eliminar(${v.id})">
+                            <i class="fas fa-trash"></i> ELIMINAR
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        };
+
+        // --- FUNCIÓN GENERAR PDF (LÓGICA BLINDADA V8) ---
+        window.generarReportePDF = function() {
+            const ventas = todasLasVentas;
+
+            if (ventas.length === 0) {
+                Swal.fire('Atención', 'No hay ventas registradas.', 'info');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // 1. Encabezado
+            doc.setFillColor(44, 62, 80); 
+            doc.rect(0, 0, 210, 25, 'F'); 
+
+            doc.setFontSize(16);
+            doc.setTextColor(255, 255, 255); 
+            doc.text("REPORTE FINANCIERO DE VENTAS", 105, 16, { align: 'center' });
+            
+            // 2. Preparar datos con la Lógica de Tope de Abono
+            let totalPrecioProv = 0;
+            let totalAbonadoPDF = 0;
+            let totalRestantePDF = 0;
+
+            const tableBody = ventas.map((v, index) => {
+                // Precio del Proveedor
+                const precioParaPDF = v.precioProveedor ? v.precioProveedor : v.precio;
+                
+                // Abono Real de la venta
+                let abonoReal = v.abono; 
+
+                // LÓGICA V8: El abono en PDF no puede superar el precioProveedor
+                let abonoParaPDF = abonoReal;
+                if(abonoParaPDF > precioParaPDF) {
+                    abonoParaPDF = precioParaPDF; // Se capa al precio del proveedor
+                }
+                
+                // Restante (será 0 si ya se cubrió el precio proveedor)
+                let restanteParaPDF = precioParaPDF - abonoParaPDF;
+                if(restanteParaPDF < 0) restanteParaPDF = 0;
+
+                // Acumulamos los valores "maquillados"
+                totalPrecioProv += precioParaPDF;
+                totalAbonadoPDF += abonoParaPDF;
+                totalRestantePDF += restanteParaPDF;
+
+                return [
+                    index + 1,
+                    '', // Espacio para foto
+                    `Lps. ${precioParaPDF.toFixed(2)}`,
+                    `Lps. ${abonoParaPDF.toFixed(2)}`,
+                    `Lps. ${restanteParaPDF.toFixed(2)}`
+                ];
+            });
+
+            // Agregar Fila de Totales
+            tableBody.push([
+                'TOTALES',
+                '', 
+                `Lps. ${totalPrecioProv.toFixed(2)}`,
+                `Lps. ${totalAbonadoPDF.toFixed(2)}`,
+                `Lps. ${totalRestantePDF.toFixed(2)}`
+            ]);
+
+            // 3. Generar Tabla
+            doc.autoTable({
+                head: [['#', 'Foto', 'Precio', 'Abonado', 'Restante']],
+                body: tableBody,
+                startY: 35, 
+                theme: 'grid', 
+                headStyles: { 
+                    fillColor: [44, 62, 80],
+                    halign: 'center', 
+                    valign: 'middle',
+                    fontStyle: 'bold'
+                },
+                bodyStyles: {
+                    halign: 'center', 
+                    valign: 'middle',
+                    textColor: [50, 50, 50]
+                },
+                columnStyles: {
+                    0: { cellWidth: 15 },
+                    1: { cellWidth: 25, minCellHeight: 25 }, 
+                },
+                didParseCell: function (data) {
+                    if (data.row.index === tableBody.length - 1) {
+                        data.cell.styles.fontStyle = 'bold';
+                        data.cell.styles.fillColor = [220, 220, 220]; 
+                        if (data.column.index === 0) {
+                            data.cell.colSpan = 2;
+                        }
+                    }
+                },
+                didDrawCell: function(data) {
+                    if (data.row.index < tableBody.length - 1 && data.column.index === 1 && data.cell.section === 'body') {
+                        const venta = ventas[data.row.index];
+                        if (venta.imagen) {
+                            const dim = 20; 
+                            const x = data.cell.x + (data.cell.width - dim) / 2;
+                            const y = data.cell.y + (data.cell.height - dim) / 2;
+                            doc.addImage(venta.imagen, 'JPEG', x, y, dim, dim);
+                        }
+                    }
+                }
+            });
+
+            // 4. Descargar
+            doc.save(`Reporte_Ventas_${new Date().toISOString().slice(0,10)}.pdf`);
+        };
+
+        window.abonar = async (id) => {
+            const venta = todasLasVentas.find(v => v.id === id);
+            if (!venta) return;
+            const deuda = venta.precio - venta.abono;
+
+            const { value: monto } = await Swal.fire({
+                title: `Abonar a: ${venta.cliente}`,
+                text: `Deuda actual: Lps. ${deuda.toFixed(2)}`,
+                input: 'number',
+                inputAttributes: { step: '0.01', min: '0.01', max: deuda },
+                showCancelButton: true,
+                confirmButtonText: 'Registrar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (monto) {
+                const nuevoAbono = parseFloat(monto);
+                if (nuevoAbono > 0) {
+                    venta.abono += nuevoAbono;
+                    if (venta.abono > venta.precio) venta.abono = venta.precio;
+                    await actualizarEnDB(venta);
+                    Swal.fire('Éxito', 'Abono registrado', 'success');
+                    cargarDatos();
+                }
+            }
+        };
+
+        window.eliminar = async (id) => {
+            const result = await Swal.fire({
+                title: '¿Eliminar registro?',
+                text: "Esta acción no se puede deshacer.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                confirmButtonText: 'Sí, eliminar'
+            });
+
+            if (result.isConfirmed) {
+                await borrarDeDB(id);
+                cargarDatos();
+                Swal.fire('Eliminado', '', 'success');
+            }
+        };
+
+        document.getElementById('historial-tab-btn').onclick = cargarDatos;
+        window.onload = async () => {
+            try {
+                await initDB();
+                cargarDatos();
+            } catch (e) { console.error(e); }
+        };
+
+    </script>
+</body>
+</html>
