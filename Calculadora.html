@@ -113,7 +113,7 @@
         </div>
         
         <div class="formula">
-            (Precio × 1.07) × 26.45 = Lempiras
+            (Precio × 1.07) × 26.50 = Lempiras
         </div>
     </div>
 
@@ -147,7 +147,7 @@
         </div>
         
         <div class="formula">
-            (Peso × Tarifa) × 26.45 = Lempiras
+            (Peso × Tarifa) × 26.50 = Lempiras
         </div>
     </div>
 
@@ -159,7 +159,7 @@
         priceInput.addEventListener('input', function() {
             const priceApp = parseFloat(this.value) || 0;
             const priceWithISV = priceApp * 1.07;
-            const priceInLempiras = (priceWithISV * 26.45).toFixed(2);
+            const priceInLempiras = (priceWithISV * 26.50).toFixed(2);
             
             resultDisplay.textContent = `L ${priceInLempiras}`;
         });
@@ -185,7 +185,7 @@
                 rate = 4;
             }
             
-            const totalCost = (weight * rate * 26.45).toFixed(2);
+            const totalCost = (weight * rate * 26.50).toFixed(2);
             weightResultDisplay.textContent = `L ${totalCost}`;
         }
 
@@ -208,4 +208,5 @@
     </script>
 </body>
 </html>
+
 
