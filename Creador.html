@@ -1487,7 +1487,7 @@
 		// Calcular precio en lempiras
 		function calculatePriceInLempiras(priceApp) {
 			const priceWithISV = priceApp * 1.07;
-			return (priceWithISV * 26.45).toFixed(2);
+			return (priceWithISV * 26.50).toFixed(2);
 		}
 
 		// Generar Tallas
@@ -1631,7 +1631,7 @@
 				// LIMPIEZA 6: 'porcentaje' eliminado
 
 				// Fórmula corregida a RC[-1]
-				const priceLempirasFormula = `=INDIRECT("RC[-1]", 0) * 1.07 * 26.45`;
+				const priceLempirasFormula = `=INDIRECT("RC[-1]", 0) * 1.07 * 26.50`;
 
 				return [
 					imageFormula,
@@ -2948,4 +2948,5 @@
 </body>
 
 </html>
+
 
