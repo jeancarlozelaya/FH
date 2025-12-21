@@ -654,8 +654,8 @@
             });
         };
 
-// --- FUNCIÓN GENERAR PDF (MODIFICADA PARA iOS) ---
-window.generarReportePDF = function() {
+// --- FUNCIÓN GENERAR PDF CON COMPARTIR (COMPATIBLE CON IOS Y ANDROID) ---
+window.generarReportePDF = async function() {
     const ventas = todasLasVentas;
 
     if (ventas.length === 0) {
@@ -663,18 +663,33 @@ window.generarReportePDF = function() {
         return;
     }
 
+    // Mostrar mensaje de carga
+    Swal.fire({
+        title: 'Generando PDF...',
+        text: 'Por favor espera',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
     // 1. Encabezado
-    doc.setFillColor(44, 62, 80);
-    doc.rect(0, 0, 210, 25, 'F');
+    doc.setFillColor(44, 62, 80); 
+    doc.rect(0, 0, 210, 25, 'F'); 
 
     doc.setFontSize(16);
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(255, 255, 255); 
     doc.text("REPORTE FINANCIERO DE VENTAS", 105, 16, { align: 'center' });
-
-    // 2. Preparar datos con la Lógica de Tope de Abono
+    
+    // 2. Fecha del reporte
+    doc.setFontSize(10);
+    doc.setTextColor(255, 255, 255);
+    doc.text(`Generado: ${new Date().toLocaleDateString()}`, 105, 23, { align: 'center' });
+    
+    // 3. Preparar datos con la Lógica de Tope de Abono
     let totalPrecioProv = 0;
     let totalAbonadoPDF = 0;
     let totalRestantePDF = 0;
@@ -682,16 +697,19 @@ window.generarReportePDF = function() {
     const tableBody = ventas.map((v, index) => {
         // Precio del Proveedor
         const precioParaPDF = v.precioProveedor ? v.precioProveedor : v.precio;
+        
+        // Abono Real de la venta
+        let abonoReal = v.abono; 
 
         // LÓGICA V8: El abono en PDF no puede superar el precioProveedor
-        let abonoParaPDF = v.abono;
-        if (abonoParaPDF > precioParaPDF) {
+        let abonoParaPDF = abonoReal;
+        if(abonoParaPDF > precioParaPDF) {
             abonoParaPDF = precioParaPDF; // Se capa al precio del proveedor
         }
-
+        
         // Restante (será 0 si ya se cubrió el precio proveedor)
         let restanteParaPDF = precioParaPDF - abonoParaPDF;
-        if (restanteParaPDF < 0) restanteParaPDF = 0;
+        if(restanteParaPDF < 0) restanteParaPDF = 0;
 
         // Acumulamos los valores "maquillados"
         totalPrecioProv += precioParaPDF;
@@ -700,7 +718,7 @@ window.generarReportePDF = function() {
 
         return [
             index + 1,
-            '', // Espacio para foto
+            v.cliente.substring(0, 20), // Mostrar nombre del cliente (truncado)
             `Lps. ${precioParaPDF.toFixed(2)}`,
             `Lps. ${abonoParaPDF.toFixed(2)}`,
             `Lps. ${restanteParaPDF.toFixed(2)}`
@@ -710,98 +728,99 @@ window.generarReportePDF = function() {
     // Agregar Fila de Totales
     tableBody.push([
         'TOTALES',
-        '',
+        `${ventas.length} ventas`,
         `Lps. ${totalPrecioProv.toFixed(2)}`,
         `Lps. ${totalAbonadoPDF.toFixed(2)}`,
         `Lps. ${totalRestantePDF.toFixed(2)}`
     ]);
 
-    // 3. Generar Tabla
+    // 4. Generar Tabla
     doc.autoTable({
-        head: [['#', 'Foto', 'Precio', 'Abonado', 'Restante']],
+        head: [['#', 'Cliente', 'Precio', 'Abonado', 'Restante']],
         body: tableBody,
-        startY: 35,
-        theme: 'grid',
-        headStyles: {
+        startY: 35, 
+        theme: 'grid', 
+        headStyles: { 
             fillColor: [44, 62, 80],
-            halign: 'center',
+            halign: 'center', 
             valign: 'middle',
             fontStyle: 'bold'
         },
         bodyStyles: {
-            halign: 'center',
+            halign: 'center', 
             valign: 'middle',
             textColor: [50, 50, 50]
         },
         columnStyles: {
-            0: { cellWidth: 15 },
-            1: { cellWidth: 25, minCellHeight: 25 },
+            0: { cellWidth: 10 },
+            1: { cellWidth: 40, halign: 'left' },
+            2: { cellWidth: 35 },
+            3: { cellWidth: 35 },
+            4: { cellWidth: 35 }
         },
-        didParseCell: function(data) {
+        didParseCell: function (data) {
             if (data.row.index === tableBody.length - 1) {
                 data.cell.styles.fontStyle = 'bold';
-                data.cell.styles.fillColor = [220, 220, 220];
+                data.cell.styles.fillColor = [220, 220, 220]; 
                 if (data.column.index === 0) {
                     data.cell.colSpan = 2;
-                }
-            }
-        },
-        didDrawCell: function(data) {
-            if (data.row.index < tableBody.length - 1 && data.column.index === 1 && data.cell.section === 'body') {
-                const venta = ventas[data.row.index];
-                if (venta.imagen) {
-                    const dim = 20;
-                    const x = data.cell.x + (data.cell.width - dim) / 2;
-                    const y = data.cell.y + (data.cell.height - dim) / 2;
-                    doc.addImage(venta.imagen, 'JPEG', x, y, dim, dim);
                 }
             }
         }
     });
 
-    // 4. Detectar iOS y usar share en lugar de descarga
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    // 5. Agregar resumen adicional
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont(undefined, 'bold');
+    doc.text('Resumen General:', 14, finalY);
+    
+    doc.setFont(undefined, 'normal');
+    doc.text(`Total Ventas: Lps. ${totalPrecioProv.toFixed(2)}`, 14, finalY + 8);
+    doc.text(`Total Abonado: Lps. ${totalAbonadoPDF.toFixed(2)}`, 14, finalY + 16);
+    doc.text(`Total Pendiente: Lps. ${totalRestantePDF.toFixed(2)}`, 14, finalY + 24);
 
-    if (isIOS) {
-        // Para iOS: Generar blob y usar la API de compartir
-        const pdfBlob = doc.output('blob');
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-        const fileName = `Reporte_Ventas_${new Date().toISOString().slice(0,10)}.pdf`;
+    // 6. Generar PDF como Blob
+    const pdfBlob = doc.output('blob');
+    const fileName = `Reporte_Ventas_${new Date().toISOString().slice(0,10)}.pdf`;
+    
+    // Cerrar el loader
+    Swal.close();
 
-        // Crear un enlace temporal para descargar/compartir
-        const link = document.createElement('a');
-        link.href = pdfUrl;
-        link.download = fileName;
-        document.body.appendChild(link);
-
-        // Usar la API de compartir si está disponible
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [pdfBlob] })) {
-            navigator.share({
-                files: [new File([pdfBlob], fileName, { type: 'application/pdf' })],
+    // 7. Compartir el PDF usando Web Share API
+    if (navigator.share) {
+        try {
+            const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+            
+            await navigator.share({
                 title: 'Reporte de Ventas',
-                text: 'Reporte financiero de ventas generado'
-            }).catch(error => {
-                console.log('Error al compartir:', error);
-                // Fallback: mostrar el enlace
-                link.click();
+                text: 'Reporte financiero de ventas generado desde la app',
+                files: [file]
             });
-        } else {
-            // Fallback para iOS sin API de compartir
-            link.click();
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                // Si falla el compartir, descargar normalmente
+                descargarPDF(doc, fileName);
+            }
         }
-
-        // Limpiar
-        setTimeout(() => {
-            document.body.removeChild(link);
-            URL.revokeObjectURL(pdfUrl);
-        }, 100);
     } else {
-        // Para Android y otros: descarga normal
-        doc.save(`Reporte_Ventas_${new Date().toISOString().slice(0,10)}.pdf`);
+        // Fallback para navegadores que no soportan Web Share API
+        descargarPDF(doc, fileName);
     }
 };
 
-
+// Función auxiliar para descargar PDF (fallback)
+function descargarPDF(doc, fileName) {
+    doc.save(fileName);
+    Swal.fire({
+        icon: 'success',
+        title: 'PDF Generado',
+        text: 'El archivo se ha descargado correctamente',
+        timer: 2000,
+        showConfirmButton: false
+    });
+}
         window.abonar = async (id) => {
             const venta = todasLasVentas.find(v => v.id === id);
             if (!venta) return;
