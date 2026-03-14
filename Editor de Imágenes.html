@@ -631,212 +631,220 @@
             });
         }
 
-        function downloadImages() {
-            const mosaicItems = document.querySelectorAll('.mosaic-item');
-            
-            if (mosaicItems.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'No hay imágenes',
-                    text: 'No hay imágenes para descargar'
-                });
-                return;
-            }
-            
-            let index = 0;
+function downloadImages() {
+    const mosaicItems = document.querySelectorAll('.mosaic-item');
+    
+    if (mosaicItems.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No hay imágenes',
+            text: 'No hay imágenes para descargar'
+        });
+        return;
+    }
+    
+    let index = 0;
 
-            function downloadNextImage() {
-                if (index >= mosaicItems.length) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Descarga completada',
-                        text: 'Todas las imágenes han sido descargadas',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                    return;
-                }
-
-                const mosaicItem = mosaicItems[index];
-                const img = mosaicItem.querySelector('img');
-                const precio = mosaicItem.querySelector('.precio').value;
-                const talla = mosaicItem.querySelector('.talla').value;
-
-                if (!img || !img.src) {
-                    console.error('No se encontró una imagen válida en el mosaico:', mosaicItem);
-                    index++;
-                    downloadNextImage();
-                    return;
-                }
-
-                const image = new Image();
-                image.crossOrigin = "anonymous";
-                image.src = img.src;
-
-                image.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-
-                    canvas.width = image.width;
-                    canvas.height = image.height;
-
-                    ctx.drawImage(image, 0, 0, image.width, image.height);
-
-                    if (logo.complete) {
-                        const logoWidth = 100;
-                        const logoHeight = (logo.height / logo.width) * logoWidth;
-                        ctx.drawImage(logo, 10, 10, logoWidth, logoHeight);
-                    }
-
-                    ctx.font = 'bold 50px Arial';
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
-                    ctx.fillStyle = 'white';
-                    
-                    // Talla desde el centro hacia la derecha
-                    ctx.textAlign = 'center';
-                    ctx.fillText(talla, canvas.width / 2, canvas.height - 370);
-                    
-                    // Precio a la izquierda
-                    ctx.textAlign = 'left';
-                    ctx.fillText("L. " + precio, 20, canvas.height - 370);
-
-                    ctx.font = 'bold 30px Arial';
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    const text = "SOLO POR ENCARGO";
-                    const textWidth = ctx.measureText(text).width;
-                    ctx.fillRect(canvas.width - textWidth - 20, 10, textWidth + 10, 40);
-                    ctx.fillStyle = 'white';
-                    ctx.textAlign = 'right';
-                    ctx.fillText(text, canvas.width - 15, 40);
-
-                    const link = document.createElement('a');
-                    link.download = `editado_${index + 1}.png`;
-                    link.href = canvas.toDataURL();
-                    link.click();
-
-                    index++;
-                    setTimeout(downloadNextImage, 100);
-                };
-
-                image.onerror = function() {
-                    console.error('Error al cargar la imagen:', img.src);
-                    index++;
-                    downloadNextImage();
-                };
-            }
-
-            downloadNextImage();
-        }
-
-        function downloadImagesAsZip() {
-            const mosaicItems = document.querySelectorAll('.mosaic-item');
-            
-            if (mosaicItems.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'No hay imágenes',
-                    text: 'No hay imágenes para comprimir'
-                });
-                return;
-            }
-            
+    function downloadNextImage() {
+        if (index >= mosaicItems.length) {
             Swal.fire({
-                title: 'Preparando archivo ZIP',
-                html: 'Por favor espera mientras se comprimen las imágenes...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
+                icon: 'success',
+                title: 'Descarga completada',
+                text: 'Todas las imágenes han sido descargadas',
+                timer: 2000,
+                showConfirmButton: false
             });
+            return;
+        }
 
-            const zip = new JSZip();
-            let index = 0;
+        const mosaicItem = mosaicItems[index];
+        const img = mosaicItem.querySelector('img');
+        const precio = mosaicItem.querySelector('.precio').value;
+        const talla = mosaicItem.querySelector('.talla').value;
 
-            function addNextImageToZip() {
-                if (index >= mosaicItems.length) {
-                    zip.generateAsync({ type: "blob" }).then(function(content) {
-                        saveAs(content, "imagenes.zip");
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'ZIP creado',
-                            text: 'Todas las imágenes han sido comprimidas en el archivo ZIP',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                    });
-                    return;
-                }
+        if (!img || !img.src) {
+            console.error('No se encontró una imagen válida en el mosaico:', mosaicItem);
+            index++;
+            downloadNextImage();
+            return;
+        }
 
-                const mosaicItem = mosaicItems[index];
-                const img = mosaicItem.querySelector('img');
-                const precio = mosaicItem.querySelector('.precio').value;
-                const talla = mosaicItem.querySelector('.talla').value;
+        const image = new Image();
+        image.crossOrigin = "anonymous";
+        image.src = img.src;
 
-                if (!img || !img.src) {
-                    console.error('No se encontró una imagen válida en el mosaico:', mosaicItem);
-                    index++;
-                    addNextImageToZip();
-                    return;
-                }
+        image.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
 
-                const image = new Image();
-                image.crossOrigin = "anonymous";
-                image.src = img.src;
+            canvas.width = image.width;
+            canvas.height = image.height;
 
-                image.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
+            ctx.drawImage(image, 0, 0, image.width, image.height);
 
-                    canvas.width = image.width;
-                    canvas.height = image.height;
-
-                    ctx.drawImage(image, 0, 0, image.width, image.height);
-
-                    if (logo.complete) {
-                        const logoWidth = 100;
-                        const logoHeight = (logo.height / logo.width) * logoWidth;
-                        ctx.drawImage(logo, 10, 10, logoWidth, logoHeight);
-                    }
-
-                    ctx.font = 'bold 50px Arial';
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
-                    ctx.fillStyle = 'white';
-                    
-                    // Talla desde el centro hacia la derecha
-                    ctx.textAlign = 'center';
-                    ctx.fillText(talla, canvas.width / 2, canvas.height - 370);
-                    
-                    // Precio a la izquierda
-                    ctx.textAlign = 'left';
-                    ctx.fillText("L. " + precio, 20, canvas.height - 370);
-
-                    ctx.font = 'bold 30px Arial';
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    const text = "SOLO POR ENCARGO";
-                    const textWidth = ctx.measureText(text).width;
-                    ctx.fillRect(canvas.width - textWidth - 20, 10, textWidth + 10, 40);
-                    ctx.fillStyle = 'white';
-                    ctx.textAlign = 'right';
-                    ctx.fillText(text, canvas.width - 15, 40);
-
-                    canvas.toBlob(function(blob) {
-                        zip.file(`editado_${index + 1}.png`, blob);
-                        index++;
-                        addNextImageToZip();
-                    }, 'image/png');
-                };
-
-                image.onerror = function() {
-                    console.error('Error al cargar la imagen:', img.src);
-                    index++;
-                    addNextImageToZip();
-                };
+            if (logo.complete) {
+                const logoWidth = 100;
+                const logoHeight = (logo.height / logo.width) * logoWidth;
+                ctx.drawImage(logo, 10, 10, logoWidth, logoHeight);
             }
 
-            addNextImageToZip();
+            // Área segura para evitar recortes en Facebook
+            const safeMargin = 50; // Margen de seguridad de 50 píxeles
+            
+            ctx.font = 'bold 50px Arial';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
+            ctx.fillStyle = 'white';
+            
+            // Talla centrada (pero dentro del área segura)
+            ctx.textAlign = 'center';
+            ctx.fillText(talla, canvas.width / 2, canvas.height - 370);
+            
+            // Precio a la izquierda (con margen de seguridad)
+            ctx.textAlign = 'left';
+            ctx.fillText("L. " + precio, safeMargin, canvas.height - 370);
+
+            ctx.font = 'bold 30px Arial';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            const text = "SOLO POR ENCARGO";
+            const textWidth = ctx.measureText(text).width;
+            // Posicionar el texto "SOLO POR ENCARGO" con margen de seguridad a la derecha
+            ctx.fillRect(canvas.width - textWidth - safeMargin - 10, 10, textWidth + 10, 40);
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'right';
+            ctx.fillText(text, canvas.width - safeMargin - 5, 40);
+
+            const link = document.createElement('a');
+            link.download = `editado_${index + 1}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+
+            index++;
+            setTimeout(downloadNextImage, 100);
+        };
+
+        image.onerror = function() {
+            console.error('Error al cargar la imagen:', img.src);
+            index++;
+            downloadNextImage();
+        };
+    }
+
+    downloadNextImage();
+}
+
+function downloadImagesAsZip() {
+    const mosaicItems = document.querySelectorAll('.mosaic-item');
+    
+    if (mosaicItems.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No hay imágenes',
+            text: 'No hay imágenes para comprimir'
+        });
+        return;
+    }
+    
+    Swal.fire({
+        title: 'Preparando archivo ZIP',
+        html: 'Por favor espera mientras se comprimen las imágenes...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
         }
+    });
+
+    const zip = new JSZip();
+    let index = 0;
+
+    function addNextImageToZip() {
+        if (index >= mosaicItems.length) {
+            zip.generateAsync({ type: "blob" }).then(function(content) {
+                saveAs(content, "imagenes.zip");
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ZIP creado',
+                    text: 'Todas las imágenes han sido comprimidas en el archivo ZIP',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            });
+            return;
+        }
+
+        const mosaicItem = mosaicItems[index];
+        const img = mosaicItem.querySelector('img');
+        const precio = mosaicItem.querySelector('.precio').value;
+        const talla = mosaicItem.querySelector('.talla').value;
+
+        if (!img || !img.src) {
+            console.error('No se encontró una imagen válida en el mosaico:', mosaicItem);
+            index++;
+            addNextImageToZip();
+            return;
+        }
+
+        const image = new Image();
+        image.crossOrigin = "anonymous";
+        image.src = img.src;
+
+        image.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = image.width;
+            canvas.height = image.height;
+
+            ctx.drawImage(image, 0, 0, image.width, image.height);
+
+            if (logo.complete) {
+                const logoWidth = 100;
+                const logoHeight = (logo.height / logo.width) * logoWidth;
+                ctx.drawImage(logo, 10, 10, logoWidth, logoHeight);
+            }
+
+            // Área segura para evitar recortes en Facebook
+            const safeMargin = 50; // Margen de seguridad de 50 píxeles
+            
+            ctx.font = 'bold 50px Arial';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
+            ctx.fillStyle = 'white';
+            
+            // Talla centrada (pero dentro del área segura)
+            ctx.textAlign = 'center';
+            ctx.fillText(talla, canvas.width / 2, canvas.height - 370);
+            
+            // Precio a la izquierda (con margen de seguridad)
+            ctx.textAlign = 'left';
+            ctx.fillText("L. " + precio, safeMargin, canvas.height - 370);
+
+            ctx.font = 'bold 30px Arial';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            const text = "SOLO POR ENCARGO";
+            const textWidth = ctx.measureText(text).width;
+            // Posicionar el texto "SOLO POR ENCARGO" con margen de seguridad a la derecha
+            ctx.fillRect(canvas.width - textWidth - safeMargin - 10, 10, textWidth + 10, 40);
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'right';
+            ctx.fillText(text, canvas.width - safeMargin - 5, 40);
+
+            canvas.toBlob(function(blob) {
+                zip.file(`editado_${index + 1}.png`, blob);
+                index++;
+                addNextImageToZip();
+            }, 'image/png');
+        };
+
+        image.onerror = function() {
+            console.error('Error al cargar la imagen:', img.src);
+            index++;
+            addNextImageToZip();
+        };
+    }
+
+    addNextImageToZip();
+}
 
         function confirmClear() {
             Swal.fire({
