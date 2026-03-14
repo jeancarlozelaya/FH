@@ -692,11 +692,14 @@
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                     ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
                     ctx.fillStyle = 'white';
+                    
+                    // Talla desde el centro hacia la derecha
+                    ctx.textAlign = 'center';
+                    ctx.fillText(talla, canvas.width / 2, canvas.height - 370);
+                    
+                    // Precio a la izquierda
                     ctx.textAlign = 'left';
-                    ctx.fillText(talla, 20, canvas.height - 370);
-
-                    ctx.textAlign = 'right';
-                    ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
+                    ctx.fillText("L. " + precio, 20, canvas.height - 370);
 
                     ctx.font = 'bold 30px Arial';
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
@@ -800,11 +803,14 @@
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                     ctx.fillRect(0, canvas.height - 420, canvas.width, 70);
                     ctx.fillStyle = 'white';
+                    
+                    // Talla desde el centro hacia la derecha
+                    ctx.textAlign = 'center';
+                    ctx.fillText(talla, canvas.width / 2, canvas.height - 370);
+                    
+                    // Precio a la izquierda
                     ctx.textAlign = 'left';
-                    ctx.fillText(talla, 20, canvas.height - 370);
-
-                    ctx.textAlign = 'right';
-                    ctx.fillText("L. " + precio, canvas.width - 20, canvas.height - 370);
+                    ctx.fillText("L. " + precio, 20, canvas.height - 370);
 
                     ctx.font = 'bold 30px Arial';
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
