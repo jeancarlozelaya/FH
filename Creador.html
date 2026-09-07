@@ -1282,7 +1282,7 @@
 			currentFetchController = new AbortController();
 			const signal = currentFetchController.signal;
 
-			const url = `https://script.google.com/macros/s/AKfycbwq82FHIL2RGyh_6pl9jluP2sKltOXzqMHzeMHTPq2ITbM5GHA8uhFLupRDHVA8zhWS/exec?url=${encodeURIComponent(enlace)}`;
+			const url = `https://script.google.com/macros/s/AKfycbxIXkAwI5My_QLLoz3koZMlA-T0hc6oNaJLUGleqGPZplZ2C-wdqbaTCMkjK8Ghx8b9tQ/exec?url=${encodeURIComponent(enlace)}`;
 
 			fetch(url, {
 					signal
@@ -1487,7 +1487,7 @@
 		// Calcular precio en lempiras
 		function calculatePriceInLempiras(priceApp) {
 			const priceWithISV = priceApp * 1.07;
-			return (priceWithISV * 26.7).toFixed(2);
+			return (priceWithISV * 27.2).toFixed(2);
 		}
 
 		// Generar Tallas
@@ -1631,7 +1631,7 @@
 				// LIMPIEZA 6: 'porcentaje' eliminado
 
 				// Fórmula corregida a RC[-1]
-				const priceLempirasFormula = `=INDIRECT("RC[-1]", 0) * 1.07 * 26.7`;
+				const priceLempirasFormula = `=INDIRECT("RC[-1]", 0) * 1.07 * 27.2`;
 
 				return [
 					imageFormula,
