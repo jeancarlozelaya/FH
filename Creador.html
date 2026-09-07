@@ -1216,59 +1216,105 @@
 			localStorage.setItem(`items_profile_${currentProfile}`, JSON.stringify(items));
 		}
 
-		// Obtener datos del enlace (MODIFICADO para apuntar a m.shein.com)
-		function obtenerFuente() {
-			let enlace = document.getElementById("enlace").value.trim();
-			// LIMPIEZA 6: Se usa valor hardcoded
-			const porcentajeSeleccionado = 0.20; // 20% hardcoded
+// Obtener datos del enlace (MEJORADA CON BACKOFF EXPONENCIAL)
+function obtenerFuente() {
+    let enlace = document.getElementById("enlace").value.trim();
+    const porcentajeSeleccionado = 0.20;
 
-			if (!enlace) {
-				showMessage("Por favor, ingrese un enlace válido.", 'error');
-				return;
-			}
+    if (!enlace) {
+        showMessage("Por favor, ingrese un enlace válido.", 'error');
+        return;
+    }
 
-			// --- ¡CAMBIO 1 AQUÍ! ---
-			const baseURL = "https://m.shein.com/us/";
+    // --- ¡CAMBIO 1 AQUÍ! ---
+    const baseURL = "https://m.shein.com/us/";
+    const cleanPath = enlace.replace(/^(https?:\/\/)?([a-zA-Z0-9.-]+\.)?shein\.com\/(us\/)?/i, "");
+    const finalEnlace = baseURL + cleanPath;
+    document.getElementById("enlace").value = finalEnlace;
 
-			// --- ¡CAMBIO 2 AQUÍ! (para limpiar 'us/' si ya viene en el enlace) ---
-			const cleanPath = enlace.replace(/^(https?:\/\/)?([a-zA-Z0-9.-]+\.)?shein\.com\/(us\/)?/i, "");
-			const finalEnlace = baseURL + cleanPath;
-			// --- FIN DE LOS CAMBIOS ---
+    // UI de carga
+    const enlaceInput = document.getElementById("enlace");
+    const clearButton = document.querySelector("button[onclick='clearInput()']");
+    const addButton = document.querySelector("button[onclick='obtenerFuente()']");
+    const menuButton = document.getElementById("menuToggleButton");
 
-			// Actualiza el valor en la caja de texto
-			document.getElementById("enlace").value = finalEnlace;
+    enlaceInput.disabled = true;
+    menuButton.disabled = true;
+    enlaceInput.style.animation = "pulse 1.5s infinite";
 
-			// (El resto de la lógica de UI de carga es idéntica)
-			const enlaceInput = document.getElementById("enlace");
-			const clearButton = document.querySelector("button[onclick='clearInput()']");
-			const addButton = document.querySelector("button[onclick='obtenerFuente()']");
-			const menuButton = document.getElementById("menuToggleButton"); // <-- REQUERIDO 1
+    if (addButton) {
+        addButton.style.display = 'none';
+    }
 
-			enlaceInput.disabled = true;
-			menuButton.disabled = true; // <-- REQUERIDO 1: Deshabilitar menú
-			enlaceInput.style.animation = "pulse 1.5s infinite";
+    if (clearButton) {
+        clearButton.innerHTML = '<i class="fas fa-times"></i> Cancelar';
+        clearButton.classList.add('cancel-button');
+        clearButton.onclick = function() {
+            if (currentFetchController) {
+                currentFetchController.abort();
+            }
+            resetUI();
+            showMessage("Proceso cancelado.", 'error');
+        };
+    }
 
-			if (addButton) {
-				addButton.style.display = 'none';
-			}
+    showMessage("Procesando, por favor espere...", 'processing');
 
-			if (clearButton) {
-				clearButton.innerHTML = '<i class="fas fa-times"></i> Cancelar';
-				clearButton.classList.add('cancel-button');
+    // Iniciar el proceso de fetch con backoff exponencial
+    fetchWithExponentialBackoff(finalEnlace, porcentajeSeleccionado, 0, 5);
+}
 
-				clearButton.onclick = function() {
-					if (currentFetchController) {
-						currentFetchController.abort();
-					}
-					resetUI();
-					showMessage("Proceso cancelado.", 'error');
-				};
-			}
+// NUEVA FUNCIÓN: Fetch con backoff exponencial
+function fetchWithExponentialBackoff(enlace, porcentajeSeleccionado, attempt, maxAttempts) {
+    if (attempt >= maxAttempts) {
+        showMessage(`No se pudo obtener la información después de ${maxAttempts} intentos.`, 'error');
+        resetUI();
+        return;
+    }
 
-			showMessage("Procesando, por favor espere...", 'processing');
+    // Calcular delay con backoff exponencial (1s, 2s, 4s, 8s, 16s)
+    const delay = Math.min(1000 * Math.pow(2, attempt), 16000);
+    
+    if (attempt > 0) {
+        showMessage(`Reintentando (${attempt + 1}/${maxAttempts})...`, 'processing');
+    }
 
-			fetchWithRetry(finalEnlace, porcentajeSeleccionado, 5);
-		}
+    setTimeout(() => {
+        // Crear y asignar el AbortController
+        currentFetchController = new AbortController();
+        const signal = currentFetchController.signal;
+
+        const url = `https://script.google.com/macros/s/AKfycbxIXkAwI5My_QLLoz3koZMlA-T0hc6oNaJLUGleqGPZplZ2C-wdqbaTCMkjK8Ghx8b9tQ/exec?url=${encodeURIComponent(enlace)}`;
+
+        fetch(url, { signal })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error de red: ${response.statusText}`);
+                }
+                return response.text();
+            })
+            .then(data => {
+                const success = extractData(data, porcentajeSeleccionado, enlace);
+                if (success) {
+                    resetUI();
+                } else {
+                    // Si la extracción falló, reintentar con backoff
+                    console.log(`Intento ${attempt + 1} falló. Reintentando...`);
+                    fetchWithExponentialBackoff(enlace, porcentajeSeleccionado, attempt + 1, maxAttempts);
+                }
+            })
+            .catch(error => {
+                if (error.name === 'AbortError') {
+                    console.log('Fetch abortado por el usuario.');
+                    return;
+                }
+                console.error("Error en fetch:", error);
+                // Reintentar con backoff
+                fetchWithExponentialBackoff(enlace, porcentajeSeleccionado, attempt + 1, maxAttempts);
+            });
+    }, delay);
+}
+
 
 		// FUNCIÓN: Fetch con reintentos (MODIFICADA para Cancelación y Reset)
 		function fetchWithRetry(enlace, porcentajeSeleccionado, retriesLeft) {
@@ -1338,151 +1384,242 @@
 		}
 
 		// Extraer datos del HTML (MODIFICADO para nuevo precio y tallas)
-		function extractData(data, porcentajeSeleccionado, enlace) {
+// Extraer datos del HTML (VERSIÓN MEJORADA CON EXTRACCIÓN PARCIAL)
+function extractData(data, porcentajeSeleccionado, enlace) {
+    // --- INICIO: Sistema de Extracción Parcial ---
+    let partialData = {
+        image: null,
+        title: null,
+        sku: null,
+        priceApp: null,
+        sizes: [],
+        priceLempiras: null
+    };
+    
+    // Estado de qué datos faltan
+    let missingData = [];
+    
+    // --- Patrones (Títulos) ---
+    const titlePatterns = [
+        /"goods_name"\s*:\s*"(.*?)"/i,
+        /<meta property="og:title" content="(.*?)"/i,
+        /<h1 class="product-intro__head-name".*?<span class="fsp-element">(.*?)<\/span>/i,
+        /<title>(.*?) \| SHEIN USA<\/title>/i,
+        /<title>(.*?) \| SHEIN<\/title>/i,
+        /<title>(.*?)<\/title>/i
+    ];
 
-			// --- Patrones (Títulos, SKU, Imagen, Precio - Sin cambios) ---
+    // --- Patrones (SKU) ---
+    const skuPatterns = [
+        /"goods_sn"\s*:\s*"(s[a-zA-Z0-9]{5,})"/i,
+        /<span class="product-intro__head-sku-text">\s*SKU:\s*(s[a-zA-Z0-9]{5,})<\/span>/i,
+        /data-clipboard-text="(s[a-zA-Z0-9]{5,})"/i,
+        /"skc_name"\s*:\s*"(s[a-zA-Z0-9]{5,})"/i,
+        /"sku":"(s[a-zA-Z0-9]{5,})"/i,
+        /"sku":"(I[a-zA-Z0-9]{5,})"/i
+    ];
 
-			const titlePatterns = [
-				/"goods_name"\s*:\s*"(.*?)"/i, // Prioridad 1: JSON gbRawData
-				/<meta property="og:title" content="(.*?)"/i, // Fallback: Meta Tag
-				/<h1 class="product-intro__head-name".*?<span class="fsp-element">(.*?)<\/span>/i,
-				/<title>(.*?) \| SHEIN USA<\/title>/i,
-				/<title>(.*?) \| SHEIN<\/title>/i
-			];
+    // --- Patrones (Imagen) ---
+    const imagePatterns = [
+        /"skcImages"\s*:\s*\[\s*"(.*?)"/i,
+        /<link rel="preload" as="image" href="(.*_900x\.webp)"/i,
+        /<div class="crop-image-container fsp-element" data-before-crop-src="(.*?)"/i,
+        /"image":"(.*?)"/i,
+        /<div class="crop-image-container" data-before-crop-src="(.*?)"/i,
+        /"skcImages":\["(.*?)"/i
+    ];
 
-			const skuPatterns = [
-				/"goods_sn"\s*:\s*"(s[a-zA-Z0-9]{5,})"/i, // Prioridad 1: JSON gbRawData (SPU)
-				/<span class="product-intro__head-sku-text">\s*SKU:\s*(s[a-zA-Z0-9]{5,})<\/span>/i, // HTML
-				/data-clipboard-text="(s[a-zA-Z0-9]{5,})"/i, // HTML Botón Copiar
-				/"skc_name"\s*:\s*"(s[a-zA-Z0-9]{5,})"/i, // Fallback JSON (SPU)
-				/"sku":"(s[a-zA-Z0-9]{5,})"/i, // Fallback ld+json (SPU)
-				/"sku":"(I[a-zA-Z0-9]{5,})"/i // Fallback ld+json (SKU de variante)
-			];
+    // --- Patrones (Precio App) ---
+    const priceAppPatterns = [
+        /"retailPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i,
+        /"originalPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i,
+        /"salePrice"\s*:\s*([\d.]+)/i,
+        /"price"\s*:\s*([\d.]+)/i
+    ];
 
-			const imagePatterns = [
-				/"skcImages"\s*:\s*\[\s*"(.*?)"/i, // Prioridad 1: JSON gbRawData (Galería)
-				/<link rel="preload" as="image" href="(.*_900x\.webp)"/i, // <head> preload
-				/<div class="crop-image-container fsp-element" data-before-crop-src="(.*?)"/i, // HTML <body> (Imagen principal)
-				/"image":"(.*?)"/i, // Fallback: ld+json
-				/<div class="crop-image-container" data-before-crop-src="(.*?)"/i // Fallback: HTML (Cualquier thumbnail)
-			];
+    // --- EXTRACCIÓN DE DATOS CON GUARDADO PARCIAL ---
+    
+    // 1. Extraer Título
+    for (const pattern of titlePatterns) {
+        const match = data.match(pattern);
+        if (match && match[1]) {
+            partialData.title = match[1];
+            break;
+        }
+    }
+    if (!partialData.title) missingData.push('Título');
 
-			const priceAppPatterns = [
-				/"retailPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i,
-				/"originalPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i
-			];
+    // 2. Extraer SKU
+    for (const pattern of skuPatterns) {
+        const match = data.match(pattern);
+        if (match && match[1]) {
+            partialData.sku = match[1];
+            break;
+        }
+    }
+    if (!partialData.sku) missingData.push('SKU');
 
-			// --- Extracción (Sin cambios) ---
+    // 3. Extraer Imagen
+    for (const pattern of imagePatterns) {
+        const match = data.match(pattern);
+        if (match && match[1]) {
+            let image = match[1];
+            if (!image.startsWith("http")) {
+                image = "https:" + image;
+            }
+            image = image.replace(/_thumbnail_\d+x\d+\.webp/i, '_thumbnail_900x.webp');
+            partialData.image = image;
+            break;
+        }
+    }
+    if (!partialData.image) missingData.push('Imagen');
 
-			let image = findMatch(data, imagePatterns);
-			const sku = findMatch(data, skuPatterns);
-			const priceAppStr = findMatch(data, priceAppPatterns);
-			const title = findMatch(data, titlePatterns);
+    // 4. Extraer Precio App
+    for (const pattern of priceAppPatterns) {
+        const match = data.match(pattern);
+        if (match && match[1]) {
+            partialData.priceApp = parseFloat(match[1]);
+            break;
+        }
+    }
+    if (!partialData.priceApp) missingData.push('Precio App');
 
-			// --- Lógica de Tallas (¡MODIFICADA!) ---
-			let sizes = [];
+    // --- Lógica de Tallas MEJORADA ---
+    let sizes = [];
 
-			// INTENTO 1: Usar "base_size_sort" (El más fiable, sugerido por ti)
-			const baseSizeSortMatch = data.match(/"base_size_sort":(\{.*?\})/);
+    // INTENTO 1: Usar "base_size_sort"
+    const baseSizeSortMatch = data.match(/"base_size_sort":(\{.*?\})/);
+    if (baseSizeSortMatch && baseSizeSortMatch[1]) {
+        try {
+            const sizeObject = JSON.parse(baseSizeSortMatch[1]);
+            sizes = Object.keys(sizeObject);
+        } catch (e) {
+            console.error("Fallo al parsear JSON de base_size_sort:", e);
+        }
+    }
 
-			if (baseSizeSortMatch && baseSizeSortMatch[1]) {
-				try {
-					const sizeObject = JSON.parse(baseSizeSortMatch[1]);
-					sizes = Object.keys(sizeObject);
-				} catch (e) {
-					console.error("Fallo al parsear JSON de base_size_sort:", e);
-					sizes = [];
-				}
-			}
+    // INTENTO 2: Usar "attr_value_list"
+    if (sizes.length === 0) {
+        const sizeBlockMatch = data.match(/"attr_name":"Talla".*?"attr_value_list":(\[.*?\])/s);
+        if (sizeBlockMatch && sizeBlockMatch[1]) {
+            try {
+                const sizeList = JSON.parse(sizeBlockMatch[1]);
+                sizeList.forEach(item => {
+                    if (item.attr_value_name && item.attr_value_id) {
+                        let sizeLabel = item.attr_value_name;
+                        if (item.attr_local_size_value && /^[a-zA-Z]+$/.test(item.attr_value_name)) {
+                            sizeLabel = `${item.attr_local_size_value} (${item.attr_value_name})`;
+                        }
+                        sizes.push(sizeLabel);
+                    }
+                });
+            } catch (e) {
+                console.error("Fallo al parsear JSON de tallas (attr_value_list):", e);
+            }
+        }
+    }
 
-			// INTENTO 2: Usar "attr_value_list" (Para casos como "0 (S)")
-			if (sizes.length === 0) {
-				const sizeBlockMatch = data.match(/"attr_name":"Talla".*?"attr_value_list":(\[.*?\])/s);
+    // INTENTO 3: Fallback a JSON genérico
+    if (sizes.length === 0) {
+        const jsonPattern = /"attr_value_name":"(.*?)"/g;
+        const jsonSizes = [...data.matchAll(jsonPattern)].map(match => match[1]);
+        sizes.push(...jsonSizes);
+    }
 
-				if (sizeBlockMatch && sizeBlockMatch[1]) {
-					try {
-						const sizeList = JSON.parse(sizeBlockMatch[1]);
-						sizeList.forEach(item => {
-							if (item.attr_value_name && item.attr_value_id) {
-								let sizeLabel = item.attr_value_name;
-								if (item.attr_local_size_value && /^[a-zA-Z]+$/.test(item.attr_value_name)) {
-									sizeLabel = `${item.attr_local_size_value} (${item.attr_value_name})`; // "0 (S)"
-								}
-								sizes.push(sizeLabel);
-							}
-						});
-					} catch (e) {
-						console.error("Fallo al parsear JSON de tallas (attr_value_list):", e);
-					}
-				}
-			}
+    // INTENTO 4: Fallback a HTML
+    if (sizes.length === 0) {
+        const htmlSizePatterns = [
+            /data-attr_id="87".*?data-attr_value_name="(.*?)"/g,
+            /<p class="product-intro__size-radio-inner.*?>(.*?)<\/p>/g
+        ];
+        const htmlSizes = htmlSizePatterns.flatMap(pattern =>
+            [...data.matchAll(pattern)].map(match => match[1])
+        );
+        sizes.push(...htmlSizes);
+    }
 
-			// INTENTO 3: Fallback a JSON genérico
-			if (sizes.length === 0) {
-				console.log("Intentando fallback de JSON genérico para tallas...");
-				const jsonPattern = /"attr_value_name":"(.*?)"/g;
-				const jsonSizes = [...data.matchAll(jsonPattern)].map(match => match[1]);
-				sizes.push(...jsonSizes);
-			}
+    // INTENTO 5: Buscar en el JSON gbRawData directamente
+    if (sizes.length === 0) {
+        const gbRawDataMatch = data.match(/"gbRawData":\s*({.*?})/s);
+        if (gbRawDataMatch && gbRawDataMatch[1]) {
+            try {
+                const rawData = JSON.parse(gbRawDataMatch[1]);
+                if (rawData.skcImages) {
+                    // Extraer tallas de las claves de skcImages
+                    const skcKeys = Object.keys(rawData.skcImages);
+                    if (skcKeys.length > 0) {
+                        // Intentar extraer tallas de los nombres de las claves
+                        skcKeys.forEach(key => {
+                            if (key.includes(':')) {
+                                const sizePart = key.split(':')[1];
+                                if (sizePart) sizes.push(sizePart);
+                            }
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error("Fallo al parsear gbRawData:", e);
+            }
+        }
+    }
 
-			// INTENTO 4: Fallback a HTML 
-			if (sizes.length === 0) {
-				console.log("Intentando fallback de HTML para tallas...");
-				const htmlSizePatterns = [
-					/data-attr_id="87".*?data-attr_value_name="(.*?)"/g,
-					/<p class="product-intro__size-radio-inner.*?>(.*?)<\/p>/g
-				];
+    // Limpieza final
+    const finalSizes = [...new Set(sizes.filter(s => s && s.trim() !== ''))];
+    partialData.sizes = finalSizes;
+    if (finalSizes.length === 0) missingData.push('Tallas');
 
-				const htmlSizes = htmlSizePatterns.flatMap(pattern =>
-					[...data.matchAll(pattern)].map(match => match[1])
-				);
-				sizes.push(...htmlSizes);
-			}
+    // --- VERIFICACIÓN FINAL ---
+    // Si tenemos al menos el título, SKU y precio, podemos continuar aunque falte la imagen o tallas
+    const hasEssentialData = partialData.title && partialData.sku && partialData.priceApp !== null;
+    
+    if (hasEssentialData) {
+        // Calcular precio en lempiras
+        partialData.priceLempiras = calculatePriceInLempiras(parseFloat(partialData.priceApp));
+        
+        // Si falta la imagen, usar una imagen por defecto
+        if (!partialData.image) {
+            partialData.image = 'https://via.placeholder.com/50x50/cccccc/ffffff?text=No+Image';
+        }
+        
+        // Si no hay tallas, añadir una opción por defecto
+        if (partialData.sizes.length === 0) {
+            partialData.sizes = ['Talla Única'];
+        }
+        
+        // Crear el item completo
+        const item = {
+            image: partialData.image,
+            title: partialData.title,
+            sku: partialData.sku,
+            priceApp: partialData.priceApp,
+            priceLempiras: partialData.priceLempiras,
+            sizes: partialData.sizes,
+            selectedSize: "",
+            enlace: enlace,
+            color: '#ffffff'
+        };
+        
+        items.push(item);
+        saveToLocalStorage();
+        updateTable();
+        
+        // Mostrar mensaje con información de qué datos faltaban
+        let message = "Datos cargados con éxito.";
+        if (missingData.length > 0) {
+            message += ` (Parcial: faltan ${missingData.join(', ')})`;
+        }
+        showMessage(message, 'success');
+        return true;
+    } else {
+        // Si faltan datos esenciales, mostrar qué falta
+        const essentialMissing = missingData.filter(d => ['Título', 'SKU', 'Precio App'].includes(d));
+        if (essentialMissing.length > 0) {
+            console.log("Faltan datos esenciales:", essentialMissing);
+        }
+        return false;
+    }
+}
 
-			// Limpieza final
-			const finalSizes = [...new Set(sizes.filter(s => s && s.trim() !== ''))];
-			// --- Fin Lógica de Tallas ---
-
-			// --- Verificación y guardado (Sin cambios) ---
-			if (image && sku && priceAppStr && title) {
-				if (!image.startsWith("http")) {
-					image = "https:" + image;
-				}
-
-				image = image.replace(/_thumbnail_\d+x\d+\.webp/i, '_thumbnail_900x.webp');
-
-				const priceApp = parseFloat(priceAppStr);
-
-				const item = {
-					image: image,
-					title: title,
-					sku: sku,
-					priceApp: priceApp,
-					priceLempiras: calculatePriceInLempiras(parseFloat(priceApp)),
-					// LIMPIEZA 6: 'percentage' eliminado
-					sizes: finalSizes,
-					selectedSize: "",
-					enlace: enlace,
-					color: '#ffffff'
-				};
-
-				items.push(item);
-				saveToLocalStorage();
-				updateTable();
-
-				showMessage("Datos cargados con éxito.", 'success');
-				return true; // <--- DEVOLVER ÉXITO
-			} else {
-				console.log("Faltaron datos clave:", {
-					image: !!image,
-					sku: !!sku,
-					priceAppStr: !!priceAppStr,
-					title: !!title
-				});
-
-				return false; // <--- DEVOLVER FRACASO (para que fetchWithRetry reintente)
-			}
-		}
 
 		// Calcular precio en lempiras
 		function calculatePriceInLempiras(priceApp) {
@@ -2948,7 +3085,6 @@
 </body>
 
 </html>
-
 
 
 
