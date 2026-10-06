@@ -2094,8 +2094,6 @@
 		function resetUI() {
 			const enlaceInput = document.getElementById("enlace");
 			const clearButton = document.querySelector("button[onclick='clearInput()'], button[onclick*='currentFetchController']");
-			const addButton = document.querySelector("button[onclick='obtenerFuente()']");
-			const extButton = document.getElementById("extensionButton");
 			const menuButton = document.getElementById("menuToggleButton");
 
 			enlaceInput.disabled = false;
@@ -2108,8 +2106,9 @@
 				clearButton.classList.remove('cancel-button');
 			}
 
-			if (addButton) addButton.style.display = 'inline-flex';
-			if (extButton) extButton.style.display = extensionDisponible ? 'inline-flex' : 'none';
+			// Restaurar visibilidad de botones SEGÚN EL MODO ACTUAL
+			// (esto decide si mostrar "+", "verde", o ambos)
+			updateUIBasedOnMode();
 
 			if (currentFetchController) currentFetchController.abort();
 			currentFetchController = null;
