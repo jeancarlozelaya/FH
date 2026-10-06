@@ -892,6 +892,15 @@
 
 			// === Detección de la extensión de Chrome ===
 			setupExtensionListeners();
+
+			// === Detección del bridge Android ===
+			setTimeout(() => {
+				if (detectarBridgeAndroid()) {
+					console.log("🤖 Bridge Android detectado");
+					const androidBtn = document.getElementById("androidButton");
+					if (androidBtn) androidBtn.style.display = "inline-flex";
+				}
+			}, 500);
 		};
 
 		// ============================================================
@@ -969,7 +978,64 @@
 					requestId: reqId
 				}, "*");
 			});
+
+
 		}
+
+
+		// ============================================================
+		// BRIDGE ANDROID NATIVO (para el APK)
+		// ============================================================
+		function detectarBridgeAndroid() {
+			return typeof window.AndroidBridge !== "undefined"
+				&& typeof window.AndroidBridge.fetchSHEIN === "function";
+		}
+
+		function fetchConAndroid(url) {
+			return new Promise((resolve, reject) => {
+				if (!detectarBridgeAndroid()) {
+					reject(new Error("AndroidBridge no está disponible"));
+					return;
+				}
+
+				const reqId = "android_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+				window._androidCallbacks = window._androidCallbacks || {};
+				window._androidCallbacks[reqId] = (exito, html, error) => {
+					delete window._androidCallbacks[reqId];
+					if (exito) {
+						resolve({
+							exito: true,
+							html: html,
+							tamano: html.length,
+							tieneGbRawData: html.includes("window.gbRawData"),
+							tieneJsonLD: html.includes("application/ld+json"),
+							tieneOgTitle: html.includes("og:title")
+						});
+					} else {
+						reject(new Error(error || "Error en AndroidBridge"));
+					}
+				};
+
+				// Timeout de 30s
+				setTimeout(() => {
+					if (window._androidCallbacks[reqId]) {
+						delete window._androidCallbacks[reqId];
+						reject(new Error("Timeout: AndroidBridge no respondió en 30s"));
+					}
+				}, 30000);
+
+				console.log("🤖 Solicitando HTML al bridge Android:", url);
+				window.AndroidBridge.fetchSHEIN(url, reqId);
+			});
+		}
+
+		// Callback global que Kotlin llama desde el otro lado
+		window.onAndroidFetchResponse = function(reqId, exito, html, error) {
+			if (window._androidCallbacks && window._androidCallbacks[reqId]) {
+				window._androidCallbacks[reqId](exito, html, error);
+			}
+		};
+
 
 		function loadDataForProfile() {
 			const savedItems = localStorage.getItem(`items_profile_${currentProfile}`);
@@ -1079,6 +1145,180 @@
 				obtenerFuenteDesdeCodigo();
 			}
 		}
+
+
+
+		async function obtenerFuenteDesdeAndroid() {
+			const enlace = document.getElementById("enlace").value.trim();
+
+			if (!enlace) {
+				showMessage("Por favor, ingrese un enlace válido.", 'error');
+				return;
+			}
+
+			if (!enlace.includes("shein")) {
+				showMessage("⚠️ El enlace no parece ser de SHEIN.", 'error');
+				return;
+			}
+
+			if (!detectarBridgeAndroid()) {
+				showMessage("⚠️ Bridge Android no disponible.", 'error');
+				return;
+			}
+
+			// Normalizar URL
+			const baseURL = "https://us.shein.com/";
+			const cleanPath = enlace.replace(/^(https?:\/\/)?([a-zA-Z0-9.-]+\.)?shein\.com\/(us\/)?/i, "");
+			const finalEnlace = baseURL + cleanPath;
+			document.getElementById("enlace").value = finalEnlace;
+
+			// Bloquear UI
+			const enlaceInput = document.getElementById("enlace");
+			const clearButton = document.querySelector("button[onclick='clearInput()']");
+			const addButton = document.querySelector("button[onclick='obtenerFuente()']");
+			const extButton = document.getElementById("extensionButton");
+			const menuButton = document.getElementById("menuToggleButton");
+
+			enlaceInput.disabled = true;
+			menuButton.disabled = true;
+			if (addButton) addButton.style.display = 'none';
+			if (extButton) extButton.style.display = 'none';
+
+			if (clearButton) {
+				clearButton.innerHTML = '<i class="fas fa-times"></i> Cancelar';
+				clearButton.classList.add('cancel-button');
+				clearButton.onclick = function() {
+					resetUI();
+					showMessage("Proceso cancelado.", 'error');
+				};
+			}
+
+			showMessage("Obteniendo desde la app...", 'processing');
+
+			const itemIndex = items.length;
+			items.push({
+				image: "",
+				title: null,
+				sku: null,
+				priceApp: null,
+				priceLempiras: null,
+				sizes: [],
+				selectedSize: "",
+				enlace: finalEnlace,
+				color: '#ffffff',
+				_pendiente: true,
+				_missing: []
+			});
+			updateTable();
+
+			try {
+				const t0 = Date.now();
+				const respuesta = await fetchConAndroid(finalEnlace);
+				const t1 = Date.now();
+				console.log(`[Android] HTML recibido en ${t1 - t0}ms (${respuesta.tamano} chars)`);
+				console.log(`[Android] gbRawData: ${respuesta.tieneGbRawData}, JSON-LD: ${respuesta.tieneJsonLD}, og:title: ${respuesta.tieneOgTitle}`);
+
+				const item = items[itemIndex];
+				let hasNewData = false;
+
+				// NIVEL 1: gbRawData
+				const nivel1 = extraerDeGbRawDataCliente(respuesta.html);
+				if (nivel1.exito) {
+					const d = nivel1.datos;
+					if (d.titulo && !item.title) { item.title = d.titulo; hasNewData = true; }
+					if (d.sku && !item.sku) { item.sku = d.sku; hasNewData = true; }
+					if (d.precioApp && !item.priceApp) {
+						item.priceApp = parseFloat(d.precioApp);
+						item.priceLempiras = calculatePriceInLempiras(item.priceApp);
+						hasNewData = true;
+					}
+					if (d.precioDescuento && !item.priceDiscount) { item.priceDiscount = parseFloat(d.precioDescuento); hasNewData = true; }
+					if (d.imagen && !item.image) {
+						let img = Array.isArray(d.imagen) ? d.imagen[0] : d.imagen;
+						if (typeof img === 'string') {
+							if (!img.startsWith("http")) img = "https:" + img;
+							item.image = img;
+							hasNewData = true;
+						}
+					}
+					if (Array.isArray(d.imagenes) && d.imagenes.length > 0) {
+						item.images = d.imagenes.map(img => img && !img.startsWith("http") ? "https:" + img : img);
+						hasNewData = true;
+					}
+					if (Array.isArray(d.tallas) && d.tallas.length > 0) {
+						item.sizes = d.tallas;
+						hasNewData = true;
+					}
+					console.log("[Android] Extraído de gbRawData");
+				}
+
+				// NIVEL 2: JSON-LD si falta algo
+				if (!item.title || !item.priceApp) {
+					const nivel2 = extraerDeJsonLDCliente(respuesta.html);
+					if (nivel2.exito) {
+						const d = nivel2.datos;
+						if (d.titulo && !item.title) { item.title = d.titulo; hasNewData = true; }
+						if (d.sku && !item.sku) { item.sku = d.sku; hasNewData = true; }
+						if (d.precioDescuento && !item.priceApp) {
+							item.priceApp = parseFloat(d.precioDescuento);
+							item.priceLempiras = calculatePriceInLempiras(item.priceApp);
+							hasNewData = true;
+						}
+						if (d.imagen && !item.image) {
+							let img = d.imagen;
+							if (typeof img === 'string' && !img.startsWith("http")) img = "https:" + img;
+							item.image = img;
+							hasNewData = true;
+						}
+						if (Array.isArray(d.tallas) && d.tallas.length > 0 && (!item.sizes || item.sizes.length === 0)) {
+							item.sizes = d.tallas;
+							hasNewData = true;
+						}
+						if (Array.isArray(d.variantes) && d.variantes.length > 0) {
+							item.variantes = d.variantes;
+						}
+						console.log("[Android] Extraído de JSON-LD (complemento)");
+					}
+				}
+
+				// NIVEL 3: regex
+				if (!item.title || !item.priceApp || !item.image) {
+					const hasFromRegex = extractDataPartial(respuesta.html, 0.20, finalEnlace, itemIndex);
+					if (hasFromRegex) hasNewData = true;
+				}
+
+				// Recalcular faltantes
+				const faltantes = [];
+				if (!item.title) faltantes.push('Título');
+				if (!item.sku) faltantes.push('SKU');
+				if (!item.image) faltantes.push('Imagen');
+				if (item.priceApp === null || item.priceApp === undefined) faltantes.push('Precio App');
+				if (!item.sizes || item.sizes.length === 0) faltantes.push('Tallas');
+				item._missing = faltantes;
+
+				items[itemIndex]._pendiente = false;
+				saveToLocalStorage();
+				updateTable();
+				resetUI();
+
+				if (hasNewData) {
+					showMessage("✅ Datos cargados desde la app.", 'success');
+				} else {
+					showMessage("No se pudieron extraer datos.", 'error');
+				}
+				console.log(`✅ COMPLETADO (Android). Tiempo: ${Date.now() - t0}ms`);
+
+			} catch (error) {
+				console.error("[Android] Error:", error);
+				items[itemIndex]._pendiente = false;
+				saveToLocalStorage();
+				updateTable();
+				resetUI();
+				showMessage("Error: " + error.message, 'error');
+			}
+		}
+
+
 
 		// ============================================================
 		// MODO EXTENSIÓN: obtener HTML usando el navegador
@@ -2098,6 +2338,10 @@
 
 			if (addButton) addButton.style.display = 'inline-flex';
 			if (extButton) extButton.style.display = extensionDisponible ? 'inline-flex' : 'none';
+			const androidBtn = document.getElementById("androidButton");
+			if (androidBtn) androidBtn.style.display = detectarBridgeAndroid() ? 'inline-flex' : 'none';
+
+
 
 			if (currentFetchController) currentFetchController.abort();
 			currentFetchController = null;
@@ -2974,6 +3218,9 @@
 			<button onclick="obtenerFuente()" title="Usar scripts de Google"><i class="fas fa-plus"></i></button>
 			<button id="extensionButton" onclick="obtenerFuenteDesdeExtension()" title="Obtener desde el navegador (extensión)" style="display: none; background-color: #28a745;">
 				<i class="fas fa-download"></i>
+			</button>
+			<button id="androidButton" onclick="obtenerFuenteDesdeAndroid()" title="Obtener desde la app Android" style="display: none; background-color: #ff9800;">
+				<i class="fas fa-mobile-alt"></i>
 			</button>
 			<button onclick="clearInput()"><i class="fas fa-eraser"></i></button>
 		</div>
