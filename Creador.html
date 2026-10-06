@@ -840,6 +840,10 @@
 
 		let workMode = "urls";
 		let dollarValue = null;
+		// Extensión de Chrome
+		let extensionDisponible = false;
+		let extensionRequestId = 0;
+		const extensionCallbacks = {}; // requestId → callback
 
 		// ============================================================
 		// 🔧 LISTA DE SCRIPTS DE GOOGLE (agrega aquí todas tus URLs)
@@ -850,8 +854,11 @@
 			"https://script.google.com/macros/s/AKfycbzNZES4klq8esXlUUmz1VFeHwdu9T_8r6EjaHHRT2bbT7XWNzvGiES6v9Mg5HvhlTsRtA/exec",
 			"https://script.google.com/macros/s/AKfycbz8CxpqiKWvcYiKX9fflzbxf3glLOjeb5DATM4ayXLxbqW3yrJkOmRJCXfwYV-J9bjVLA/exec",
 			"https://script.google.com/macros/s/AKfycbwS8GHgN5IY-0ZKo1pF9iaPFzf3O0UkYNLW9pbMxVN9bZqnavc6SLe9i4PTwB8VoniGfw/exec",
-
-
+			"https://script.google.com/macros/s/AKfycbzK1wSSfcvLbC0s3C_CJVU-J_-5IaD7BgH33BSLHQkWyojR6RMbQrePqDdpPg7cqSnlxA/exec",
+			"https://script.google.com/macros/s/AKfycbwvfIZH0KI7SVgTQo9okF_LiXv-iyNMkFetY9CFBNLX2cuODx4PC548zuPt5-9QvmMlFw/exec",
+			"https://script.google.com/macros/s/AKfycbylvx41hS7dMp8cS_CUAojgRYfbcPFZ2LATtGMOGIwFNRyv-J2RTJRbC4dWAMM0H8MT/exec",
+			"https://script.google.com/macros/s/AKfycbxGbFbvvVzxls1qjFdizrZTSsvDW9_S6YswEXjz0VxJmwKK2-ulg1TlFLxb_RQObs-bgQ/exec",
+			"https://script.google.com/macros/s/AKfycbzpMcvzbZo66QConpxYbsEVeCRTTVbrCHsxksKuJb0G2ziJVTPe4WGxmTQ-GWyYO0_tog/exec",
 
 
 		];
@@ -882,7 +889,87 @@
 			const savedProfile = localStorage.getItem("currentProfile");
 			if (savedProfile) currentProfile = parseInt(savedProfile, 10);
 			loadDataForProfile();
+
+			// === Detección de la extensión de Chrome ===
+			setupExtensionListeners();
 		};
+
+		// ============================================================
+		// EXTENSIÓN DE CHROME (SHEIN Extractor)
+		// ============================================================
+		function setupExtensionListeners() {
+			window.addEventListener("message", (event) => {
+				if (event.source !== window) return;
+				const data = event.data;
+				if (!data || !data.tipo) return;
+
+				if (data.tipo === "SHEIN_EXTENSION_READY") {
+					extensionDisponible = true;
+					console.log("🔌 Extensión SHEIN disponible (versión " + data.version + ")");
+					updateExtensionUI();
+				}
+
+				if (data.tipo === "SHEIN_FETCH_RESPONSE") {
+					const reqId = data.requestId || "default";
+					if (extensionCallbacks[reqId]) {
+						extensionCallbacks[reqId](data);
+						delete extensionCallbacks[reqId];
+					}
+				}
+			});
+
+			// Por si la extensión ya estaba cargada antes de este listener
+			setTimeout(() => {
+				if (!extensionDisponible) {
+					// Intentar ping a la extensión
+					window.postMessage({ tipo: "SHEIN_EXTENSION_PING" }, "*");
+				}
+			}, 500);
+		}
+
+		function updateExtensionUI() {
+			// Muestra u oculta el botón de "Desde Navegador" según disponibilidad
+			const btn = document.getElementById("extensionButton");
+			if (btn) {
+				btn.style.display = extensionDisponible ? "inline-flex" : "none";
+			}
+		}
+
+		// ============================================================
+		// OBTENER HTML DE SHEIN USANDO LA EXTENSIÓN
+		// ============================================================
+		function fetchConExtension(url) {
+			return new Promise((resolve, reject) => {
+				if (!extensionDisponible) {
+					reject(new Error("La extensión de Chrome no está disponible"));
+					return;
+				}
+
+				const reqId = "req_" + (++extensionRequestId) + "_" + Date.now();
+				extensionCallbacks[reqId] = (data) => {
+					if (data.exito) {
+						resolve(data);
+					} else {
+						reject(new Error(data.error || "Error desconocido"));
+					}
+				};
+
+				// Timeout de 30 segundos
+				setTimeout(() => {
+					if (extensionCallbacks[reqId]) {
+						delete extensionCallbacks[reqId];
+						reject(new Error("Timeout: la extensión no respondió en 30s"));
+					}
+				}, 30000);
+
+				console.log("📡 Solicitando HTML a la extensión:", url);
+				window.postMessage({
+					tipo: "SHEIN_FETCH_REQUEST",
+					url: url,
+					requestId: reqId
+				}, "*");
+			});
+		}
 
 		function loadDataForProfile() {
 			const savedItems = localStorage.getItem(`items_profile_${currentProfile}`);
@@ -992,6 +1079,194 @@
 				obtenerFuenteDesdeCodigo();
 			}
 		}
+
+		// ============================================================
+		// MODO EXTENSIÓN: obtener HTML usando el navegador
+		// ============================================================
+		async function obtenerFuenteDesdeExtension() {
+			const enlace = document.getElementById("enlace").value.trim();
+
+			if (!enlace) {
+				showMessage("Por favor, ingrese un enlace válido.", 'error');
+				return;
+			}
+
+			if (!enlace.includes("shein")) {
+				showMessage("⚠️ El enlace no parece ser de SHEIN.", 'error');
+				return;
+			}
+
+			if (!extensionDisponible) {
+				showMessage("⚠️ La extensión de Chrome no está disponible. Instálala primero.", 'error');
+				return;
+			}
+
+			// Normalizar URL a us.shein.com
+			const baseURL = "https://us.shein.com/";
+			const cleanPath = enlace.replace(/^(https?:\/\/)?([a-zA-Z0-9.-]+\.)?shein\.com\/(us\/)?/i, "");
+			const finalEnlace = baseURL + cleanPath;
+			document.getElementById("enlace").value = finalEnlace;
+
+			// Bloquear UI
+			const enlaceInput = document.getElementById("enlace");
+			const clearButton = document.querySelector("button[onclick='clearInput()']");
+			const addButton = document.querySelector("button[onclick='obtenerFuente()']");
+			const extButton = document.getElementById("extensionButton");
+			const menuButton = document.getElementById("menuToggleButton");
+
+			enlaceInput.disabled = true;
+			menuButton.disabled = true;
+			if (addButton) addButton.style.display = 'none';
+			if (extButton) extButton.style.display = 'none';
+
+			if (clearButton) {
+				clearButton.innerHTML = '<i class="fas fa-times"></i> Cancelar';
+				clearButton.classList.add('cancel-button');
+				clearButton.onclick = function() {
+					resetUI();
+					showMessage("Proceso cancelado.", 'error');
+				};
+			}
+
+			showMessage("Obteniendo desde el navegador...", 'processing');
+
+			const itemIndex = items.length;
+			items.push({
+				image: "",
+				title: null,
+				sku: null,
+				priceApp: null,
+				priceLempiras: null,
+				sizes: [],
+				selectedSize: "",
+				enlace: finalEnlace,
+				color: '#ffffff',
+				_pendiente: true,
+				_missing: []
+			});
+			updateTable();
+
+			try {
+				const t0 = Date.now();
+				const respuesta = await fetchConExtension(finalEnlace);
+				const t1 = Date.now();
+				console.log(`[Extensión] HTML recibido en ${t1 - t0}ms (${respuesta.tamano} chars)`);
+				console.log(`[Extensión] Tiene gbRawData: ${respuesta.tieneGbRawData}, JSON-LD: ${respuesta.tieneJsonLD}, og:title: ${respuesta.tieneOgTitle}`);
+
+				const item = items[itemIndex];
+				let hasNewData = false;
+
+				// NIVEL 1: intentar gbRawData primero (parseo real)
+				const nivel1 = extraerDeGbRawDataCliente(respuesta.html);
+				if (nivel1.exito) {
+					const d = nivel1.datos;
+					if (d.titulo && !item.title) { item.title = d.titulo; hasNewData = true; }
+					if (d.sku && !item.sku) { item.sku = d.sku; hasNewData = true; }
+					if (d.precioApp && !item.priceApp) {
+						item.priceApp = parseFloat(d.precioApp);
+						item.priceLempiras = calculatePriceInLempiras(item.priceApp);
+						hasNewData = true;
+					}
+					if (d.precioDescuento && !item.priceDiscount) { item.priceDiscount = parseFloat(d.precioDescuento); hasNewData = true; }
+					if (d.imagen && !item.image) {
+						let img = Array.isArray(d.imagen) ? d.imagen[0] : d.imagen;
+						if (typeof img === 'string') {
+							if (!img.startsWith("http")) img = "https:" + img;
+							item.image = img;
+							hasNewData = true;
+						}
+					}
+					if (Array.isArray(d.imagenes) && d.imagenes.length > 0) {
+						item.images = d.imagenes.map(img => img && !img.startsWith("http") ? "https:" + img : img);
+						hasNewData = true;
+					}
+					if (Array.isArray(d.tallas) && d.tallas.length > 0) {
+						item.sizes = d.tallas;
+						hasNewData = true;
+					}
+					console.log("[Extensión] Extraído de gbRawData");
+				}
+
+				// NIVEL 2: intentar JSON-LD si falta algo
+				if (!item.title || !item.priceApp) {
+					const nivel2 = extraerDeJsonLDCliente(respuesta.html);
+					if (nivel2.exito) {
+						const d = nivel2.datos;
+						if (d.titulo && !item.title) { item.title = d.titulo; hasNewData = true; }
+						if (d.sku && !item.sku) { item.sku = d.sku; hasNewData = true; }
+						if (d.precioDescuento && !item.priceApp) {
+							// JSON-LD trae salePrice, usarlo como precioApp si no hay retail
+							item.priceApp = parseFloat(d.precioDescuento);
+							item.priceLempiras = calculatePriceInLempiras(item.priceApp);
+							hasNewData = true;
+						}
+						if (d.imagen && !item.image) {
+							let img = d.imagen;
+							if (typeof img === 'string' && !img.startsWith("http")) img = "https:" + img;
+							item.image = img;
+							hasNewData = true;
+						}
+						if (Array.isArray(d.tallas) && d.tallas.length > 0 && (!item.sizes || item.sizes.length === 0)) {
+							item.sizes = d.tallas;
+							hasNewData = true;
+						}
+						if (Array.isArray(d.variantes) && d.variantes.length > 0) {
+							item.variantes = d.variantes;
+						}
+						console.log("[Extensión] Extraído de JSON-LD (complemento)");
+					}
+				}
+
+				// NIVEL 3: regex (respaldo por si nada de lo anterior funciona)
+				if (!item.title || !item.priceApp || !item.image) {
+					const hasFromRegex = extractDataPartial(respuesta.html, 0.20, finalEnlace, itemIndex);
+					if (hasFromRegex) hasNewData = true;
+					console.log("[Extensión] Complementado con regex");
+				}
+
+				if (hasNewData) {
+					saveToLocalStorage();
+					updateTable();
+				}
+
+				// Recalcular faltantes
+				const faltantes = [];
+				if (!item.title) faltantes.push('Título');
+				if (!item.sku) faltantes.push('SKU');
+				if (!item.image) faltantes.push('Imagen');
+				if (item.priceApp === null || item.priceApp === undefined) faltantes.push('Precio App');
+				if (!item.sizes || item.sizes.length === 0) faltantes.push('Tallas');
+				item._missing = faltantes;
+				console.log("[Extensión] Faltantes:", faltantes.length === 0 ? "(ninguno)" : faltantes.join(', '));
+
+				// Verificar si tenemos todo
+				const tengoTodo = item.title && item.sku && item.priceApp !== null;
+				items[itemIndex]._pendiente = false;
+
+				saveToLocalStorage();
+				updateTable();
+				resetUI();
+
+				if (tengoTodo) {
+					showMessage("✅ Datos cargados desde el navegador.", 'success');
+					console.log(`✅ COMPLETADO (extensión). Tiempo: ${Date.now() - t0}ms`);
+				} else {
+					const faltantes = item._missing || [];
+					showMessage(`Datos incompletos. Faltan: ${faltantes.join(', ')}`, 'error');
+				}
+
+			} catch (error) {
+				console.error("[Extensión] Error:", error);
+				items[itemIndex]._pendiente = false;
+				saveToLocalStorage();
+				updateTable();
+				resetUI();
+				showMessage("Error: " + error.message, 'error');
+			}
+		}
+
+
+
 
 		// --- MODO 1: ENLACES ---
 		function obtenerFuenteDesdeEnlace() {
@@ -1347,6 +1622,196 @@
 			return trimmed;
 		}
 
+
+		// ============================================================
+		// EXTRACTOR ROBUSTO DE gbRawData (mismo que el Apps Script v6)
+		// ============================================================
+		function extraerDeGbRawDataCliente(html) {
+			const marcador = "window.gbRawData";
+			const candidatos = [];
+			let idx = 0;
+
+			while ((idx = html.indexOf(marcador, idx)) !== -1) {
+				let p = idx + marcador.length;
+				while (p < html.length && /\s/.test(html[p])) p++;
+				if (html[p] !== "=") { idx++; continue; }
+				if (html[p + 1] === "=") { idx++; continue; }
+				if (html[p + 1] === ">") { idx++; continue; }
+				p++;
+				while (p < html.length && /\s/.test(html[p])) p++;
+				if (html[p] !== "{") { idx++; continue; }
+				candidatos.push({ posicionLlave: p });
+				idx = p + 1;
+			}
+
+			if (candidatos.length === 0) return { exito: false };
+
+			for (const c of candidatos) {
+				const posicionLlave = c.posicionLlave;
+				let nivel = 0, enString = false, caracterString = null, escapado = false, fin = -1;
+
+				for (let i = posicionLlave; i < html.length; i++) {
+					const ch = html[i];
+					if (escapado) { escapado = false; continue; }
+					if (ch === '\\') { escapado = true; continue; }
+					if (enString) {
+						if (ch === caracterString) enString = false;
+						continue;
+					}
+					if (ch === '"' || ch === "'") { enString = true; caracterString = ch; continue; }
+					if (ch === '{') nivel++;
+					else if (ch === '}') { nivel--; if (nivel === 0) { fin = i; break; } }
+				}
+
+				if (fin === -1) continue;
+				const jsonString = html.substring(posicionLlave, fin + 1);
+				if (jsonString.length < 1000) continue;
+
+				const primeros200 = jsonString.substring(0, 200);
+				if (/=\s*['"]/.test(primeros200) || /renderType\s*=/.test(primeros200)) continue;
+
+				try {
+					const gbRawData = JSON.parse(jsonString);
+					const datos = extraerCamposCliente(gbRawData);
+					return { exito: true, datos: datos };
+				} catch (e) {
+					continue;
+				}
+			}
+
+			return { exito: false };
+		}
+
+		function extraerCamposCliente(gb) {
+			function buscar(obj, claves) {
+				if (!obj || typeof obj !== 'object') return null;
+				for (const clave of claves) {
+					if (obj[clave] !== undefined && obj[clave] !== null && obj[clave] !== "") {
+						return obj[clave];
+					}
+				}
+				for (const key in obj) {
+					if (typeof obj[key] === 'object') {
+						const found = buscar(obj[key], claves);
+						if (found) return found;
+					}
+				}
+				return null;
+			}
+
+			function extraerPrecios(gb) {
+				const resultado = { precioApp: null, precioDescuento: null };
+				try {
+					const skuList = gb?.modules?.saleAttr?.multiLevelSaleAttribute?.sku_list;
+					if (!Array.isArray(skuList) || skuList.length === 0) return resultado;
+					for (const sku of skuList) {
+						const retail =
+							sku?.priceInfo?.retailPrice?.amount ||
+							sku?.price?.retailPrice?.amount ||
+							sku?.priceInfo?.originalPrice?.amount ||
+							sku?.price?.originalPrice?.amount ||
+							null;
+						const sale =
+							sku?.priceInfo?.salePrice?.amount ||
+							sku?.price?.salePrice?.amount ||
+							null;
+						if (retail) resultado.precioApp = parseFloat(retail);
+						if (sale) resultado.precioDescuento = parseFloat(sale);
+						if (resultado.precioApp || resultado.precioDescuento) return resultado;
+					}
+				} catch (e) {}
+				return resultado;
+			}
+
+			const precios = extraerPrecios(gb);
+
+			const datos = {
+				titulo: buscar(gb, ["goods_name", "productName", "product_name", "goodsName", "title"]),
+				sku: buscar(gb, ["goods_sn", "goodsSn", "productSn", "sku"]),
+				goodsId: buscar(gb, ["goods_id", "goodsId", "productId"]),
+				precioApp: precios.precioApp,
+				precioDescuento: precios.precioDescuento,
+				imagen: buscar(gb, ["goods_img", "goodsImg", "mainImage", "image"]),
+				imagenes: buscar(gb, ["skcImages", "goods_imgs", "images"]),
+				tallas: buscar(gb, ["base_size_sort", "size_list", "attr_value_list", "sizes"])
+			};
+
+			if (datos.tallas && typeof datos.tallas === 'object' && !Array.isArray(datos.tallas)) {
+				datos.tallas = Object.keys(datos.tallas);
+			}
+
+			if (Array.isArray(datos.imagenes) && datos.imagenes.length > 0) {
+				datos.imagenes = datos.imagenes.map(img => {
+					if (typeof img === 'string') return img;
+					if (img && typeof img === 'object') return img.url || img.src || img.image || null;
+					return null;
+				}).filter(Boolean);
+			}
+
+			return datos;
+		}
+
+		function extraerDeJsonLDCliente(html) {
+			const regex = /<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+			const bloques = [];
+			let m;
+			while ((m = regex.exec(html)) !== null) bloques.push(m[1].trim());
+
+			for (const contenido of bloques) {
+				try {
+					let data = JSON.parse(contenido);
+					const items = Array.isArray(data) ? data : [data];
+					for (const item of items) {
+						if (!item || typeof item !== 'object') continue;
+						const tipo = item['@type'];
+						if (tipo !== 'ProductGroup' && tipo !== 'Product') continue;
+
+						const datos = {
+							titulo: item.name || null,
+							sku: null,
+							goodsId: item.productGroupID || null,
+							precioApp: null,
+							precioDescuento: null,
+							imagen: null,
+							imagenes: [],
+							tallas: [],
+							variantes: []
+						};
+
+						if (Array.isArray(item.image)) {
+							datos.imagenes = item.image.filter(Boolean);
+							if (datos.imagenes.length > 0) datos.imagen = datos.imagenes[0];
+						} else if (typeof item.image === 'string') {
+							datos.imagen = item.image;
+							datos.imagenes = [item.image];
+						}
+
+						if (Array.isArray(item.hasVariant)) {
+							item.hasVariant.forEach(v => {
+								const talla = v.size || null;
+								const sku = v.sku || null;
+								const precio = (v.offers && v.offers.price) ? parseFloat(v.offers.price) : null;
+								if (talla) datos.tallas.push(talla);
+								if (sku && !datos.sku) datos.sku = sku;
+								if (precio && !datos.precioDescuento) datos.precioDescuento = precio;
+								datos.variantes.push({ talla, sku, precioDescuento: precio });
+							});
+						}
+
+						if (tipo === 'Product' && item.offers && item.offers.price) {
+							datos.precioDescuento = parseFloat(item.offers.price);
+						}
+
+						datos.tallas = [...new Set(datos.tallas)];
+						return { exito: true, datos };
+					}
+				} catch (e) {}
+			}
+			return { exito: false };
+		}
+
+
+
 		function extractDataPartial(data, porcentajeSeleccionado, enlace, itemIndex) {
 			const item = items[itemIndex];
 			if (!item) return false;
@@ -1618,6 +2083,7 @@
 			const enlaceInput = document.getElementById("enlace");
 			const clearButton = document.querySelector("button[onclick='clearInput()'], button[onclick*='currentFetchController']");
 			const addButton = document.querySelector("button[onclick='obtenerFuente()']");
+			const extButton = document.getElementById("extensionButton");
 			const menuButton = document.getElementById("menuToggleButton");
 
 			enlaceInput.disabled = false;
@@ -1631,6 +2097,7 @@
 			}
 
 			if (addButton) addButton.style.display = 'inline-flex';
+			if (extButton) extButton.style.display = extensionDisponible ? 'inline-flex' : 'none';
 
 			if (currentFetchController) currentFetchController.abort();
 			currentFetchController = null;
@@ -2504,7 +2971,10 @@
 		<div class="controls">
 			<input type="text" id="enlace" placeholder="Enlace del artículo" style="height: 40px; width: 200px; padding: 5px;" autocomplete="off">
 
-			<button onclick="obtenerFuente()"><i class="fas fa-plus"></i></button>
+			<button onclick="obtenerFuente()" title="Usar scripts de Google"><i class="fas fa-plus"></i></button>
+			<button id="extensionButton" onclick="obtenerFuenteDesdeExtension()" title="Obtener desde el navegador (extensión)" style="display: none; background-color: #28a745;">
+				<i class="fas fa-download"></i>
+			</button>
 			<button onclick="clearInput()"><i class="fas fa-eraser"></i></button>
 		</div>
 
