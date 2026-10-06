@@ -99,23 +99,6 @@
 			color: #666;
 		}
 
-		.refresh-btn {
-			background-color: #ff9800;
-			color: white;
-			border: none;
-			border-radius: 5px;
-			padding: 5px 8px;
-			font-size: 12px;
-			cursor: pointer;
-			display: inline-flex;
-			align-items: center;
-			gap: 4px;
-			transition: background-color 0.2s ease;
-			margin-top: 3px;
-		}
-
-		.refresh-btn:hover { background-color: #e68900; }
-		.refresh-btn i { font-size: 12px; }
 
 		#downloadTableImage {
 			position: fixed;
@@ -840,6 +823,8 @@
 
 		let workMode = "urls";
 		let dollarValue = null;
+		let usarExtensionMode = false;
+
 		// Extensión de Chrome
 		let extensionDisponible = false;
 		let extensionRequestId = 0;
@@ -892,6 +877,14 @@
 
 			// === Detección de la extensión de Chrome ===
 			setupExtensionListeners();
+
+			// === Listeners para modos de trabajo ===
+			document.querySelectorAll('input[name="workMode"]').forEach(radio => {
+				radio.addEventListener('change', actualizarVisibilidadModoExtension);
+			});
+
+			// === Actualizar UI según el modo actual ===
+			updateUIBasedOnMode();
 		};
 
 		// ============================================================
@@ -997,11 +990,15 @@
 
 			const savedDollar = localStorage.getItem("dollarValue");
 			if (savedDollar) dollarValue = parseFloat(savedDollar);
+
+			const savedExtMode = localStorage.getItem("usarExtensionMode");
+			if (savedExtMode === "true") usarExtensionMode = true;
 		}
 
 		function saveSettings() {
 			localStorage.setItem("workMode", workMode);
 			if (dollarValue !== null) localStorage.setItem("dollarValue", dollarValue);
+			localStorage.setItem("usarExtensionMode", usarExtensionMode ? "true" : "false");
 		}
 
 		function showSettingsModal() {
@@ -1014,7 +1011,21 @@
 			const dollarInput = document.getElementById("dollarValueInput");
 			dollarInput.value = dollarValue !== null ? dollarValue : "";
 
+			// Mostrar/ocultar la sección "Modo Extensión" según el modo seleccionado
+			actualizarVisibilidadModoExtension();
+
+			// Marcar el checkbox si estaba activo
+			const checkboxExt = document.getElementById("usarModoExtension");
+			if (checkboxExt) checkboxExt.checked = usarExtensionMode;
+
 			document.getElementById("settingsModal").style.display = "block";
+		}
+
+		function actualizarVisibilidadModoExtension() {
+			const radioSource = document.getElementById("modeSource");
+			const seccion = document.getElementById("modoExtensionSection");
+			if (!seccion || !radioSource) return;
+			seccion.style.display = radioSource.checked ? "block" : "none";
 		}
 
 		function closeSettingsModal() {
@@ -1025,6 +1036,9 @@
 			const radioUrls = document.getElementById("modeUrls");
 			const radioSource = document.getElementById("modeSource");
 			workMode = radioUrls.checked ? "urls" : "source";
+
+			const checkboxExt = document.getElementById("usarModoExtension");
+			usarExtensionMode = checkboxExt ? checkboxExt.checked : false;
 
 			const dollarInput = document.getElementById("dollarValueInput");
 			const dollarInputValue = dollarInput.value.trim();
@@ -1047,11 +1061,27 @@
 			updateUIBasedOnMode();
 		}
 
+
 		function updateUIBasedOnMode() {
 			const enlaceInput = document.getElementById("enlace");
+			const addButton = document.querySelector("button[onclick='obtenerFuente()']");
+			const extButton = document.getElementById("extensionButton");
+
+			// Placeholder según modo
 			if (workMode === "urls") enlaceInput.placeholder = "Enlace del artículo";
 			else enlaceInput.placeholder = "Pega aquí el código fuente...";
+
+			// Si estamos en modo source y con extensión activa, ocultar + y mostrar botón verde
+			if (workMode === "source") {
+				if (addButton) addButton.style.display = 'none';
+				if (extButton) extButton.style.display = extensionDisponible ? 'inline-flex' : 'none';
+			} else {
+				// Modo urls: mostrar + y ocultar botón verde
+				if (addButton) addButton.style.display = 'inline-flex';
+				if (extButton) extButton.style.display = 'none';
+			}
 		}
+
 
 		function ensureConfigured() {
 			if (dollarValue === null) {
@@ -1251,8 +1281,11 @@
 					showMessage("✅ Datos cargados desde el navegador.", 'success');
 					console.log(`✅ COMPLETADO (extensión). Tiempo: ${Date.now() - t0}ms`);
 				} else {
-					const faltantes = item._missing || [];
-					showMessage(`Datos incompletos. Faltan: ${faltantes.join(', ')}`, 'error');
+					// Auto-borrar la fila
+					items.splice(itemIndex, 1);
+					saveToLocalStorage();
+					updateTable();
+					showMessage("No se pudieron obtener datos. Fila eliminada.", 'error');
 				}
 
 			} catch (error) {
@@ -1370,14 +1403,12 @@
 					console.log(`🔄 Ciclo completo. Reiniciando desde script 1 (vuelta ${ciclosCompletados})`);
 
 					if (MAX_CICLOS > 0 && ciclosCompletados >= MAX_CICLOS) {
-						if (items[itemIndex]) items[itemIndex]._pendiente = false;
-						const faltantes = items[itemIndex] ? (items[itemIndex]._missing || []) : [];
+						// Auto-borrar la fila que no se pudo completar
+						items.splice(itemIndex, 1);
 						saveToLocalStorage();
 						updateTable();
 						resetUI();
-						showMessage(faltantes.length > 0
-							? `Faltan datos: ${faltantes.join(', ')}. Puedes refrescar la fila.`
-							: `No se pudo obtener datos tras ${MAX_CICLOS} vueltas.`, 'error');
+						showMessage(`No se pudo obtener datos tras ${MAX_CICLOS} vueltas. Fila eliminada.`, 'error');
 						return;
 					}
 
@@ -1594,7 +1625,11 @@
 				if (hasNewData) {
 					showMessage("Datos extraídos del código.", 'success');
 				} else {
-					showMessage("No se pudieron extraer datos del código pegado.", 'error');
+					// Auto-borrar la fila
+					items.splice(itemIndex, 1);
+					saveToLocalStorage();
+					updateTable();
+					showMessage("No se pudieron extraer datos del código. Fila eliminada.", 'error');
 				}
 				document.getElementById("enlace").value = "";
 			}, 100);
@@ -1942,24 +1977,7 @@
 			return hasNewData;
 		}
 
-		// ============================================================
-		// REFRESCAR FILA
-		// ============================================================
-		function refreshItem(index) {
-			const item = items[index];
-			if (!item || !item.enlace) {
-				showMessage("Esta fila no tiene enlace para refrescar.", 'error');
-				return;
-			}
 
-			if (!ensureConfigured()) return;
-
-			item._pendiente = true;
-			updateTable();
-			showMessage("Refrescando...", 'processing');
-
-			fetchConRotacionDeScripts(item.enlace, index);
-		}
 
 		// ============================================================
 		// RESTO DE FUNCIONES
@@ -2017,13 +2035,7 @@
 					? item.priceLempiras
 					: '<span style="color:#999;">—</span>';
 
-				const faltantes = item._missing || [];
-				const hasMissing = faltantes.length > 0;
-				const refreshBtnHtml = (!item._pendiente && hasMissing)
-					? `<button class="refresh-btn" onclick="refreshItem(${index})" title="Faltan: ${faltantes.join(', ')}">
-							<i class="fas fa-sync-alt"></i> Refrescar
-						</button>`
-					: '';
+				const refreshBtnHtml = '';
 
 				const titleText = item.title || '';
 
@@ -2314,6 +2326,8 @@
 				});
 				if (enlaceInput) enlaceInput.style.display = 'none';
 				if (addButton) addButton.style.display = 'none';
+				const extButtonPrev = document.getElementById("extensionButton");
+				if (extButtonPrev) extButtonPrev.style.display = 'none';
 				if (clearButton) clearButton.style.display = 'none';
 				if (totalRow) totalRow.style.display = 'none';
 				openColorPicker2Button.style.display = 'inline-block';
@@ -2332,7 +2346,8 @@
 				});
 				Array.from(tableBody.rows).forEach(row => { row.style.display = ''; });
 				if (enlaceInput) enlaceInput.style.display = '';
-				if (addButton) addButton.style.display = '';
+				// Restaurar botones según el modo actual
+				updateUIBasedOnMode();
 				if (clearButton) clearButton.style.display = '';
 				if (totalRow) totalRow.style.display = 'none';
 				openColorPicker2Button.style.display = 'none';
@@ -3160,6 +3175,17 @@
 					<input type="radio" name="workMode" id="modeSource" value="source">
 					<span><b>Código Fuente</b> (pegar HTML sin script)</span>
 				</label>
+			</div>
+
+			<div class="settings-section" id="modoExtensionSection" style="display: none;">
+				<h4><i class="fas fa-download"></i> Modo Extensión</h4>
+				<label>
+					<input type="checkbox" id="usarModoExtension" style="transform: scale(1.3); cursor: pointer; accent-color: #28a745;">
+					<span><b>Activar modo extensión</b> (usa el botón verde)</span>
+				</label>
+				<div class="settings-help" style="margin-top: 8px;">
+					Al activarlo, el botón <b>+</b> (azul) se oculta y solo funcionará el botón verde de la extensión.
+				</div>
 			</div>
 
 			<div class="settings-section">
