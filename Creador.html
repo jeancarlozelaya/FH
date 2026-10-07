@@ -4,7 +4,7 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta charset="UTF-8">
-	<title>Creador v4.5</title>
+	<title>Creador v4.7</title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
@@ -56,6 +56,65 @@
 			50% { background-color: rgba(0, 123, 255, 0.20); }
 		}
 
+		/* === FILA CON PRECIO VARIABLE === */
+		tr.row-variable-price {
+			background-color: #fff8f0 !important;
+		}
+
+		tr.row-variable-price td {
+			border-top: 2px solid #ff6b00 !important;
+			border-bottom: 2px solid #ff6b00 !important;
+		}
+
+		tr.row-variable-price td:first-child {
+			border-left: 2px solid #ff6b00 !important;
+		}
+
+		tr.row-variable-price td:last-child {
+			border-right: 2px solid #ff6b00 !important;
+		}
+
+		.variable-badge-row {
+			display: inline-block;
+			background-color: #ff6b00;
+			color: white;
+			font-size: 10px;
+			font-weight: 700;
+			padding: 2px 6px;
+			border-radius: 8px;
+			letter-spacing: 0.3px;
+			white-space: nowrap;
+			margin-top: 4px;
+			cursor: help;
+		}
+
+		.variable-badge-row i {
+			font-size: 10px;
+			margin-right: 2px;
+		}
+
+		/* En vista previa, no mostrar nada de precio variable */
+		body.preview-mode tr.row-variable-price {
+			background-color: transparent !important;
+		}
+
+		body.preview-mode tr.row-variable-price td {
+			border-top: 1px solid #ccc !important;
+			border-bottom: 1px solid #ccc !important;
+		}
+
+		body.preview-mode tr.row-variable-price td:first-child {
+			border-left: 1px solid #ccc !important;
+		}
+
+		body.preview-mode tr.row-variable-price td:last-child {
+			border-right: 1px solid #ccc !important;
+		}
+
+		body.preview-mode .variable-badge-cell {
+			display: none !important;
+		}
+
 		.pending-spinner {
 			width: 50px;
 			height: 50px;
@@ -98,7 +157,6 @@
 			background-color: #e8e8e8;
 			color: #666;
 		}
-
 
 		#downloadTableImage {
 			position: fixed;
@@ -828,11 +886,8 @@
 		// Extensión de Chrome
 		let extensionDisponible = false;
 		let extensionRequestId = 0;
-		const extensionCallbacks = {}; // requestId → callback
+		const extensionCallbacks = {};
 
-		// ============================================================
-		// 🔧 LISTA DE SCRIPTS DE GOOGLE (agrega aquí todas tus URLs)
-		// ============================================================
 		const SCRIPT_URLS = [
 			"https://script.google.com/macros/s/AKfycbxIXkAwI5My_QLLoz3koZMlA-T0hc6oNaJLUGleqGPZplZ2C-wdqbaTCMkjK8Ghx8b9tQ/exec",
 			"https://script.google.com/macros/s/AKfycbw3fFuenF1wWW_McS6YDmxkOMIlFRbxGt50mFdfhIKnrXI6W0ZbRBVjT0KRqoILXQi3/exec",
@@ -844,8 +899,6 @@
 			"https://script.google.com/macros/s/AKfycbylvx41hS7dMp8cS_CUAojgRYfbcPFZ2LATtGMOGIwFNRyv-J2RTJRbC4dWAMM0H8MT/exec",
 			"https://script.google.com/macros/s/AKfycbxGbFbvvVzxls1qjFdizrZTSsvDW9_S6YswEXjz0VxJmwKK2-ulg1TlFLxb_RQObs-bgQ/exec",
 			"https://script.google.com/macros/s/AKfycbzpMcvzbZo66QConpxYbsEVeCRTTVbrCHsxksKuJb0G2ziJVTPe4WGxmTQ-GWyYO0_tog/exec",
-
-
 		];
 
 		const ISV = 1.07;
@@ -875,21 +928,15 @@
 			if (savedProfile) currentProfile = parseInt(savedProfile, 10);
 			loadDataForProfile();
 
-			// === Detección de la extensión de Chrome ===
 			setupExtensionListeners();
 
-			// === Listeners para modos de trabajo ===
 			document.querySelectorAll('input[name="workMode"]').forEach(radio => {
 				radio.addEventListener('change', actualizarVisibilidadModoExtension);
 			});
 
-			// === Actualizar UI según el modo actual ===
 			updateUIBasedOnMode();
 		};
 
-		// ============================================================
-		// EXTENSIÓN DE CHROME (SHEIN Extractor)
-		// ============================================================
 		function setupExtensionListeners() {
 			window.addEventListener("message", (event) => {
 				if (event.source !== window) return;
@@ -911,26 +958,20 @@
 				}
 			});
 
-			// Por si la extensión ya estaba cargada antes de este listener
 			setTimeout(() => {
 				if (!extensionDisponible) {
-					// Intentar ping a la extensión
 					window.postMessage({ tipo: "SHEIN_EXTENSION_PING" }, "*");
 				}
 			}, 500);
 		}
 
 		function updateExtensionUI() {
-			// Muestra u oculta el botón de "Desde Navegador" según disponibilidad
 			const btn = document.getElementById("extensionButton");
 			if (btn) {
 				btn.style.display = extensionDisponible ? "inline-flex" : "none";
 			}
 		}
 
-		// ============================================================
-		// OBTENER HTML DE SHEIN USANDO LA EXTENSIÓN
-		// ============================================================
 		function fetchConExtension(url) {
 			return new Promise((resolve, reject) => {
 				if (!extensionDisponible) {
@@ -947,7 +988,6 @@
 					}
 				};
 
-				// Timeout de 30 segundos
 				setTimeout(() => {
 					if (extensionCallbacks[reqId]) {
 						delete extensionCallbacks[reqId];
@@ -974,16 +1014,13 @@
 		}
 
 		function updateProfileTitle() {
-			document.title = `Creador v4.5 - ${profileNames[currentProfile]}`;
+			document.title = `Creador v4.7 - ${profileNames[currentProfile]}`;
 		}
 
 		function saveToLocalStorage() {
 			localStorage.setItem(`items_profile_${currentProfile}`, JSON.stringify(items));
 		}
 
-		// ============================================================
-		// CONFIGURACIÓN
-		// ============================================================
 		function loadSettings() {
 			const savedMode = localStorage.getItem("workMode");
 			if (savedMode) workMode = savedMode;
@@ -1011,10 +1048,8 @@
 			const dollarInput = document.getElementById("dollarValueInput");
 			dollarInput.value = dollarValue !== null ? dollarValue : "";
 
-			// Mostrar/ocultar la sección "Modo Extensión" según el modo seleccionado
 			actualizarVisibilidadModoExtension();
 
-			// Marcar el checkbox si estaba activo
 			const checkboxExt = document.getElementById("usarModoExtension");
 			if (checkboxExt) checkboxExt.checked = usarExtensionMode;
 
@@ -1061,27 +1096,22 @@
 			updateUIBasedOnMode();
 		}
 
-
 		function updateUIBasedOnMode() {
 			const enlaceInput = document.getElementById("enlace");
 			const addButton = document.querySelector("button[onclick='obtenerFuente()']");
 			const extButton = document.getElementById("extensionButton");
 
-			// Placeholder según modo
 			if (workMode === "urls") enlaceInput.placeholder = "Enlace del artículo";
 			else enlaceInput.placeholder = "Pega aquí el código fuente...";
 
-			// Si estamos en modo source y con extensión activa, ocultar + y mostrar botón verde
 			if (workMode === "source") {
 				if (addButton) addButton.style.display = 'none';
 				if (extButton) extButton.style.display = extensionDisponible ? 'inline-flex' : 'none';
 			} else {
-				// Modo urls: mostrar + y ocultar botón verde
 				if (addButton) addButton.style.display = 'inline-flex';
 				if (extButton) extButton.style.display = 'none';
 			}
 		}
-
 
 		function ensureConfigured() {
 			if (dollarValue === null) {
@@ -1097,9 +1127,6 @@
 			return (priceApp * ISV * dollarValue).toFixed(2);
 		}
 
-		// ============================================================
-		// OBTENER FUENTE
-		// ============================================================
 		function obtenerFuente() {
 			if (!ensureConfigured()) return;
 
@@ -1110,9 +1137,6 @@
 			}
 		}
 
-		// ============================================================
-		// MODO EXTENSIÓN: obtener HTML usando el navegador
-		// ============================================================
 		async function obtenerFuenteDesdeExtension() {
 			const enlace = document.getElementById("enlace").value.trim();
 
@@ -1131,13 +1155,11 @@
 				return;
 			}
 
-			// Normalizar URL a us.shein.com
 			const baseURL = "https://us.shein.com/";
 			const cleanPath = enlace.replace(/^(https?:\/\/)?([a-zA-Z0-9.-]+\.)?shein\.com\/(us\/)?/i, "");
 			const finalEnlace = baseURL + cleanPath;
 			document.getElementById("enlace").value = finalEnlace;
 
-			// Bloquear UI
 			const enlaceInput = document.getElementById("enlace");
 			const clearButton = document.querySelector("button[onclick='clearInput()']");
 			const addButton = document.querySelector("button[onclick='obtenerFuente()']");
@@ -1172,7 +1194,10 @@
 				enlace: finalEnlace,
 				color: '#ffffff',
 				_pendiente: true,
-				_missing: []
+				_missing: [],
+				tienePrecioVariable: false,
+				preciosUnicos: [],
+				priceAppMax: null
 			});
 			updateTable();
 
@@ -1181,23 +1206,34 @@
 				const respuesta = await fetchConExtension(finalEnlace);
 				const t1 = Date.now();
 				console.log(`[Extensión] HTML recibido en ${t1 - t0}ms (${respuesta.tamano} chars)`);
-				console.log(`[Extensión] Tiene gbRawData: ${respuesta.tieneGbRawData}, JSON-LD: ${respuesta.tieneJsonLD}, og:title: ${respuesta.tieneOgTitle}`);
 
 				const item = items[itemIndex];
 				let hasNewData = false;
 
-				// NIVEL 1: intentar gbRawData primero (parseo real)
+				// NIVEL 1
 				const nivel1 = extraerDeGbRawDataCliente(respuesta.html);
 				if (nivel1.exito) {
 					const d = nivel1.datos;
 					if (d.titulo && !item.title) { item.title = d.titulo; hasNewData = true; }
 					if (d.sku && !item.sku) { item.sku = d.sku; hasNewData = true; }
-					if (d.precioApp && !item.priceApp) {
+					if (d.precioDescuento && !item.priceDiscount) {
+						item.priceDiscount = parseFloat(d.precioDescuento);
+						hasNewData = true;
+					}
+					// === DETECCIÓN DE PRECIO VARIABLE ===
+					if (d.tienePrecioVariable) {
+						item.tienePrecioVariable = true;
+						item.preciosUnicos = d.preciosUnicos || [];
+						item.priceAppMax = d.precioAppMax;
+						item.priceApp = 0;
+						item.priceLempiras = calculatePriceInLempiras(0);
+						hasNewData = true;
+						console.log("[Extensión] ⚠️ Precio variable detectado. Precios:", d.preciosUnicos);
+					} else if (d.precioApp && !item.priceApp) {
 						item.priceApp = parseFloat(d.precioApp);
 						item.priceLempiras = calculatePriceInLempiras(item.priceApp);
 						hasNewData = true;
 					}
-					if (d.precioDescuento && !item.priceDiscount) { item.priceDiscount = parseFloat(d.precioDescuento); hasNewData = true; }
 					if (d.imagen && !item.image) {
 						let img = Array.isArray(d.imagen) ? d.imagen[0] : d.imagen;
 						if (typeof img === 'string') {
@@ -1217,7 +1253,7 @@
 					console.log("[Extensión] Extraído de gbRawData");
 				}
 
-				// NIVEL 2: intentar JSON-LD si falta algo
+				// NIVEL 2
 				if (!item.title || !item.priceApp) {
 					const nivel2 = extraerDeJsonLDCliente(respuesta.html);
 					if (nivel2.exito) {
@@ -1225,7 +1261,6 @@
 						if (d.titulo && !item.title) { item.title = d.titulo; hasNewData = true; }
 						if (d.sku && !item.sku) { item.sku = d.sku; hasNewData = true; }
 						if (d.precioDescuento && !item.priceApp) {
-							// JSON-LD trae salePrice, usarlo como precioApp si no hay retail
 							item.priceApp = parseFloat(d.precioDescuento);
 							item.priceLempiras = calculatePriceInLempiras(item.priceApp);
 							hasNewData = true;
@@ -1247,7 +1282,7 @@
 					}
 				}
 
-				// NIVEL 3: regex (respaldo por si nada de lo anterior funciona)
+				// NIVEL 3
 				if (!item.title || !item.priceApp || !item.image) {
 					const hasFromRegex = extractDataPartial(respuesta.html, 0.20, finalEnlace, itemIndex);
 					if (hasFromRegex) hasNewData = true;
@@ -1259,7 +1294,6 @@
 					updateTable();
 				}
 
-				// Recalcular faltantes
 				const faltantes = [];
 				if (!item.title) faltantes.push('Título');
 				if (!item.sku) faltantes.push('SKU');
@@ -1267,9 +1301,7 @@
 				if (item.priceApp === null || item.priceApp === undefined) faltantes.push('Precio App');
 				if (!item.sizes || item.sizes.length === 0) faltantes.push('Tallas');
 				item._missing = faltantes;
-				console.log("[Extensión] Faltantes:", faltantes.length === 0 ? "(ninguno)" : faltantes.join(', '));
 
-				// Verificar si tenemos todo
 				const tengoTodo = item.title && item.sku && item.priceApp !== null;
 				items[itemIndex]._pendiente = false;
 
@@ -1281,7 +1313,6 @@
 					showMessage("✅ Datos cargados desde el navegador.", 'success');
 					console.log(`✅ COMPLETADO (extensión). Tiempo: ${Date.now() - t0}ms`);
 				} else {
-					// Auto-borrar la fila
 					items.splice(itemIndex, 1);
 					saveToLocalStorage();
 					updateTable();
@@ -1298,10 +1329,6 @@
 			}
 		}
 
-
-
-
-		// --- MODO 1: ENLACES ---
 		function obtenerFuenteDesdeEnlace() {
 			const enlace = document.getElementById("enlace").value.trim();
 
@@ -1320,7 +1347,6 @@
 				return;
 			}
 
-			// Usar SIEMPRE us.shein.com (desktop)
 			const baseURL = "https://us.shein.com/";
 			const cleanPath = enlace.replace(/^(https?:\/\/)?([a-zA-Z0-9.-]+\.)?shein\.com\/(us\/)?/i, "");
 			const finalEnlace = baseURL + cleanPath;
@@ -1361,24 +1387,21 @@
 				enlace: finalEnlace,
 				color: '#ffffff',
 				_pendiente: true,
-				_missing: []
+				_missing: [],
+				tienePrecioVariable: false,
+				preciosUnicos: [],
+				priceAppMax: null
 			});
 			updateTable();
 
 			fetchConRotacionDeScripts(finalEnlace, itemIndex);
 		}
 
-		// ============================================================
-		// ROTACIÓN DE SCRIPTS (ciclo infinito hasta obtener datos)
-		// ============================================================
-		// ============================================================
-		// ROTACIÓN DE SCRIPTS (v6 - acepta gbRawData, jsonLD, metaTags)
-		// ============================================================
 		function fetchConRotacionDeScripts(enlace, itemIndex) {
 			let scriptIndex = 0;
 			let ciclosCompletados = 0;
 			const totalScripts = SCRIPT_URLS.length;
-			const MAX_CICLOS = 0; // 0 = infinito. El ciclo se repite hasta encontrar datos.
+			const MAX_CICLOS = 0;
 
 			if (totalScripts === 0) {
 				showMessage("⚠️ No hay scripts de Google configurados.", 'error');
@@ -1389,7 +1412,6 @@
 				return;
 			}
 
-			// Priorizar el último script exitoso
 			const ultimoExitoso = parseInt(localStorage.getItem("lastSuccessScriptIndex") || "-1", 10);
 			if (ultimoExitoso >= 0 && ultimoExitoso < totalScripts) {
 				scriptIndex = ultimoExitoso;
@@ -1403,7 +1425,6 @@
 					console.log(`🔄 Ciclo completo. Reiniciando desde script 1 (vuelta ${ciclosCompletados})`);
 
 					if (MAX_CICLOS > 0 && ciclosCompletados >= MAX_CICLOS) {
-						// Auto-borrar la fila que no se pudo completar
 						items.splice(itemIndex, 1);
 						saveToLocalStorage();
 						updateTable();
@@ -1458,38 +1479,40 @@
 							return;
 						}
 
-						// ✅ Éxito: procesar datos (cualquier fuente sirve)
 						console.log(`[Script ${numScript}] ✅ Éxito. Fuente: ${respuestaJSON.fuente}`);
-
-						// Guardar índice del script que funcionó
 						localStorage.setItem("lastSuccessScriptIndex", scriptIndex.toString());
 
 						const d = respuestaJSON.datos;
 						const item = items[itemIndex];
 						let hasNewData = false;
 
-						// Título
 						if (d.titulo && !item.title) {
 							item.title = d.titulo;
 							hasNewData = true;
 						}
-						// SKU genérico
 						if (d.sku && !item.sku) {
 							item.sku = d.sku;
 							hasNewData = true;
 						}
-						// Precio App (retail)
-						if (d.precioApp && !item.priceApp) {
+
+						// === DETECCIÓN DE PRECIO VARIABLE ===
+						if (d.tienePrecioVariable) {
+							item.tienePrecioVariable = true;
+							item.preciosUnicos = d.preciosUnicos || [];
+							item.priceAppMax = d.precioAppMax;
+							item.priceApp = 0;
+							item.priceLempiras = calculatePriceInLempiras(0);
+							hasNewData = true;
+							console.log(`[Script ${numScript}] ⚠️ Precio variable detectado. Precios:`, d.preciosUnicos);
+						} else if (d.precioApp && !item.priceApp) {
 							item.priceApp = parseFloat(d.precioApp);
 							item.priceLempiras = calculatePriceInLempiras(item.priceApp);
 							hasNewData = true;
 						}
-						// Precio descuento (salePrice) - solo se guarda
 						if (d.precioDescuento && !item.priceDiscount) {
 							item.priceDiscount = parseFloat(d.precioDescuento);
 							hasNewData = true;
 						}
-						// Imagen principal
 						if (d.imagen && !item.image) {
 							let img = d.imagen;
 							if (Array.isArray(img) && img.length > 0) img = img[0];
@@ -1499,7 +1522,6 @@
 								hasNewData = true;
 							}
 						}
-						// Imágenes secundarias
 						if (Array.isArray(d.imagenes) && d.imagenes.length > 0 && (!item.images || item.images.length === 0)) {
 							item.images = d.imagenes.map(img => {
 								if (typeof img === 'string' && !img.startsWith("http")) return "https:" + img;
@@ -1507,16 +1529,13 @@
 							});
 							hasNewData = true;
 						}
-						// Tallas (solo si aún no las tiene)
 						if (Array.isArray(d.tallas) && d.tallas.length > 0
 							&& (!item.sizes || item.sizes.length === 0)) {
 							item.sizes = d.tallas;
 							hasNewData = true;
 						}
-						// Variantes (SIEMPRE sobrescribir, son la fuente más fiable)
 						if (Array.isArray(d.variantes) && d.variantes.length > 0) {
 							item.variantes = d.variantes;
-							// Sincronizar tallas con las variantes
 							const tallasVariantes = [...new Set(d.variantes.map(v => v.talla).filter(Boolean))];
 							if (tallasVariantes.length > 0) {
 								item.sizes = tallasVariantes;
@@ -1524,7 +1543,6 @@
 							hasNewData = true;
 						}
 
-						// Recalcular _missing según estado ACTUAL
 						const faltantes = [];
 						if (!item.title) faltantes.push('Título');
 						if (!item.sku) faltantes.push('SKU');
@@ -1534,16 +1552,6 @@
 
 						const faltantesAntes = (item._missing || []).length;
 						item._missing = faltantes;
-
-						console.log(`[Script ${numScript}] Estado tras procesar:`);
-						console.log("  Título:", item.title || "(falta)");
-						console.log("  SKU:", item.sku || "(falta)");
-						console.log("  Imagen:", item.image ? "✓" : "(falta)");
-						console.log("  Precio App:", item.priceApp !== null ? item.priceApp : "(falta)");
-						console.log("  Precio Descuento:", item.priceDiscount !== undefined ? item.priceDiscount : "(no hay)");
-						console.log("  Tallas:", item.sizes && item.sizes.length > 0 ? item.sizes.join(', ') : "(falta)");
-						console.log("  Variantes:", item.variantes ? item.variantes.length : 0);
-						console.log("  Faltantes:", faltantes.length === 0 ? "(ninguno)" : faltantes.join(', '));
 
 						if (hasNewData || faltantes.length !== faltantesAntes) {
 							saveToLocalStorage();
@@ -1576,9 +1584,6 @@
 			intentarSiguiente();
 		}
 
-
-
-		// --- MODO 2: CÓDIGO FUENTE ---
 		function obtenerFuenteDesdeCodigo() {
 			const source = document.getElementById("enlace").value.trim();
 
@@ -1611,7 +1616,10 @@
 					enlace: enlace,
 					color: '#ffffff',
 					_pendiente: true,
-					_missing: []
+					_missing: [],
+					tienePrecioVariable: false,
+					preciosUnicos: [],
+					priceAppMax: null
 				});
 				updateTable();
 
@@ -1625,7 +1633,6 @@
 				if (hasNewData) {
 					showMessage("Datos extraídos del código.", 'success');
 				} else {
-					// Auto-borrar la fila
 					items.splice(itemIndex, 1);
 					saveToLocalStorage();
 					updateTable();
@@ -1635,9 +1642,6 @@
 			}, 100);
 		}
 
-		// ============================================================
-		// EXTRACCIÓN PARCIAL (para modo Código Fuente)
-		// ============================================================
 		function findMatch(data, patterns) {
 			for (const pattern of patterns) {
 				const match = data.match(pattern);
@@ -1657,10 +1661,6 @@
 			return trimmed;
 		}
 
-
-		// ============================================================
-		// EXTRACTOR ROBUSTO DE gbRawData (mismo que el Apps Script v6)
-		// ============================================================
 		function extraerDeGbRawDataCliente(html) {
 			const marcador = "window.gbRawData";
 			const candidatos = [];
@@ -1735,10 +1735,20 @@
 			}
 
 			function extraerPrecios(gb) {
-				const resultado = { precioApp: null, precioDescuento: null };
+				const resultado = {
+					precioApp: null,
+					precioDescuento: null,
+					precioAppMax: null,
+					tienePrecioVariable: false,
+					preciosUnicos: []
+				};
 				try {
 					const skuList = gb?.modules?.saleAttr?.multiLevelSaleAttribute?.sku_list;
 					if (!Array.isArray(skuList) || skuList.length === 0) return resultado;
+
+					const precios = [];
+					let precioDescuento = null;
+
 					for (const sku of skuList) {
 						const retail =
 							sku?.priceInfo?.retailPrice?.amount ||
@@ -1750,10 +1760,19 @@
 							sku?.priceInfo?.salePrice?.amount ||
 							sku?.price?.salePrice?.amount ||
 							null;
-						if (retail) resultado.precioApp = parseFloat(retail);
-						if (sale) resultado.precioDescuento = parseFloat(sale);
-						if (resultado.precioApp || resultado.precioDescuento) return resultado;
+
+						if (retail) precios.push(parseFloat(retail));
+						if (!precioDescuento && sale) precioDescuento = parseFloat(sale);
 					}
+
+					if (precios.length > 0) {
+						const unicos = [...new Set(precios)].sort((a, b) => a - b);
+						resultado.preciosUnicos = unicos;
+						resultado.precioApp = unicos[0];
+						resultado.precioAppMax = unicos[unicos.length - 1];
+						resultado.tienePrecioVariable = unicos.length > 1;
+					}
+					resultado.precioDescuento = precioDescuento;
 				} catch (e) {}
 				return resultado;
 			}
@@ -1765,7 +1784,10 @@
 				sku: buscar(gb, ["goods_sn", "goodsSn", "productSn", "sku"]),
 				goodsId: buscar(gb, ["goods_id", "goodsId", "productId"]),
 				precioApp: precios.precioApp,
+				precioAppMax: precios.precioAppMax,
 				precioDescuento: precios.precioDescuento,
+				tienePrecioVariable: precios.tienePrecioVariable,
+				preciosUnicos: precios.preciosUnicos,
 				imagen: buscar(gb, ["goods_img", "goodsImg", "mainImage", "image"]),
 				imagenes: buscar(gb, ["skcImages", "goods_imgs", "images"]),
 				tallas: buscar(gb, ["base_size_sort", "size_list", "attr_value_list", "sizes"])
@@ -1844,8 +1866,6 @@
 			}
 			return { exito: false };
 		}
-
-
 
 		function extractDataPartial(data, porcentajeSeleccionado, enlace, itemIndex) {
 			const item = items[itemIndex];
@@ -1977,11 +1997,6 @@
 			return hasNewData;
 		}
 
-
-
-		// ============================================================
-		// RESTO DE FUNCIONES
-		// ============================================================
 		function generateSizeSelect(index, item) {
 			if (!item.sizes || item.sizes.length === 0) {
 				return `<span style="color:#999;font-style:italic;">—</span>`;
@@ -2012,6 +2027,12 @@
 				if (item.color) row.style.backgroundColor = item.color;
 				if (item._pendiente) row.classList.add("row-pending");
 
+				// === FILA CON PRECIO VARIABLE ===
+				const esVariable = item.tienePrecioVariable === true;
+				if (esVariable && !item._pendiente) {
+					row.classList.add("row-variable-price");
+				}
+
 				const precioPersonalizado = item.precioPersonalizado || 0;
 				const priceLempiras = parseFloat(item.priceLempiras) || 0;
 				const precioStyle = precioPersonalizado < priceLempiras ?
@@ -2035,9 +2056,14 @@
 					? item.priceLempiras
 					: '<span style="color:#999;">—</span>';
 
-				const refreshBtnHtml = '';
-
 				const titleText = item.title || '';
+
+				// Badge de precio variable (solo si aplica)
+				const badgeVariableHtml = esVariable
+					? `<div class="variable-badge-row variable-badge-cell" title="Este producto tiene precios diferentes según la variante (color, talla, largo, etc). Revisa manualmente.">
+						<i class="fas fa-exclamation-triangle"></i> PRECIO VARIABLE
+					</div>`
+					: '';
 
 				row.innerHTML =
 					`<td>
@@ -2045,6 +2071,7 @@
 							${imageHtml}
 							<input type="checkbox" class="itemCheckbox" data-index="${index}" onchange="updateButtonStates()" style="position: absolute; top: 0; right: 0;">
 						</div>
+						<div>${badgeVariableHtml}</div>
 					</td>
 					<td class="hidden-column">${titleText}</td>
 					<td>${generateSizeSelect(index, item)}</td>
@@ -2060,7 +2087,6 @@
 					<td class="preview-hidden" style="cursor: pointer;" title="Doble-clic para abrir enlace" ondblclick="window.open('${item.enlace}', '_blank')">${priceLempHtml}</td>
 					<td>
 						<input type="number" id="customPriceInput${index}" class="small-input" value="${item.precioPersonalizado || ''}" placeholder="Precio" oninput="updateCustomPrice(${index})" ${precioStyle}>
-						${refreshBtnHtml}
 					</td>
 					<td class="hidden-column"><a href="${item.enlace}" target="_blank">Ver detalle</a></td>`;
 
@@ -2106,8 +2132,6 @@
 				clearButton.classList.remove('cancel-button');
 			}
 
-			// Restaurar visibilidad de botones SEGÚN EL MODO ACTUAL
-			// (esto decide si mostrar "+", "verde", o ambos)
 			updateUIBasedOnMode();
 
 			if (currentFetchController) currentFetchController.abort();
@@ -2135,7 +2159,8 @@
 					priceLempirasFormula,
 					detailFormula,
 					'',
-					customPrice
+					customPrice,
+					item.tienePrecioVariable ? 'VARIABLE' : ''
 				].join('\t');
 			});
 
@@ -2263,6 +2288,8 @@
 				if (newPrice !== items[index].priceApp) {
 					items[index].priceApp = newPrice;
 					items[index].priceLempiras = calculatePriceInLempiras(newPrice);
+					// Si el usuario edita manualmente el precio, ya no es "variable"
+					items[index].tienePrecioVariable = false;
 					showMessage("Precio de App actualizado con éxito.", 'success');
 				}
 			}
@@ -2345,7 +2372,6 @@
 				});
 				Array.from(tableBody.rows).forEach(row => { row.style.display = ''; });
 				if (enlaceInput) enlaceInput.style.display = '';
-				// Restaurar botones según el modo actual
 				updateUIBasedOnMode();
 				if (clearButton) clearButton.style.display = '';
 				if (totalRow) totalRow.style.display = 'none';
