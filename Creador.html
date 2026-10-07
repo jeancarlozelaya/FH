@@ -4,7 +4,7 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta charset="UTF-8">
-	<title>Creador v4.7</title>
+	<title>Creador v4.8</title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
@@ -93,7 +93,6 @@
 			margin-right: 2px;
 		}
 
-		/* En vista previa, no mostrar nada de precio variable */
 		body.preview-mode tr.row-variable-price {
 			background-color: transparent !important;
 		}
@@ -883,7 +882,6 @@
 		let dollarValue = null;
 		let usarExtensionMode = false;
 
-		// Extensión de Chrome
 		let extensionDisponible = false;
 		let extensionRequestId = 0;
 		const extensionCallbacks = {};
@@ -1014,7 +1012,7 @@
 		}
 
 		function updateProfileTitle() {
-			document.title = `Creador v4.7 - ${profileNames[currentProfile]}`;
+			document.title = `Creador v4.8 - ${profileNames[currentProfile]}`;
 		}
 
 		function saveToLocalStorage() {
@@ -1205,13 +1203,25 @@
 				const t0 = Date.now();
 				const respuesta = await fetchConExtension(finalEnlace);
 				const t1 = Date.now();
-				console.log(`[Extensión] HTML recibido en ${t1 - t0}ms (${respuesta.tamano} chars)`);
+				console.log(`[Extensión] HTML recibido en ${t1 - t0}ms (${respuesta.tamano} chars, JSON: ${respuesta.tamanoJson || 0} chars)`);
 
 				const item = items[itemIndex];
 				let hasNewData = false;
 
-				// NIVEL 1
-				const nivel1 = extraerDeGbRawDataCliente(respuesta.html);
+				// NUEVO: si el content.js ya extrajo el gbRawData, usarlo directamente
+				let nivel1;
+				if (respuesta.gbRawDataJson) {
+					console.log("[Extensión] Usando gbRawData pre-extraído por la extensión");
+					try {
+						const gbRawData = JSON.parse(respuesta.gbRawDataJson);
+						nivel1 = { exito: true, datos: extraerCamposCliente(gbRawData) };
+					} catch (e) {
+						console.warn("[Extensión] Error parseando gbRawData pre-extraído, cayendo a extracción normal:", e.message);
+						nivel1 = extraerDeGbRawDataCliente(respuesta.html);
+					}
+				} else {
+					nivel1 = extraerDeGbRawDataCliente(respuesta.html);
+				}
 				if (nivel1.exito) {
 					const d = nivel1.datos;
 					if (d.titulo && !item.title) { item.title = d.titulo; hasNewData = true; }
@@ -1220,7 +1230,6 @@
 						item.priceDiscount = parseFloat(d.precioDescuento);
 						hasNewData = true;
 					}
-					// === DETECCIÓN DE PRECIO VARIABLE ===
 					if (d.tienePrecioVariable) {
 						item.tienePrecioVariable = true;
 						item.preciosUnicos = d.preciosUnicos || [];
@@ -1253,7 +1262,6 @@
 					console.log("[Extensión] Extraído de gbRawData");
 				}
 
-				// NIVEL 2
 				if (!item.title || !item.priceApp) {
 					const nivel2 = extraerDeJsonLDCliente(respuesta.html);
 					if (nivel2.exito) {
@@ -1282,7 +1290,6 @@
 					}
 				}
 
-				// NIVEL 3
 				if (!item.title || !item.priceApp || !item.image) {
 					const hasFromRegex = extractDataPartial(respuesta.html, 0.20, finalEnlace, itemIndex);
 					if (hasFromRegex) hasNewData = true;
@@ -1495,7 +1502,6 @@
 							hasNewData = true;
 						}
 
-						// === DETECCIÓN DE PRECIO VARIABLE ===
 						if (d.tienePrecioVariable) {
 							item.tienePrecioVariable = true;
 							item.preciosUnicos = d.preciosUnicos || [];
@@ -1642,6 +1648,60 @@
 			}, 100);
 		}
 
+		// ============================================================
+		// NORMALIZAR TALLA (por si viene como objeto)
+		// ============================================================
+		function normalizarTalla(valor) {
+			if (valor === null || valor === undefined) return null;
+			if (typeof valor === 'string') {
+				const t = valor.trim();
+				return t.length > 0 ? t : null;
+			}
+			if (typeof valor === 'number') return String(valor);
+			if (Array.isArray(valor)) {
+				for (const v of valor) {
+					const t = normalizarTalla(v);
+					if (t) return t;
+				}
+				return null;
+			}
+			if (typeof valor === 'object') {
+				const claves = ['value', 'name', 'label', 'text', 'en', 'es', 'default', 'attr_value_name', 'attr_value_name_en', 'attr_value'];
+				for (const k of claves) {
+					if (valor[k] !== undefined && valor[k] !== null && valor[k] !== '') {
+						const t = normalizarTalla(valor[k]);
+						if (t) return t;
+					}
+				}
+				for (const k in valor) {
+					const t = normalizarTalla(valor[k]);
+					if (t) return t;
+				}
+			}
+			return null;
+		}
+
+		function extraerTallaDeSkuSaleAttr(skuSaleAttr) {
+			if (!Array.isArray(skuSaleAttr)) return null;
+			for (const attr of skuSaleAttr) {
+				if (!attr || typeof attr !== 'object') continue;
+				const esTalla =
+					attr.attr_id === "87" ||
+					attr.attr_name === "Talla" ||
+					attr.attr_name_en === "Size" ||
+					String(attr.attr_name || "").toLowerCase().includes("talla") ||
+					String(attr.attr_name_en || "").toLowerCase() === "size";
+				if (esTalla) {
+					return normalizarTalla(attr.attr_value_name) || normalizarTalla(attr.attr_value_name_en);
+				}
+			}
+			const primero = skuSaleAttr[0];
+			if (primero && typeof primero === 'object') {
+				return normalizarTalla(primero.attr_value_name) || normalizarTalla(primero.attr_value_name_en);
+			}
+			return null;
+		}
+
 		function findMatch(data, patterns) {
 			for (const pattern of patterns) {
 				const match = data.match(pattern);
@@ -1779,6 +1839,17 @@
 
 			const precios = extraerPrecios(gb);
 
+			const variantes = [];
+			try {
+				const skuList = gb?.modules?.saleAttr?.multiLevelSaleAttribute?.sku_list;
+				if (Array.isArray(skuList)) {
+					skuList.forEach(sku => {
+						const talla = extraerTallaDeSkuSaleAttr(sku?.sku_sale_attr);
+						if (talla) variantes.push({ talla });
+					});
+				}
+			} catch (e) {}
+
 			const datos = {
 				titulo: buscar(gb, ["goods_name", "productName", "product_name", "goodsName", "title"]),
 				sku: buscar(gb, ["goods_sn", "goodsSn", "productSn", "sku"]),
@@ -1803,6 +1874,20 @@
 					if (img && typeof img === 'object') return img.url || img.src || img.image || null;
 					return null;
 				}).filter(Boolean);
+			}
+
+			if (variantes.length > 0 && (!datos.tallas || datos.tallas.length === 0)) {
+				datos.tallas = [...new Set(variantes.map(v => v.talla))];
+			}
+
+			if (Array.isArray(datos.tallas)) {
+				datos.tallas = datos.tallas
+					.map(t => normalizarTalla(t))
+					.filter(t => t !== null && t !== undefined && t !== '');
+			}
+
+			if (Array.isArray(datos.tallas) && datos.tallas.length > 0) {
+				datos.tallas = ordenarTallas(datos.tallas);
 			}
 
 			return datos;
@@ -1845,7 +1930,7 @@
 
 						if (Array.isArray(item.hasVariant)) {
 							item.hasVariant.forEach(v => {
-								const talla = v.size || null;
+								const talla = normalizarTalla(v.size);
 								const sku = v.sku || null;
 								const precio = (v.offers && v.offers.price) ? parseFloat(v.offers.price) : null;
 								if (talla) datos.tallas.push(talla);
@@ -1984,7 +2069,11 @@
 					});
 				}
 
-				const finalSizes = [...new Set(sizes.filter(s => s && s.trim() !== ''))];
+				const tallasNormalizadas = sizes
+					.map(s => normalizarTalla(s))
+					.filter(s => s !== null && s !== undefined && s !== '');
+
+				const finalSizes = [...new Set(tallasNormalizadas)];
 				if (finalSizes.length > 0) {
 					item.sizes = finalSizes;
 					hasNewData = true;
@@ -1995,6 +2084,44 @@
 
 			item._missing = missing;
 			return hasNewData;
+		}
+
+		function ordenarTallas(tallas) {
+			if (!Array.isArray(tallas) || tallas.length === 0) return [];
+
+			const ORDEN_TALLAS_LETRAS = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '4XL', '5XL'];
+
+			const limpias = [...new Set(tallas.map(t => normalizarTalla(t)).filter(Boolean))];
+
+			const letras = [];
+			const numericas = [];
+			const otras = [];
+
+			for (const t of limpias) {
+				const upper = t.toUpperCase();
+				if (ORDEN_TALLAS_LETRAS.includes(upper)) {
+					letras.push({ original: t, idx: ORDEN_TALLAS_LETRAS.indexOf(upper) });
+				} else if (/^\d+([.,]\d+)?$/.test(t)) {
+					numericas.push({ original: t, num: parseFloat(t.replace(',', '.')) });
+				} else {
+					const numMatch = t.match(/\d+([.,]\d+)?/);
+					if (numMatch) {
+						otras.push({ original: t, num: parseFloat(numMatch[0].replace(',', '.')) });
+					} else {
+						otras.push({ original: t, num: Infinity });
+					}
+				}
+			}
+
+			letras.sort((a, b) => a.idx - b.idx);
+			numericas.sort((a, b) => a.num - b.num);
+			otras.sort((a, b) => a.num - b.num);
+
+			return [
+				...letras.map(x => x.original),
+				...numericas.map(x => x.original),
+				...otras.map(x => x.original)
+			];
 		}
 
 		function generateSizeSelect(index, item) {
@@ -2027,7 +2154,6 @@
 				if (item.color) row.style.backgroundColor = item.color;
 				if (item._pendiente) row.classList.add("row-pending");
 
-				// === FILA CON PRECIO VARIABLE ===
 				const esVariable = item.tienePrecioVariable === true;
 				if (esVariable && !item._pendiente) {
 					row.classList.add("row-variable-price");
@@ -2058,7 +2184,6 @@
 
 				const titleText = item.title || '';
 
-				// Badge de precio variable (solo si aplica)
 				const badgeVariableHtml = esVariable
 					? `<div class="variable-badge-row variable-badge-cell" title="Este producto tiene precios diferentes según la variante (color, talla, largo, etc). Revisa manualmente.">
 						<i class="fas fa-exclamation-triangle"></i> PRECIO VARIABLE
@@ -2288,7 +2413,6 @@
 				if (newPrice !== items[index].priceApp) {
 					items[index].priceApp = newPrice;
 					items[index].priceLempiras = calculatePriceInLempiras(newPrice);
-					// Si el usuario edita manualmente el precio, ya no es "variable"
 					items[index].tienePrecioVariable = false;
 					showMessage("Precio de App actualizado con éxito.", 'success');
 				}
