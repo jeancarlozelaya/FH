@@ -4,7 +4,7 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta charset="UTF-8">
-	<title>Creador v4.8</title>
+	<title>Creador v4.9</title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
@@ -56,7 +56,6 @@
 			50% { background-color: rgba(0, 123, 255, 0.20); }
 		}
 
-		/* === FILA CON PRECIO VARIABLE === */
 		tr.row-variable-price {
 			background-color: #fff8f0 !important;
 		}
@@ -945,6 +944,7 @@
 					extensionDisponible = true;
 					console.log("🔌 Extensión SHEIN disponible (versión " + data.version + ")");
 					updateExtensionUI();
+					updateUIBasedOnMode();
 				}
 
 				if (data.tipo === "SHEIN_FETCH_RESPONSE") {
@@ -1012,7 +1012,7 @@
 		}
 
 		function updateProfileTitle() {
-			document.title = `Creador v4.8 - ${profileNames[currentProfile]}`;
+			document.title = `Creador v4.9 - ${profileNames[currentProfile]}`;
 		}
 
 		function saveToLocalStorage() {
@@ -1102,11 +1102,14 @@
 			if (workMode === "urls") enlaceInput.placeholder = "Enlace del artículo";
 			else enlaceInput.placeholder = "Pega aquí el código fuente...";
 
-			if (workMode === "source") {
-				if (addButton) addButton.style.display = 'none';
-				if (extButton) extButton.style.display = extensionDisponible ? 'inline-flex' : 'none';
+			// Ocultar el botón + SOLO si estamos en modo fuente Y modo extensión activado
+			const ocultarAdd = (workMode === "source" && usarExtensionMode === true);
+			if (addButton) addButton.style.display = ocultarAdd ? 'none' : 'inline-flex';
+
+			// El botón verde solo aparece en modo source + extensión activada + extensión disponible
+			if (workMode === "source" && usarExtensionMode && extensionDisponible) {
+				if (extButton) extButton.style.display = 'inline-flex';
 			} else {
-				if (addButton) addButton.style.display = 'inline-flex';
 				if (extButton) extButton.style.display = 'none';
 			}
 		}
@@ -1203,25 +1206,12 @@
 				const t0 = Date.now();
 				const respuesta = await fetchConExtension(finalEnlace);
 				const t1 = Date.now();
-				console.log(`[Extensión] HTML recibido en ${t1 - t0}ms (${respuesta.tamano} chars, JSON: ${respuesta.tamanoJson || 0} chars)`);
+				console.log(`[Extensión] HTML recibido en ${t1 - t0}ms (${respuesta.tamano} chars)`);
 
 				const item = items[itemIndex];
 				let hasNewData = false;
 
-				// NUEVO: si el content.js ya extrajo el gbRawData, usarlo directamente
-				let nivel1;
-				if (respuesta.gbRawDataJson) {
-					console.log("[Extensión] Usando gbRawData pre-extraído por la extensión");
-					try {
-						const gbRawData = JSON.parse(respuesta.gbRawDataJson);
-						nivel1 = { exito: true, datos: extraerCamposCliente(gbRawData) };
-					} catch (e) {
-						console.warn("[Extensión] Error parseando gbRawData pre-extraído, cayendo a extracción normal:", e.message);
-						nivel1 = extraerDeGbRawDataCliente(respuesta.html);
-					}
-				} else {
-					nivel1 = extraerDeGbRawDataCliente(respuesta.html);
-				}
+				const nivel1 = extraerDeGbRawDataCliente(respuesta.html);
 				if (nivel1.exito) {
 					const d = nivel1.datos;
 					if (d.titulo && !item.title) { item.title = d.titulo; hasNewData = true; }
@@ -1648,9 +1638,6 @@
 			}, 100);
 		}
 
-		// ============================================================
-		// NORMALIZAR TALLA (por si viene como objeto)
-		// ============================================================
 		function normalizarTalla(valor) {
 			if (valor === null || valor === undefined) return null;
 			if (typeof valor === 'string') {
