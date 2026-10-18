@@ -144,10 +144,31 @@
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.08);
             margin-bottom: 20px;
+            position: sticky;
+            top: 60px;
+            z-index: 9;
         }
 
-        .url-bar textarea {
-            width: 100%;
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .controls input[type="text"] {
+            flex: 1 1 200px;
+            height: 40px;
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 0;
+        }
+
+        .controls textarea {
+            flex: 1 1 100%;
             min-height: 90px;
             padding: 10px;
             border: 1px solid #ccc;
@@ -156,37 +177,34 @@
             font-size: 13px;
             resize: vertical;
             box-sizing: border-box;
+            width: 100%;
         }
 
-        .url-bar .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-
-        .url-bar .actions button {
-            padding: 10px 18px;
+        .controls button {
+            height: 40px;
+            width: 40px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 16px;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
             transition: background 0.2s;
+            flex-shrink: 0;
         }
 
-        .btn-cargar { background: #28a745; color: white; }
-        .btn-cargar:hover { background: #218838; }
-        .btn-cargar:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-add { background: #007bff; color: white; }
+        .btn-add:hover { background: #0056b3; }
+        .btn-add:disabled { background: #ccc; cursor: not-allowed; }
 
-        .btn-cancelar-proceso { background: #dc3545; color: white; }
-        .btn-cancelar-proceso:hover { background: #c82333; }
+        .btn-ext { background: #28a745; color: white; display: none; }
+        .btn-ext:hover { background: #218838; }
 
-        .btn-secundario { background: #6c757d; color: white; }
-        .btn-secundario:hover { background: #5a6268; }
+        .btn-clear { background: #6c757d; color: white; }
+        .btn-clear:hover { background: #5a6268; }
+
+        .btn-cancel { background: #dc3545; color: white; }
 
         .status-bar {
             font-size: 13px;
@@ -223,6 +241,82 @@
             margin-top: 5px;
             text-align: center;
         }
+
+        .floating-dropdown {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .dropdown-toggle.with-icon {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dropdown-toggle.with-icon:hover { background-color: #0056b3; }
+
+        .floating-menu {
+            position: absolute;
+            bottom: 60px;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            visibility: hidden;
+            opacity: 0;
+            transform: scale(0.9) translateY(10px);
+            transition: visibility 0.2s, opacity 0.2s, transform 0.2s ease-out;
+            transform-origin: bottom left;
+        }
+
+        .floating-menu.show {
+            visibility: visible;
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .floating-menu button.with-icon {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            width: auto;
+            height: auto;
+            padding: 8px 14px;
+            border-radius: 20px;
+            gap: 10px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            transition: background-color 0.2s;
+        }
+
+        .floating-menu button.with-icon span {
+            font-size: 14px;
+            color: white;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .floating-menu button.with-icon:hover { background-color: #0056b3; }
+        .floating-menu button.with-icon:disabled { background-color: #ccc; cursor: not-allowed; }
 
         .mosaic-view {
             display: grid;
@@ -268,6 +362,7 @@
         .mosaic-view.size-small .color-swatch.selected { border-width: 2px; }
         .mosaic-view.size-small .delete-item { width: 20px; height: 20px; font-size: 11px; top: 5px; right: 5px; }
         .mosaic-view.size-small .retry-item { width: 20px; height: 20px; font-size: 10px; top: 5px; right: 32px; }
+        .mosaic-view.size-small .select-item { width: 20px; height: 20px; top: 5px; left: 5px; }
         .mosaic-view.size-small .btn-refresh-color { font-size: 10px; padding: 5px 6px; border-radius: 4px; }
         .mosaic-view.size-small .precio-consultado-info { font-size: 10px; }
         .mosaic-view.size-small .color-selected-name { font-size: 9px; }
@@ -294,6 +389,7 @@
         .mosaic-view.size-medium .color-swatch { width: 24px; height: 24px; }
         .mosaic-view.size-medium .delete-item { width: 22px; height: 22px; font-size: 12px; }
         .mosaic-view.size-medium .retry-item { width: 22px; height: 22px; font-size: 11px; right: 36px; }
+        .mosaic-view.size-medium .select-item { width: 22px; height: 22px; }
         .mosaic-view.size-medium .btn-refresh-color { font-size: 11px; padding: 6px 8px; }
         .mosaic-view.size-medium .precio-consultado-info { font-size: 10.5px; }
         .mosaic-view.size-medium .variable-badge {
@@ -308,6 +404,7 @@
         .mosaic-item:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.15); }
         .mosaic-item.pending { animation: pending-pulse 1.5s ease-in-out infinite; }
         .mosaic-item.variable-price { border-color: #ff6b00; background: #fff8f0; }
+        .mosaic-item.selected { border-color: #007bff; box-shadow: 0 0 0 3px rgba(0,123,255,0.25); }
 
         .variable-badge {
             position: absolute;
@@ -372,6 +469,20 @@
         }
 
         .retry-item:hover { transform: scale(1.1); }
+
+        .select-item {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 26px;
+            height: 26px;
+            z-index: 3;
+            cursor: pointer;
+            accent-color: #007bff;
+            transform: scale(1.3);
+            background: white;
+            border-radius: 4px;
+        }
 
         .mosaic-image-container {
             width: 100%;
@@ -943,16 +1054,16 @@
     </div>
 
     <div class="url-bar">
-        <textarea id="urlInput" placeholder="Pega aquí las URLs de SHEIN (una por línea)...&#10;&#10;https://us.shein.com/producto-1-p-123456.html&#10;https://us.shein.com/producto-2-p-789101.html"></textarea>
-        <div class="actions">
-            <button class="btn-cargar" id="btnCargar" onclick="cargarProductos()">
-                <i class="fas fa-download"></i> Cargar productos
+        <div class="controls">
+            <input type="text" id="enlace" placeholder="Enlace del artículo" autocomplete="off">
+            <button class="btn-add" id="btnCargar" onclick="obtenerFuente()" title="Cargar producto">
+                <i class="fas fa-plus"></i>
             </button>
-            <button class="btn-cancelar-proceso" id="btnCancelarProceso" onclick="cancelarProceso()" style="display: none;">
-                <i class="fas fa-stop"></i> Detener
+            <button class="btn-ext" id="extensionButton" onclick="obtenerFuenteDesdeExtension()" title="Obtener desde el navegador (extensión)">
+                <i class="fas fa-download"></i>
             </button>
-            <button class="btn-secundario" onclick="clearAll()">
-                <i class="fas fa-eraser"></i> Limpiar todo
+            <button class="btn-clear" id="btnClearInput" onclick="clearInput()" title="Limpiar entrada">
+                <i class="fas fa-eraser"></i>
             </button>
         </div>
         <div class="status-bar" id="statusBar"></div>
@@ -966,6 +1077,22 @@
 
     <div class="mosaic-view size-large" id="mosaicView"></div>
 
+</div>
+
+<div class="floating-dropdown">
+    <button id="menuToggleButton" class="dropdown-toggle with-icon" onclick="toggleDropdown()" title="Opciones">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="floating-menu" id="dropdownMenu">
+        <button id="duplicateButton" class="with-icon" onclick="duplicateSelected()" disabled title="Duplicar seleccionado">
+            <i class="fas fa-layer-group"></i>
+            <span>Duplicar</span>
+        </button>
+        <button id="deleteButton" class="with-icon" onclick="deleteSelected()" disabled title="Eliminar seleccionados">
+            <i class="fas fa-trash-alt"></i>
+            <span>Eliminar</span>
+        </button>
+    </div>
 </div>
 
 <div class="modal-overlay" id="downloadModal">
@@ -1012,6 +1139,37 @@
         </div>
 
         <div class="tab-content active" id="tab-general">
+            <div class="input-group">
+                <label>Modo de trabajo</label>
+                <div class="behavior-options">
+                    <label class="behavior-option" id="optModeUrls" onclick="seleccionarWorkMode('urls')">
+                        <input type="radio" name="workMode" id="radioModeUrls" value="urls">
+                        <div class="opt-content">
+                            <div class="opt-title">Enlaces</div>
+                            <div class="opt-desc">Usa el script de Google / extensión con la URL del producto.</div>
+                        </div>
+                    </label>
+                    <label class="behavior-option" id="optModeSource" onclick="seleccionarWorkMode('source')">
+                        <input type="radio" name="workMode" id="radioModeSource" value="source">
+                        <div class="opt-content">
+                            <div class="opt-title">Código Fuente</div>
+                            <div class="opt-desc">Pega el HTML directamente, sin usar scripts ni extensión.</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="input-group" id="modoExtensionSection" style="display: none;">
+                <label>Modo Extensión</label>
+                <label class="checkbox-option" id="optUsarExtension" onclick="toggleUsarExtension()">
+                    <input type="checkbox" id="usarModoExtension">
+                    <div class="opt-content">
+                        <div class="opt-title">Activar modo extensión</div>
+                        <div class="opt-desc">Al activarlo, el botón + se oculta y solo funciona el botón verde de la extensión.</div>
+                    </div>
+                </label>
+            </div>
+
             <div class="input-group">
                 <label>Valor del dólar (Lempiras)</label>
                 <input type="number" id="dollarInput" step="0.01" min="0.01" placeholder="Ej: 27.20">
@@ -1144,6 +1302,11 @@
 
     let watermarkEnabled = false;
 
+    let workMode = 'urls';
+    let usarExtensionMode = false;
+
+    let lastDeletedItems = [];
+
     const LOGO_URL = 'https://raw.githubusercontent.com/jeancarlozelaya/FH/refs/heads/main/Im%C3%A1genes/FashionHouse.png';
 
     const ORDEN_TALLAS_LETRAS = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '4XL', '5XL'];
@@ -1203,12 +1366,13 @@
 
     window.addEventListener('load', function () {
         loadSettings();
-        loadUrlInput();
         loadLogo();
         setupExtensionListeners();
         loadFromStorage();
         applyCardSize();
         renderAll();
+        updateUIBasedOnMode();
+        updateButtonStates();
     });
 
     function loadSettings() {
@@ -1232,25 +1396,11 @@
 
         const wm = localStorage.getItem('editorWatermark');
         if (wm === 'true') watermarkEnabled = true;
-    }
 
-    function loadUrlInput() {
-        const saved = localStorage.getItem('editorUrlInput') || '';
-        const ta = document.getElementById('urlInput');
-        if (ta) {
-            ta.value = saved;
-            ta.addEventListener('input', () => {
-                localStorage.setItem('editorUrlInput', ta.value);
-            });
-        }
-    }
-
-    function clearUrlInput() {
-        const ta = document.getElementById('urlInput');
-        if (ta) {
-            ta.value = '';
-            localStorage.setItem('editorUrlInput', '');
-        }
+        const wmMode = localStorage.getItem('editorWorkMode');
+        if (wmMode) workMode = wmMode;
+        const extMode = localStorage.getItem('editorUsarExtensionMode');
+        if (extMode === 'true') usarExtensionMode = true;
     }
 
     function applyCardSize() {
@@ -1326,9 +1476,12 @@
         localStorage.setItem('editorPriceColor', priceColor);
         localStorage.setItem('editorSizesColor', sizesColor);
         localStorage.setItem('editorWatermark', watermarkEnabled ? 'true' : 'false');
+        localStorage.setItem('editorWorkMode', workMode);
+        localStorage.setItem('editorUsarExtensionMode', usarExtensionMode ? 'true' : 'false');
 
         closeSettings();
         renderAll();
+        updateUIBasedOnMode();
     }
 
     function showSettings() {
@@ -1342,6 +1495,11 @@
         document.getElementById('optWatermark').classList.toggle('selected', watermarkEnabled);
         seleccionarBehavior(colorBehavior, true);
         seleccionarSize(cardSize);
+        seleccionarWorkMode(workMode, true);
+        const chkExt = document.getElementById('usarModoExtension');
+        if (chkExt) chkExt.checked = usarExtensionMode;
+        document.getElementById('optUsarExtension').classList.toggle('selected', usarExtensionMode);
+        actualizarVisibilidadModoExtension();
         switchTab('general');
         document.getElementById('settingsModal').classList.add('show');
     }
@@ -1382,27 +1540,86 @@
         }
     }
 
-    // ============================================================
-    // CARGA DEL LOGO CON REMOCIÓN DE FONDO BLANCO
-    // ============================================================
+    function seleccionarWorkMode(mode, silencioso) {
+        workMode = mode;
+        const optUrls = document.getElementById('optModeUrls');
+        const optSource = document.getElementById('optModeSource');
+        const radioUrls = document.getElementById('radioModeUrls');
+        const radioSource = document.getElementById('radioModeSource');
+
+        if (mode === 'urls') {
+            optUrls.classList.add('selected');
+            optSource.classList.remove('selected');
+            radioUrls.checked = true;
+        } else {
+            optSource.classList.add('selected');
+            optUrls.classList.remove('selected');
+            radioSource.checked = true;
+        }
+
+        if (!silencioso) {
+            localStorage.setItem('editorWorkMode', workMode);
+        }
+
+        actualizarVisibilidadModoExtension();
+        updateUIBasedOnMode();
+    }
+
+    function toggleUsarExtension() {
+        usarExtensionMode = !usarExtensionMode;
+        document.getElementById('usarModoExtension').checked = usarExtensionMode;
+        document.getElementById('optUsarExtension').classList.toggle('selected', usarExtensionMode);
+        localStorage.setItem('editorUsarExtensionMode', usarExtensionMode ? 'true' : 'false');
+        updateUIBasedOnMode();
+    }
+
+    function actualizarVisibilidadModoExtension() {
+        const seccion = document.getElementById('modoExtensionSection');
+        if (!seccion) return;
+        seccion.style.display = (workMode === 'source') ? 'block' : 'none';
+    }
+
+    function updateUIBasedOnMode() {
+        const enlaceInput = document.getElementById('enlace');
+        const addButton = document.getElementById('btnCargar');
+        const extButton = document.getElementById('extensionButton');
+
+        if (workMode === 'urls') {
+            enlaceInput.placeholder = 'Enlace del artículo';
+        } else {
+            enlaceInput.placeholder = 'Pega aquí el código fuente...';
+        }
+
+        const ocultarAdd = (workMode === 'source' && usarExtensionMode === true);
+        if (addButton) addButton.style.display = ocultarAdd ? 'none' : 'inline-flex';
+
+        if (workMode === 'source' && usarExtensionMode && extensionDisponible) {
+            if (extButton) extButton.style.display = 'inline-flex';
+        } else {
+            if (extButton) extButton.style.display = 'none';
+        }
+    }
+
+    function obtenerFuente() {
+        if (workMode === 'urls') {
+            obtenerFuenteDesdeEnlace();
+        } else {
+            obtenerFuenteDesdeCodigo();
+        }
+    }
 
     function loadLogo() {
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
-            // Guardar la versión original (para esquinas)
             logoOriginal = img;
-
-            // Procesar la versión limpia (para marca de agua)
             try {
                 const logoLimpio = removerFondoBlancoDelLogo(img);
-                // Cuando la versión limpia esté lista, guardarla
                 logoLimpio.onload = () => {
                     logo = logoLimpio;
                     logoCargado = true;
                     console.log('✅ Logo cargado (original + limpio sin fondo blanco)');
                 };
-                // Si el onload no se dispara por ser dataURL local, asignar igual
                 if (logoLimpio.complete) {
                     logo = logoLimpio;
                     logoCargado = true;
@@ -1469,6 +1686,7 @@
             if (data.tipo === 'SHEIN_EXTENSION_READY') {
                 extensionDisponible = true;
                 console.log('🔌 Extensión SHEIN disponible');
+                updateUIBasedOnMode();
             }
 
             if (data.tipo === 'SHEIN_FETCH_RESPONSE') {
@@ -1549,8 +1767,8 @@
             const seg = Math.ceil(tiempoRestante / 1000);
             const min = Math.floor(seg / 60);
             const s = seg % 60;
-            const tiempoTexto = min > 0 ? `${min}m ${s}s` : `${s}s`;
-            text.textContent = `${actual} de ${total} (${pct}%) — ~${tiempoTexto} restante`;
+            const texto = min > 0 ? `${min}m ${s}s` : `${s}s`;
+            text.textContent = `${actual} de ${total} (${pct}%) — ~${texto} restante`;
         } else {
             text.textContent = `${actual} de ${total} (${pct}%)`;
         }
@@ -1774,13 +1992,145 @@
         return { exito: false };
     }
 
+    function extractDataFromSource(source, enlace, itemIndex) {
+        const item = items[itemIndex];
+        if (!item) return false;
+
+        let hasNewData = false;
+
+        const titlePatterns = [
+            /"goods_name"\s*:\s*"([^"]+)"/i,
+            /<meta property="og:title" content="([^"]+)"/i,
+            /<h1 class="product-intro__head-name"[^>]*>.*?<span[^>]*>([^<]+)<\/span>/i,
+            /<title>([^<]+?) \| SHEIN USA<\/title>/i,
+            /<title>([^<]+?) \| SHEIN<\/title>/i,
+            /<title>([^<]+?)<\/title>/i
+        ];
+
+        const skuPatterns = [
+            /"goods_sn"\s*:\s*"(s[a-zA-Z0-9]{5,})"/i,
+            /<span class="product-intro__head-sku-text">\s*SKU:\s*(s[a-zA-Z0-9]{5,})<\/span>/i,
+            /data-clipboard-text="(s[a-zA-Z0-9]{5,})"/i,
+            /"skc_name"\s*:\s*"(s[a-zA-Z0-9]{5,})"/i,
+            /"sku":"(s[a-zA-Z0-9]{5,})"/i,
+            /"sku":"(I[a-zA-Z0-9]{5,})"/i
+        ];
+
+        const imagePatterns = [
+            /"skcImages"\s*:\s*\[\s*"(.*?)"/i,
+            /<link rel="preload" as="image" href="(.*_900x\.webp)"/i,
+            /<div class="crop-image-container fsp-element" data-before-crop-src="(.*?)"/i,
+            /"image":"(.*?)"/i,
+            /<div class="crop-image-container" data-before-crop-src="(.*?)"/i,
+            /"skcImages":\["(.*?)"/i
+        ];
+
+        const priceAppPatterns = [
+            /"retailPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i,
+            /"originalPrice"\s*:\s*{"amount"\s*:\s*"([\d.]+)"/i,
+            /"salePrice"\s*:\s*([\d.]+)/i,
+            /"price"\s*:\s*([\d.]+)/i
+        ];
+
+        function findMatch(data, patterns) {
+            for (const pattern of patterns) {
+                const match = data.match(pattern);
+                if (match && match[1]) return match[1];
+            }
+            return null;
+        }
+
+        if (!item.title) {
+            const title = findMatch(source, titlePatterns);
+            if (title) { item.title = title.trim(); hasNewData = true; }
+        }
+
+        if (!item.sku) {
+            const sku = findMatch(source, skuPatterns);
+            if (sku) { item.sku = sku; hasNewData = true; }
+        }
+
+        if (!item.image) {
+            let image = findMatch(source, imagePatterns);
+            if (image) {
+                if (!image.startsWith('http')) image = 'https:' + image;
+                image = image.replace(/_thumbnail_\d+x\d+\.webp/i, '_thumbnail_900x.webp');
+                image = image.replace(/_\d+x\d+\.(jpg|webp|png)/i, '_900x.webp');
+                item.image = image;
+                item.imagenOriginal = image;
+                hasNewData = true;
+            }
+        }
+
+        if (item.priceApp === null || item.priceApp === undefined) {
+            const priceStr = findMatch(source, priceAppPatterns);
+            if (priceStr) {
+                item.priceApp = parseFloat(priceStr);
+                hasNewData = true;
+            }
+        }
+
+        if (!item.sizes) {
+            let sizes = [];
+
+            const baseSizeSortMatch = source.match(/"base_size_sort":(\{.*?\})/);
+            if (baseSizeSortMatch && baseSizeSortMatch[1]) {
+                try {
+                    const sizeObject = JSON.parse(baseSizeSortMatch[1]);
+                    sizes = Object.keys(sizeObject);
+                } catch (e) {}
+            }
+
+            if (sizes.length === 0) {
+                const sizeBlockMatch = source.match(/"attr_name":"Talla".*?"attr_value_list":(\[.*?\])/s);
+                if (sizeBlockMatch && sizeBlockMatch[1]) {
+                    try {
+                        const sizeList = JSON.parse(sizeBlockMatch[1]);
+                        sizeList.forEach(s => {
+                            if (s.attr_value_name && s.attr_value_id) {
+                                let sizeLabel = s.attr_value_name;
+                                if (s.attr_local_size_value && /^[a-zA-Z]+$/.test(s.attr_value_name)) {
+                                    sizeLabel = `${s.attr_local_size_value} (${s.attr_value_name})`;
+                                }
+                                sizes.push(sizeLabel);
+                            }
+                        });
+                    } catch (e) {}
+                }
+            }
+
+            if (sizes.length === 0) {
+                const jsonPattern = /"attr_value_name":"(.*?)"/g;
+                sizes = [...source.matchAll(jsonPattern)].map(m => m[1]);
+            }
+
+            if (sizes.length === 0) {
+                const htmlSizePatterns = [
+                    /data-attr_id="87".*?data-attr_value_name="(.*?)"/g,
+                    /<p class="product-intro__size-radio-inner.*?>(.*?)<\/p>/g
+                ];
+                htmlSizePatterns.forEach(pattern => {
+                    [...source.matchAll(pattern)].forEach(m => sizes.push(m[1]));
+                });
+            }
+
+            const tallasFinales = ordenarTallas(sizes);
+            if (tallasFinales.length > 0) {
+                item.sizes = tallasFinales.join(', ');
+                hasNewData = true;
+            }
+        }
+
+        return hasNewData;
+    }
+
     function cancelarProceso() {
         if (!procesoActivo) return;
         canceladoSolicitado = true;
         setStatus('Deteniendo...', 'error');
     }
 
-    async function cargarProductos() {
+    async function obtenerFuenteDesdeEnlace() {
         if (dollarValue === null) {
             Swal.fire('Configuración', 'Primero configura el valor del dólar', 'info').then(() => showSettings());
             return;
@@ -1789,48 +2139,238 @@
             Swal.fire('Extensión no disponible', 'Instala la extensión SHEIN Extractor primero', 'error');
             return;
         }
-        const urlText = document.getElementById('urlInput').value.trim();
-        if (!urlText) {
-            Swal.fire('Sin URLs', 'Pega al menos una URL de SHEIN', 'warning');
-            return;
-        }
-        const urls = urlText.split('\n').map(u => u.trim()).filter(u => u.length > 10);
-        if (urls.length === 0) {
-            Swal.fire('Sin URLs válidas', 'No se encontraron URLs válidas', 'warning');
-            return;
-        }
 
-        const itemsNuevos = [];
-        for (let i = 0; i < urls.length; i++) {
-            const urlOriginal = urls[i];
-            const baseURL = 'https://us.shein.com/';
-            const cleanPath = urlOriginal.replace(/^(https?:\/\/)?([a-zA-Z0-9.-]+\.)?shein\.com\/(us\/)?/i, '');
-            const finalUrl = baseURL + cleanPath;
-            if (items.some(x => x.url === finalUrl)) continue;
+        const enlaceInput = document.getElementById('enlace');
+        const enlace = enlaceInput.value.trim();
 
-            const item = {
-                id: Date.now() + '_' + i + '_' + Math.random().toString(36).slice(2, 6),
-                url: finalUrl, image: '', imagenOriginal: '', title: '', priceApp: null, priceAppMax: null,
-                priceFinal: null, sizes: '', priceDiscount: null,
-                tienePrecioVariable: false, preciosUnicos: [],
-                colores: [],
-                colorSeleccionado: null,
-                colorSeleccionadoNombre: null,
-                goodsIdOriginal: null,
-                preciosPorColor: {},
-                pending: true, failed: false, error: null
-            };
-            items.push(item);
-            itemsNuevos.push(item);
-        }
-
-        if (itemsNuevos.length === 0) {
-            Swal.fire('Sin cambios', 'Todas las URLs ya estaban cargadas', 'info');
+        if (!enlace) {
+            Swal.fire('Sin enlace', 'Pega una URL de SHEIN', 'warning');
             return;
         }
 
-        await procesarItems(itemsNuevos);
+        if (enlace.startsWith('<!DOCTYPE') || enlace.startsWith('<html') || enlace.length > 500) {
+            Swal.fire('Modo incorrecto', 'Parece que pegaste código fuente. Cambia al modo "Código Fuente" en Configuración.', 'warning');
+            return;
+        }
+
+        if (!enlace.includes('shein')) {
+            Swal.fire('URL inválida', 'El enlace no parece ser de SHEIN', 'warning');
+            return;
+        }
+
+        const baseURL = 'https://us.shein.com/';
+        const cleanPath = enlace.replace(/^(https?:\/\/)?([a-zA-Z0-9.-]+\.)?shein\.com\/(us\/)?/i, '');
+        const finalUrl = baseURL + cleanPath;
+
+        if (items.some(x => x.url === finalUrl)) {
+            Swal.fire('Duplicado', 'Este producto ya está cargado', 'info');
+            return;
+        }
+
+        const item = {
+            id: Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+            url: finalUrl, image: '', imagenOriginal: '', title: '', priceApp: null, priceAppMax: null,
+            priceFinal: null, sizes: '', priceDiscount: null,
+            tienePrecioVariable: false, preciosUnicos: [],
+            colores: [],
+            colorSeleccionado: null,
+            colorSeleccionadoNombre: null,
+            goodsIdOriginal: null,
+            preciosPorColor: {},
+            pending: true, failed: false, error: null
+        };
+        items.push(item);
+        saveToStorage();
+        renderAll();
+
+        await procesarItems([item]);
         updateAlertaFallos();
+        enlaceInput.value = '';
+    }
+
+    async function obtenerFuenteDesdeExtension() {
+        if (dollarValue === null) {
+            Swal.fire('Configuración', 'Primero configura el valor del dólar', 'info').then(() => showSettings());
+            return;
+        }
+        if (!extensionDisponible) {
+            Swal.fire('Extensión no disponible', 'Instala la extensión SHEIN Extractor primero', 'error');
+            return;
+        }
+
+        const enlaceInput = document.getElementById('enlace');
+        const enlace = enlaceInput.value.trim();
+
+        if (!enlace) {
+            Swal.fire('Sin enlace', 'Pega una URL de SHEIN', 'warning');
+            return;
+        }
+
+        if (!enlace.includes('shein')) {
+            Swal.fire('URL inválida', 'El enlace no parece ser de SHEIN', 'warning');
+            return;
+        }
+
+        const baseURL = 'https://us.shein.com/';
+        const cleanPath = enlace.replace(/^(https?:\/\/)?([a-zA-Z0-9.-]+\.)?shein\.com\/(us\/)?/i, '');
+        const finalUrl = baseURL + cleanPath;
+
+        if (items.some(x => x.url === finalUrl)) {
+            Swal.fire('Duplicado', 'Este producto ya está cargado', 'info');
+            return;
+        }
+
+        const item = {
+            id: Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+            url: finalUrl, image: '', imagenOriginal: '', title: '', priceApp: null, priceAppMax: null,
+            priceFinal: null, sizes: '', priceDiscount: null,
+            tienePrecioVariable: false, preciosUnicos: [],
+            colores: [],
+            colorSeleccionado: null,
+            colorSeleccionadoNombre: null,
+            goodsIdOriginal: null,
+            preciosPorColor: {},
+            pending: true, failed: false, error: null
+        };
+        items.push(item);
+        saveToStorage();
+        renderAll();
+
+        await procesarItems([item]);
+        updateAlertaFallos();
+        enlaceInput.value = '';
+    }
+
+    function obtenerFuenteDesdeCodigo() {
+        if (dollarValue === null) {
+            Swal.fire('Configuración', 'Primero configura el valor del dólar', 'info').then(() => showSettings());
+            return;
+        }
+
+        const enlaceInput = document.getElementById('enlace');
+        const source = enlaceInput.value.trim();
+
+        if (!source || source.length < 500) {
+            Swal.fire('Código insuficiente', 'Pega el código fuente completo de SHEIN', 'warning');
+            return;
+        }
+
+        if (source.startsWith('http') && source.length < 500) {
+            Swal.fire('Modo incorrecto', 'Parece que pegaste un enlace. Cambia al modo "Enlaces" en Configuración.', 'warning');
+            return;
+        }
+
+        let enlace = '';
+        const urlMatch = source.match(/<link rel="canonical" href="(.*?)"/i);
+        if (urlMatch && urlMatch[1]) enlace = urlMatch[1];
+
+        const itemIndex = items.length;
+        items.push({
+            id: Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+            url: enlace || '', image: '', imagenOriginal: '', title: '', priceApp: null, priceAppMax: null,
+            priceFinal: null, sizes: '', priceDiscount: null,
+            tienePrecioVariable: false, preciosUnicos: [],
+            colores: [],
+            colorSeleccionado: null,
+            colorSeleccionadoNombre: null,
+            goodsIdOriginal: null,
+            preciosPorColor: {},
+            pending: true, failed: false, error: null
+        });
+        saveToStorage();
+        renderAll();
+
+        setTimeout(() => {
+            const item = items[itemIndex];
+            if (!item) return;
+
+            let hasNewData = false;
+
+            const n1 = extraerDeGbRawDataCliente(source);
+            if (n1.exito) {
+                const d = n1.datos;
+                if (d.titulo) item.title = d.titulo;
+                if (d.precioApp) item.priceApp = parseFloat(d.precioApp);
+                if (d.precioAppMax) item.priceAppMax = parseFloat(d.precioAppMax);
+                if (d.precioDescuento) item.priceDiscount = parseFloat(d.precioDescuento);
+                if (d.tienePrecioVariable) item.tienePrecioVariable = true;
+                if (Array.isArray(d.preciosUnicos)) item.preciosUnicos = d.preciosUnicos;
+                if (d.imagen) {
+                    let img = Array.isArray(d.imagen) ? d.imagen[0] : d.imagen;
+                    if (typeof img === 'string') {
+                        if (!img.startsWith('http')) img = 'https:' + img;
+                        img = img.replace(/_\d+x\d+\.(jpg|webp|png)/i, '_900x.webp');
+                        item.image = img;
+                        item.imagenOriginal = img;
+                    }
+                }
+                if (Array.isArray(d.tallas) && d.tallas.length > 0) {
+                    item.sizes = d.tallas.join(', ');
+                }
+                if (Array.isArray(d.colores) && d.colores.length > 0) {
+                    item.colores = d.colores;
+                }
+                if (d.goodsIdOriginal) {
+                    item.goodsIdOriginal = d.goodsIdOriginal;
+                    if (d.precioApp) {
+                        item.preciosPorColor[d.goodsIdOriginal] = {
+                            precioApp: parseFloat(d.precioApp),
+                            precioDescuento: d.precioDescuento ? parseFloat(d.precioDescuento) : null,
+                            tallas: Array.isArray(d.tallas) ? d.tallas.join(', ') : '',
+                            imagen: item.image,
+                            consultado: true
+                        };
+                    }
+                }
+                if (item.image || item.priceApp) hasNewData = true;
+            }
+
+            if (!item.image || !item.priceApp) {
+                const n2 = extraerDeJsonLDCliente(source);
+                if (n2.exito) {
+                    const d = n2.datos;
+                    if (d.imagen && !item.image) {
+                        let img = d.imagen;
+                        if (typeof img === 'string' && !img.startsWith('http')) img = 'https:' + img;
+                        item.image = img;
+                        item.imagenOriginal = img;
+                    }
+                    if (d.precioDescuento && !item.priceApp) {
+                        item.priceApp = parseFloat(d.precioDescuento);
+                    }
+                    if (d.tienePrecioVariable && !item.tienePrecioVariable) {
+                        item.tienePrecioVariable = true;
+                        item.preciosUnicos = d.preciosUnicos;
+                        item.priceAppMax = d.preciosUnicos[d.preciosUnicos.length - 1];
+                    }
+                    if (d.tallas && d.tallas.length > 0 && !item.sizes) {
+                        item.sizes = d.tallas.join(', ');
+                    }
+                    if (item.image || item.priceApp) hasNewData = true;
+                }
+            }
+
+            if (!hasNewData) {
+                hasNewData = extractDataFromSource(source, enlace, itemIndex);
+            }
+
+            if (hasNewData) {
+                if (item.priceApp !== null && item.priceFinal === null) {
+                    item.priceFinal = calcularPrecioFinal(item.priceApp);
+                }
+                item.pending = false;
+                saveToStorage();
+                renderAll();
+                setStatus('Datos extraídos del código.', 'ok');
+            } else {
+                items.splice(itemIndex, 1);
+                saveToStorage();
+                renderAll();
+                setStatus('No se pudieron extraer datos del código. Fila eliminada.', 'error');
+            }
+
+            enlaceInput.value = '';
+        }, 100);
     }
 
     async function procesarItems(itemsAProcesar) {
@@ -1838,7 +2378,7 @@
         const btnCancelar = document.getElementById('btnCancelarProceso');
 
         btnCargar.disabled = true;
-        btnCancelar.style.display = 'inline-flex';
+        if (btnCancelar) btnCancelar.style.display = 'inline-flex';
         procesoActivo = true;
         canceladoSolicitado = false;
         delayActual = delaySeconds;
@@ -1847,7 +2387,6 @@
         let fallos = 0;
         let variables = 0;
         let captchasSeguidos = 0;
-        let itemsProcesados = 0;
 
         const t0Global = Date.now();
 
@@ -1981,7 +2520,6 @@
                 delete item.colorConsultandoAuto;
                 saveToStorage();
                 renderAll();
-                itemsProcesados++;
             }
 
             if (i < itemsAProcesar.length - 1 && !canceladoSolicitado) {
@@ -1999,7 +2537,7 @@
 
         procesoActivo = false;
         btnCargar.disabled = false;
-        btnCancelar.style.display = 'none';
+        if (btnCancelar) btnCancelar.style.display = 'none';
         ocultarBarraProgreso();
 
         const tTotal = ((Date.now() - t0Global) / 1000).toFixed(1);
@@ -2187,7 +2725,7 @@
             return;
         }
         alerta.classList.add('show');
-        lista.innerHTML = fallidos.map(i => `<li>${i.url}</li>`).join('');
+        lista.innerHTML = fallidos.map(i => `<li>${i.url || '(sin URL)'}</li>`).join('');
     }
 
     function dismissAlert() {
@@ -2226,7 +2764,11 @@
             Swal.fire('Sin fallidos', 'No hay productos para abrir', 'info');
             return;
         }
-        window.open(fallidos[0].url, '_blank');
+        if (fallidos[0].url) {
+            window.open(fallidos[0].url, '_blank');
+        } else {
+            Swal.fire('Sin URL', 'Este producto no tiene URL para abrir', 'info');
+        }
     }
 
     function renderAll() {
@@ -2236,11 +2778,16 @@
             const cont = document.getElementById('mosaicView');
             cont.innerHTML = '';
 
+            const seleccionados = getSeleccionados();
+
             items.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'mosaic-item' + (item.pending ? ' pending' : '');
                 if (item.tienePrecioVariable && !item.pending && !item.failed) {
                     div.classList.add('variable-price');
+                }
+                if (item._seleccionado) {
+                    div.classList.add('selected');
                 }
 
                 const colorActual = (item.colores || []).find(x => normalizarId(x.id) === normalizarId(item.colorSeleccionado));
@@ -2356,6 +2903,7 @@
                 }
 
                 div.innerHTML = `
+                    <input type="checkbox" class="select-item" ${item._seleccionado ? 'checked' : ''} onchange="toggleSelectItem('${item.id}')" title="Seleccionar">
                     ${retryBtn}
                     <button class="delete-item" onclick="deleteItem('${item.id}')" title="Eliminar">×</button>
                     <div class="mosaic-image-container">
@@ -2390,6 +2938,7 @@
                 cont.appendChild(div);
             });
             saveToStorage();
+            updateButtonStates();
         } finally {
             renderizadoEnCurso = false;
         }
@@ -2430,20 +2979,89 @@
         });
     }
 
-    function clearAll() {
+    function getSeleccionados() {
+        return items.filter(x => x._seleccionado);
+    }
+
+    function toggleSelectItem(id) {
+        const item = items.find(x => x.id === id);
+        if (!item) return;
+        item._seleccionado = !item._seleccionado;
+        saveToStorage();
+        renderAll();
+    }
+
+    function updateButtonStates() {
+        const seleccionados = getSeleccionados();
+        const dupBtn = document.getElementById('duplicateButton');
+        const delBtn = document.getElementById('deleteButton');
+        if (dupBtn) dupBtn.disabled = seleccionados.length !== 1;
+        if (delBtn) delBtn.disabled = seleccionados.length === 0;
+    }
+
+    function duplicateSelected() {
+        const seleccionados = getSeleccionados();
+        if (seleccionados.length !== 1) {
+            Swal.fire('Selección', 'Selecciona exactamente un elemento para duplicar', 'info');
+            return;
+        }
+        const original = seleccionados[0];
+        const copia = JSON.parse(JSON.stringify(original));
+        copia.id = Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+        copia._seleccionado = false;
+        const idx = items.findIndex(x => x.id === original.id);
+        items.splice(idx + 1, 0, copia);
+        saveToStorage();
+        renderAll();
+        closeDropdown();
+        showMessage('Elemento duplicado', 'success');
+    }
+
+    function deleteSelected() {
+        const seleccionados = getSeleccionados();
+        if (seleccionados.length === 0) return;
+
         Swal.fire({
-            title: '¿Limpiar todo?', text: 'Se eliminarán todas las imágenes, datos y enlaces',
-            icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, limpiar', cancelButtonText: 'Cancelar'
+            title: `¿Eliminar ${seleccionados.length} elemento(s)?`,
+            text: 'Esta acción no se puede deshacer',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
         }).then(r => {
             if (r.isConfirmed) {
-                items = [];
+                const ids = new Set(seleccionados.map(x => x.id));
+                items = items.filter(x => !ids.has(x.id));
                 saveToStorage();
                 renderAll();
-                clearUrlInput();
-                setStatus('Todo limpiado', 'ok');
                 updateAlertaFallos();
+                closeDropdown();
+                showMessage(`${seleccionados.length} elemento(s) eliminado(s)`, 'success');
             }
         });
+    }
+
+    function toggleDropdown() {
+        const menu = document.getElementById('dropdownMenu');
+        menu.classList.toggle('show');
+    }
+
+    function closeDropdown() {
+        document.getElementById('dropdownMenu').classList.remove('show');
+    }
+
+    document.addEventListener('click', function(event) {
+        const dropdown = document.querySelector('.floating-dropdown');
+        const menu = document.getElementById('dropdownMenu');
+        if (dropdown && menu && !dropdown.contains(event.target)) {
+            menu.classList.remove('show');
+        }
+    });
+
+    function clearInput() {
+        const enlaceInput = document.getElementById('enlace');
+        if (enlaceInput) enlaceInput.value = '';
+        setStatus('', '');
     }
 
     function saveToStorage() {
@@ -2468,6 +3086,7 @@
                     if (!item.preciosPorColor) item.preciosPorColor = {};
                     delete item.colorConsultando;
                     delete item.colorConsultandoAuto;
+                    delete item._seleccionado;
                 });
             }
         } catch (e) {
@@ -2476,7 +3095,11 @@
         updateAlertaFallos();
     }
 
+    // ============================================================
+    // GENERADOR DE IMAGEN CON MARCO - TAMAÑO FIJO, ELEMENTOS ADAPTATIVOS
+    // ============================================================
     async function generarImagenConMarco(item) {
+        // 1. Precargar todas las imágenes de los colores
         const coloresImgs = [];
         if (Array.isArray(item.colores) && item.colores.length > 0) {
             for (const c of item.colores) {
@@ -2507,18 +3130,119 @@
                 const imgRatio = img.height / img.width;
                 const scaledImgHeight = Math.round(targetWidth * imgRatio);
                 const hayColores = coloresImgs.length > 0;
+
+                // ===== TAMAÑO FIJO DEL MARCO (igual que antes) =====
                 const marcoHeight = hayColores ? 500 : 420;
 
+                // ===== MEDIR TALLAS =====
+                const canvasMedicion = document.createElement('canvas');
+                const ctxMed = canvasMedicion.getContext('2d');
+                const tallasTexto = (item.sizes || '').trim();
+                const maxWidthTallas = targetWidth - 100;
+
+                const probarLineas = (fontSize) => {
+                    ctxMed.font = `bold ${fontSize}px Arial`;
+                    const palabras = tallasTexto.split(',').map(s => s.trim()).filter(Boolean);
+                    const lineas = [];
+                    let lineaActual = '';
+                    for (const palabra of palabras) {
+                        const candidata = lineaActual ? lineaActual + ', ' + palabra : palabra;
+                        if (ctxMed.measureText(candidata).width > maxWidthTallas && lineaActual) {
+                            lineas.push(lineaActual);
+                            lineaActual = palabra;
+                        } else {
+                            lineaActual = candidata;
+                        }
+                    }
+                    if (lineaActual) lineas.push(lineaActual);
+                    return lineas;
+                };
+
+                // ===== CALCULAR FILAS DE COLORES =====
+                const gapColores = 18;
+                let radioBase = 30;
+                let radioSeleccionado = 40;
+                let radioMax = Math.max(radioBase, radioSeleccionado);
+                let anchoTotalPorItem = radioMax * 2 + gapColores;
+                let maxWidthFila = targetWidth - 80;
+                let cabenPorFila = Math.floor(maxWidthFila / anchoTotalPorItem);
+                let totalItems = coloresImgs.length;
+                let porFila = totalItems > 0 ? Math.max(1, Math.min(cabenPorFila, totalItems)) : 0;
+                let filasColores = hayColores ? Math.ceil(totalItems / porFila) : 0;
+
+                // Si hay muchas filas, reducir círculos
+                if (filasColores > 2) {
+                    const factor = filasColores > 4 ? 0.65 : 0.8;
+                    radioBase = Math.round(radioBase * factor);
+                    radioSeleccionado = Math.round(radioSeleccionado * factor);
+                    radioMax = Math.max(radioBase, radioSeleccionado);
+                    anchoTotalPorItem = radioMax * 2 + gapColores;
+                    cabenPorFila = Math.floor(maxWidthFila / anchoTotalPorItem);
+                    porFila = Math.max(1, Math.min(cabenPorFila, totalItems));
+                    filasColores = Math.ceil(totalItems / porFila);
+                }
+
+                // ===== CONSTANTES DE LAYOUT =====
+                // IMPORTANTE: PRECIO_ALTO es la distancia desde la línea divisoria hasta la BASE del precio.
+                // El texto tiene ~80px de alto con font 80px, así que necesita al menos 100px de margen superior.
+                const PRECIO_MARGEN_SUPERIOR = 50; // espacio entre la línea divisoria y el TOPE del texto del precio
+                const PRECIO_ALTO_TEXTO = 80;      // alto del texto del precio con font 80px
+                const PRECIO_ESPACIO_INFERIOR = 40; // espacio entre el precio y las tallas
+                const ALTO_PIE = 40;
+                const BOTTOM_PADDING = 25;
+
+                // La base (baseline) del texto del precio estará en:
+                // scaledImgHeight + PRECIO_MARGEN_SUPERIOR + PRECIO_ALTO_TEXTO
+                const precioBaselineY = scaledImgHeight + PRECIO_MARGEN_SUPERIOR + PRECIO_ALTO_TEXTO;
+
+                // El siguiente elemento (tallas) empieza debajo del precio:
+                let yTallasStart = precioBaselineY + PRECIO_ESPACIO_INFERIOR;
+
+                // ===== ESPACIO DISPONIBLE PARA TALLAS =====
+                // El bloque de colores (si lo hay) se ancla desde abajo, encima del pie.
+                const alturaColores = filasColores * (radioMax * 2 + gapColores);
+                const yColoresStart = scaledImgHeight + marcoHeight - BOTTOM_PADDING - ALTO_PIE - alturaColores - 10;
+
+                // Espacio vertical disponible para tallas
+                const espacioTallas = yColoresStart - yTallasStart;
+
+                // ===== AJUSTAR TAMAÑO DE FUENTE DE TALLAS =====
+                let fontSizeTallas = 36;
+                let lineHeightTallas = 45;
+                let lineasTallas = tallasTexto ? probarLineas(fontSizeTallas) : [];
+
+                if (tallasTexto && espacioTallas > 0) {
+                    const tamanosFuente = [36, 32, 28, 26, 24, 22, 20, 18];
+                    for (const fs of tamanosFuente) {
+                        const lh = Math.round(fs * 1.25);
+                        const lineas = probarLineas(fs);
+                        const alturaBloque = lineas.length * lh;
+                        if (alturaBloque <= espacioTallas) {
+                            fontSizeTallas = fs;
+                            lineHeightTallas = lh;
+                            lineasTallas = lineas;
+                            break;
+                        }
+                        if (fs === tamanosFuente[tamanosFuente.length - 1]) {
+                            fontSizeTallas = fs;
+                            lineHeightTallas = lh;
+                            lineasTallas = lineas;
+                        }
+                    }
+                }
+
+                // ===== CREAR CANVAS =====
                 const canvas = document.createElement('canvas');
                 canvas.width = targetWidth;
                 canvas.height = scaledImgHeight + marcoHeight;
                 const ctx = canvas.getContext('2d');
 
+                // Fondo blanco
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, targetWidth, scaledImgHeight);
 
-                // =========== MARCA DE AGUA CENTRAL (con logo sin fondo) ===========
+                // Marca de agua central
                 if (watermarkEnabled && logoCargado) {
                     const wmAncho = targetWidth * 0.55;
                     const wmAlto = (logo.height / logo.width) * wmAncho;
@@ -2533,7 +3257,7 @@
 
                 const safeMargin = 30;
 
-                // =========== LOGOS EN LAS ESQUINAS (con la versión original) ===========
+                // Logos en las esquinas
                 if (logoCargado) {
                     const logoWidth = 120;
                     const logoHeight = (logoOriginal.height / logoOriginal.width) * logoWidth;
@@ -2549,10 +3273,10 @@
                     );
                 }
 
+                // Texto "SOLO POR ENCARGO"
                 const textoEncargo = 'SOLO POR ENCARGO';
                 ctx.font = 'bold 30px Arial';
 
-                // Arriba derecha
                 ctx.textAlign = 'right';
                 const textoWidth = ctx.measureText(textoEncargo).width;
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
@@ -2560,7 +3284,6 @@
                 ctx.fillStyle = 'white';
                 ctx.fillText(textoEncargo, targetWidth - safeMargin - 10, safeMargin + 31);
 
-                // Abajo izquierda
                 ctx.textAlign = 'left';
                 const textoWidth2 = ctx.measureText(textoEncargo).width;
                 const posYInferior = scaledImgHeight - safeMargin - 44;
@@ -2569,98 +3292,104 @@
                 ctx.fillStyle = 'white';
                 ctx.fillText(textoEncargo, safeMargin + 10, posYInferior + 31);
 
+                // ===== FRANJA DEL MARCO =====
                 ctx.fillStyle = '#2c3e50';
                 ctx.fillRect(0, scaledImgHeight, canvas.width, 4);
                 ctx.fillStyle = cardBgColor;
                 ctx.fillRect(0, scaledImgHeight + 4, canvas.width, marcoHeight - 4);
 
+                // ===== PRECIO (posición fija y garantizada dentro del marco) =====
                 const precioFinal = item.priceFinal !== null ? item.priceFinal : calcularPrecioFinal(item.priceApp);
                 const precioTexto = 'L. ' + precioFinal;
 
                 ctx.font = 'bold 80px Arial';
                 ctx.fillStyle = priceColor;
                 ctx.textAlign = 'center';
-                ctx.fillText(precioTexto, targetWidth / 2, scaledImgHeight + 120);
+                ctx.textBaseline = 'alphabetic';
+                // El baseline está en scaledImgHeight + 50 + 80 = scaledImgHeight + 130
+                // El TOPE del texto (aprox) está en scaledImgHeight + 130 - 80 = scaledImgHeight + 50
+                // Así que siempre está 50px debajo de la línea divisoria.
+                ctx.fillText(precioTexto, targetWidth / 2, precioBaselineY);
 
-                const tallasTexto = (item.sizes || '').trim();
-                if (tallasTexto) {
-                    ctx.font = 'bold 36px Arial';
+                // ===== TALLAS =====
+                if (lineasTallas.length > 0) {
+                    ctx.font = `bold ${fontSizeTallas}px Arial`;
                     ctx.fillStyle = sizesColor;
                     ctx.textAlign = 'center';
+                    ctx.textBaseline = 'alphabetic';
 
-                    const maxWidth = targetWidth - 100;
-                    const palabras = tallasTexto.split(',').map(s => s.trim()).filter(Boolean);
-                    const lineas = [];
-                    let lineaActual = '';
-
-                    for (const palabra of palabras) {
-                        const candidata = lineaActual ? lineaActual + ', ' + palabra : palabra;
-                        if (ctx.measureText(candidata).width > maxWidth && lineaActual) {
-                            lineas.push(lineaActual);
-                            lineaActual = palabra;
-                        } else {
-                            lineaActual = candidata;
+                    let yTallasActual = yTallasStart;
+                    lineasTallas.forEach((linea) => {
+                        yTallasActual += lineHeightTallas;
+                        // Verificar que no nos salgamos del marco
+                        if (yTallasActual < yColoresStart) {
+                            ctx.fillText(linea, targetWidth / 2, yTallasActual);
                         }
-                    }
-                    if (lineaActual) lineas.push(lineaActual);
-
-                    const lineHeight = 45;
-                    const startY = scaledImgHeight + 220;
-
-                    lineas.forEach((linea, i) => {
-                        ctx.fillText(linea, targetWidth / 2, startY + i * lineHeight);
                     });
                 }
 
+                // ===== COLORES (anclados desde abajo) =====
                 if (hayColores) {
-                    const radioCirculo = 30;
-                    const gap = 18;
-                    const diametro = radioCirculo * 2;
-                    const anchoTotalPorItem = diametro + gap;
-                    const totalItems = coloresImgs.length;
+                    // Detectar color seleccionado
+                    const seleccionadoNorm = normalizarId(item.colorSeleccionado);
+                    let idxSeleccionado = -1;
 
-                    const maxWidthFila = targetWidth - 80;
-                    const cabenPorFila = Math.floor(maxWidthFila / anchoTotalPorItem);
-                    const porFila = Math.max(1, Math.min(cabenPorFila, totalItems));
-                    const filas = Math.ceil(totalItems / porFila);
+                    if (seleccionadoNorm !== '') {
+                        idxSeleccionado = (item.colores || []).findIndex(c => {
+                            if (!c) return false;
+                            return normalizarId(c.id) === seleccionadoNorm;
+                        });
+                    }
+                    if (idxSeleccionado === -1 && item.goodsIdOriginal) {
+                        const origNorm = normalizarId(item.goodsIdOriginal);
+                        idxSeleccionado = (item.colores || []).findIndex(c => {
+                            if (!c) return false;
+                            return normalizarId(c.goodsId) === origNorm;
+                        });
+                    }
+                    if (idxSeleccionado === -1 && (item.colores || []).length === 1) {
+                        idxSeleccionado = 0;
+                    }
 
-                    const lineHeight = diametro + gap;
-                    const startY = scaledImgHeight + 320;
-
-                    for (let fila = 0; fila < filas; fila++) {
+                    for (let fila = 0; fila < filasColores; fila++) {
                         const inicioFila = fila * porFila;
                         const finFila = Math.min(inicioFila + porFila, totalItems);
                         const itemsEnFila = finFila - inicioFila;
-                        const anchoFila = itemsEnFila * anchoTotalPorItem - gap;
-                        const startX = (targetWidth - anchoFila) / 2 + radioCirculo;
-                        const yCentro = startY + fila * lineHeight + radioCirculo;
+                        const anchoFila = itemsEnFila * anchoTotalPorItem - gapColores;
+                        const startX = (targetWidth - anchoFila) / 2 + radioMax;
+                        const yCentro = yColoresStart + fila * (radioMax * 2 + gapColores) + radioMax;
 
                         for (let i = 0; i < itemsEnFila; i++) {
                             const idx = inicioFila + i;
                             const imgColor = coloresImgs[idx];
                             const xCentro = startX + i * anchoTotalPorItem;
 
+                            const esElSeleccionado = (idxSeleccionado !== -1 && idx === idxSeleccionado);
+                            const radio = esElSeleccionado ? radioSeleccionado : radioBase;
+
+                            // Sombra
                             ctx.save();
-                            ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-                            ctx.shadowBlur = 6;
+                            ctx.shadowColor = 'rgba(0, 0, 0, 0.18)';
+                            ctx.shadowBlur = esElSeleccionado ? 12 : 6;
                             ctx.shadowOffsetY = 2;
                             ctx.beginPath();
-                            ctx.arc(xCentro, yCentro, radioCirculo, 0, Math.PI * 2);
+                            ctx.arc(xCentro, yCentro, radio, 0, Math.PI * 2);
                             ctx.closePath();
                             ctx.fillStyle = '#e0e0e0';
                             ctx.fill();
                             ctx.restore();
 
+                            // Imagen del color
                             ctx.save();
                             ctx.beginPath();
-                            ctx.arc(xCentro, yCentro, radioCirculo, 0, Math.PI * 2);
+                            ctx.arc(xCentro, yCentro, radio, 0, Math.PI * 2);
                             ctx.closePath();
                             ctx.clip();
 
                             if (imgColor) {
-                                ctx.drawImage(imgColor, xCentro - radioCirculo, yCentro - radioCirculo, radioCirculo * 2, radioCirculo * 2);
+                                ctx.drawImage(imgColor, xCentro - radio, yCentro - radio, radio * 2, radio * 2);
                             } else {
-                                const grad = ctx.createLinearGradient(xCentro - radioCirculo, yCentro - radioCirculo, xCentro + radioCirculo, yCentro + radioCirculo);
+                                const grad = ctx.createLinearGradient(xCentro - radio, yCentro - radio, xCentro + radio, yCentro + radio);
                                 grad.addColorStop(0, '#cccccc');
                                 grad.addColorStop(1, '#999999');
                                 ctx.fillStyle = grad;
@@ -2668,19 +3397,61 @@
                             }
                             ctx.restore();
 
-                            ctx.beginPath();
-                            ctx.arc(xCentro, yCentro, radioCirculo, 0, Math.PI * 2);
-                            ctx.strokeStyle = '#ffffff';
-                            ctx.lineWidth = 3;
-                            ctx.stroke();
+                            if (esElSeleccionado) {
+                                ctx.beginPath();
+                                ctx.arc(xCentro, yCentro, radio, 0, Math.PI * 2);
+                                ctx.strokeStyle = '#000000';
+                                ctx.lineWidth = 6;
+                                ctx.stroke();
+
+                                ctx.beginPath();
+                                ctx.arc(xCentro, yCentro, radio + 7, 0, Math.PI * 2);
+                                ctx.strokeStyle = '#28a745';
+                                ctx.lineWidth = 6;
+                                ctx.stroke();
+
+                                const checkX = xCentro + radio * 0.72;
+                                const checkY = yCentro + radio * 0.72;
+                                const checkR = Math.max(12, Math.round(18 * (radio / 40)));
+
+                                ctx.beginPath();
+                                ctx.arc(checkX, checkY, checkR, 0, Math.PI * 2);
+                                ctx.fillStyle = '#28a745';
+                                ctx.fill();
+                                ctx.strokeStyle = '#ffffff';
+                                ctx.lineWidth = 3;
+                                ctx.stroke();
+
+                                ctx.beginPath();
+                                ctx.strokeStyle = '#ffffff';
+                                ctx.lineWidth = 4;
+                                ctx.lineCap = 'round';
+                                ctx.lineJoin = 'round';
+                                ctx.moveTo(checkX - checkR * 0.45, checkY);
+                                ctx.lineTo(checkX - checkR * 0.1, checkY + checkR * 0.35);
+                                ctx.lineTo(checkX + checkR * 0.5, checkY - checkR * 0.4);
+                                ctx.stroke();
+                            } else {
+                                ctx.beginPath();
+                                ctx.arc(xCentro, yCentro, radio, 0, Math.PI * 2);
+                                ctx.strokeStyle = '#ffffff';
+                                ctx.lineWidth = 3;
+                                ctx.stroke();
+                            }
                         }
                     }
                 }
 
+                // ===== PIE FINAL (siempre al fondo del marco) =====
                 ctx.font = 'italic 22px Arial';
                 ctx.fillStyle = '#666666';
                 ctx.textAlign = 'center';
-                ctx.fillText('Los precios pueden variar según el color / talla seleccionada', targetWidth / 2, scaledImgHeight + marcoHeight - 30);
+                ctx.textBaseline = 'alphabetic';
+                ctx.fillText(
+                    'Los precios pueden variar según el color / talla seleccionada',
+                    targetWidth / 2,
+                    scaledImgHeight + marcoHeight - BOTTOM_PADDING
+                );
 
                 canvas.toBlob(blob => {
                     if (!blob) reject(new Error('No se pudo generar la imagen'));
