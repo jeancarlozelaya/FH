@@ -1767,8 +1767,8 @@
             const seg = Math.ceil(tiempoRestante / 1000);
             const min = Math.floor(seg / 60);
             const s = seg % 60;
-            const texto = min > 0 ? `${min}m ${s}s` : `${s}s`;
-            text.textContent = `${actual} de ${total} (${pct}%) — ~${texto} restante`;
+            const tiempoTexto = min > 0 ? `${min}m ${s}s` : `${s}s`;
+            text.textContent = `${actual} de ${total} (${pct}%) — ~${tiempoTexto} restante`;
         } else {
             text.textContent = `${actual} de ${total} (${pct}%)`;
         }
@@ -1823,6 +1823,9 @@
         return { exito: false };
     }
 
+    // ============================================================
+    // EXTRACCIÓN DE CAMPOS DESDE gbRawData - CORREGIDA
+    // ============================================================
     function extraerCamposCliente(gb) {
         function buscar(obj, claves) {
             if (!obj || typeof obj !== 'object') return null;
@@ -1876,20 +1879,66 @@
 
         const precios = extraerTodosLosPrecios(gb);
 
-        const variantes = [];
+        // ===== TALLAS: buscar en attr_value_list que tiene local_size_value =====
+        let tallasFinales = [];
         try {
-            const skuList = gb?.modules?.saleAttr?.multiLevelSaleAttribute?.sku_list;
-            if (Array.isArray(skuList)) {
-                skuList.forEach(sku => {
-                    const talla = sku?.sku_sale_attr?.[0]?.attr_value_name
-                        || sku?.sku_sale_attr?.[0]?.attr_value
-                        || sku?.attr_value_name
-                        || null;
-                    if (talla) variantes.push({ talla });
-                });
+            const saleAttr = gb?.modules?.saleAttr;
+            // Buscar attr_value_list en varios niveles
+            let attrValueList = null;
+            if (saleAttr?.multiLevelSaleAttribute?.skc_sale_attr) {
+                for (const attr of saleAttr.multiLevelSaleAttribute.skc_sale_attr) {
+                    if (attr.attr_id === "87" && Array.isArray(attr.attr_value_list)) {
+                        attrValueList = attr.attr_value_list;
+                        break;
+                    }
+                }
             }
-        } catch (e) {}
+            if (!attrValueList && saleAttr?.multiLevelSaleAttribute?.sku_list) {
+                // Fallback: extraer de sku_sale_attr
+                const skuList = saleAttr.multiLevelSaleAttribute.sku_list;
+                const tallasSet = new Set();
+                for (const sku of skuList) {
+                    if (Array.isArray(sku.sku_sale_attr)) {
+                        for (const sa of sku.sku_sale_attr) {
+                            if (sa.attr_id === "87" && sa.attr_value_name) {
+                                tallasSet.add(sa.attr_value_name);
+                            }
+                        }
+                    }
+                }
+                if (tallasSet.size > 0) {
+                    tallasFinales = [...tallasSet];
+                }
+            }
 
+            if (attrValueList && attrValueList.length > 0) {
+                tallasFinales = attrValueList.map(t => {
+                    const localSize = t.attr_local_size_value;
+                    const euroSize = t.attr_value_name;
+                    if (localSize && euroSize && localSize !== euroSize) {
+                        return `${localSize} (${euroSize})`;
+                    }
+                    return euroSize || localSize || '';
+                }).filter(Boolean);
+            }
+
+            // Fallback: si no hay tallas, intentar con sizeInfo de productInfo
+            if (tallasFinales.length === 0) {
+                const sizeInfo = gb?.modules?.productInfo?.sizeInfo?.sizeInfo;
+                if (Array.isArray(sizeInfo)) {
+                    tallasFinales = sizeInfo.map(s => s.attr_value_name).filter(Boolean);
+                }
+            }
+
+            // Ordenar
+            if (tallasFinales.length > 0) {
+                tallasFinales = ordenarTallas(tallasFinales);
+            }
+        } catch (e) {
+            console.warn('Error extrayendo tallas:', e);
+        }
+
+        // ===== COLORES =====
         const colores = [];
         const idsVistos = new Set();
         try {
@@ -1927,20 +1976,11 @@
             preciosUnicos: precios.preciosUnicos,
             imagen: buscar(gb, ['goods_img', 'goodsImg', 'mainImage', 'image']),
             imagenes: buscar(gb, ['skcImages', 'goods_imgs', 'images']),
-            tallas: buscar(gb, ['base_size_sort', 'size_list', 'attr_value_list', 'sizes']),
+            tallas: tallasFinales,
             colores: colores,
             goodsIdOriginal: goodsIdOriginal
         };
 
-        if (datos.tallas && typeof datos.tallas === 'object' && !Array.isArray(datos.tallas)) {
-            datos.tallas = Object.keys(datos.tallas);
-        }
-        if (variantes.length > 0 && (!datos.tallas || datos.tallas.length === 0)) {
-            datos.tallas = [...new Set(variantes.map(v => v.talla))];
-        }
-        if (Array.isArray(datos.tallas) && datos.tallas.length > 0) {
-            datos.tallas = ordenarTallas(datos.tallas);
-        }
         return datos;
     }
 
@@ -1992,6 +2032,9 @@
         return { exito: false };
     }
 
+    // ============================================================
+    // EXTRACCIÓN DESDE CÓDIGO FUENTE - CORREGIDA
+    // ============================================================
     function extractDataFromSource(source, enlace, itemIndex) {
         const item = items[itemIndex];
         if (!item) return false;
@@ -2070,51 +2113,76 @@
             }
         }
 
-        if (!item.sizes) {
-            let sizes = [];
+        // ===== TALLAS: buscar primero attr_value_list con local_size_value =====
+        if (!item.sizes || (Array.isArray(item.sizes) && item.sizes.length === 0) || item.sizes === '') {
+            let tallas = [];
 
-            const baseSizeSortMatch = source.match(/"base_size_sort":(\{.*?\})/);
-            if (baseSizeSortMatch && baseSizeSortMatch[1]) {
+            // Estrategia 1: buscar el bloque "attr_value_list" dentro de "attr_name":"Talla"
+            // que contiene "attr_local_size_value" (formato "US6 (EUR36)")
+            const attrValueListRegex = /"attr_id"\s*:\s*"87"[^}]*?"attr_value_list"\s*:\s*(\[[\s\S]*?\])\s*[,}]/;
+            const matchAttr = source.match(attrValueListRegex);
+            if (matchAttr && matchAttr[1]) {
                 try {
-                    const sizeObject = JSON.parse(baseSizeSortMatch[1]);
-                    sizes = Object.keys(sizeObject);
+                    const lista = JSON.parse(matchAttr[1]);
+                    tallas = lista.map(t => {
+                        const local = t.attr_local_size_value;
+                        const euro = t.attr_value_name;
+                        if (local && euro && local !== euro) return `${local} (${euro})`;
+                        return euro || local || '';
+                    }).filter(Boolean);
                 } catch (e) {}
             }
 
-            if (sizes.length === 0) {
-                const sizeBlockMatch = source.match(/"attr_name":"Talla".*?"attr_value_list":(\[.*?\])/s);
-                if (sizeBlockMatch && sizeBlockMatch[1]) {
+            // Estrategia 2: buscar todas las apariciones de attr_local_size_value + attr_value_name
+            if (tallas.length === 0) {
+                const localSizeRegex = /"attr_local_size_value"\s*:\s*"([^"]+)"[\s\S]*?"attr_value_name"\s*:\s*"([^"]+)"/g;
+                let matchLocal;
+                while ((matchLocal = localSizeRegex.exec(source)) !== null) {
+                    const local = matchLocal[1];
+                    const euro = matchLocal[2];
+                    if (local && euro && local !== euro) {
+                        tallas.push(`${local} (${euro})`);
+                    } else if (euro) {
+                        tallas.push(euro);
+                    }
+                }
+            }
+
+            // Estrategia 3: buscar "base_size_sort" (objeto con claves de tallas)
+            if (tallas.length === 0) {
+                const baseSizeSortMatch = source.match(/"base_size_sort"\s*:\s*(\{.*?\})/);
+                if (baseSizeSortMatch && baseSizeSortMatch[1]) {
                     try {
-                        const sizeList = JSON.parse(sizeBlockMatch[1]);
-                        sizeList.forEach(s => {
-                            if (s.attr_value_name && s.attr_value_id) {
-                                let sizeLabel = s.attr_value_name;
-                                if (s.attr_local_size_value && /^[a-zA-Z]+$/.test(s.attr_value_name)) {
-                                    sizeLabel = `${s.attr_local_size_value} (${s.attr_value_name})`;
-                                }
-                                sizes.push(sizeLabel);
-                            }
-                        });
+                        const sizeObject = JSON.parse(baseSizeSortMatch[1]);
+                        tallas = Object.keys(sizeObject);
                     } catch (e) {}
                 }
             }
 
-            if (sizes.length === 0) {
-                const jsonPattern = /"attr_value_name":"(.*?)"/g;
-                sizes = [...source.matchAll(jsonPattern)].map(m => m[1]);
+            // Estrategia 4: buscar bloques "attr_value_name":"EUR.." solo (fallback)
+            if (tallas.length === 0) {
+                const sizeBlockMatch = source.match(/"attr_name":"Talla".*?"attr_value_list":(\[.*?\])/s);
+                if (sizeBlockMatch && sizeBlockMatch[1]) {
+                    try {
+                        const sizeList = JSON.parse(sizeBlockMatch[1]);
+                        tallas = sizeList.map(s => s.attr_value_name).filter(Boolean);
+                    } catch (e) {}
+                }
             }
 
-            if (sizes.length === 0) {
+            // Estrategia 5: buscar en HTML data-attr_value_name (fallback extremo)
+            if (tallas.length === 0) {
                 const htmlSizePatterns = [
                     /data-attr_id="87".*?data-attr_value_name="(.*?)"/g,
                     /<p class="product-intro__size-radio-inner.*?>(.*?)<\/p>/g
                 ];
                 htmlSizePatterns.forEach(pattern => {
-                    [...source.matchAll(pattern)].forEach(m => sizes.push(m[1]));
+                    [...source.matchAll(pattern)].forEach(m => tallas.push(m[1]));
                 });
             }
 
-            const tallasFinales = ordenarTallas(sizes);
+            // Deduplicar y ordenar
+            const tallasFinales = ordenarTallas([...new Set(tallas)]);
             if (tallasFinales.length > 0) {
                 item.sizes = tallasFinales.join(', ');
                 hasNewData = true;
@@ -3095,11 +3163,7 @@
         updateAlertaFallos();
     }
 
-    // ============================================================
-    // GENERADOR DE IMAGEN CON MARCO - TAMAÑO FIJO, ELEMENTOS ADAPTATIVOS
-    // ============================================================
     async function generarImagenConMarco(item) {
-        // 1. Precargar todas las imágenes de los colores
         const coloresImgs = [];
         if (Array.isArray(item.colores) && item.colores.length > 0) {
             for (const c of item.colores) {
@@ -3130,11 +3194,8 @@
                 const imgRatio = img.height / img.width;
                 const scaledImgHeight = Math.round(targetWidth * imgRatio);
                 const hayColores = coloresImgs.length > 0;
-
-                // ===== TAMAÑO FIJO DEL MARCO (igual que antes) =====
                 const marcoHeight = hayColores ? 500 : 420;
 
-                // ===== MEDIR TALLAS =====
                 const canvasMedicion = document.createElement('canvas');
                 const ctxMed = canvasMedicion.getContext('2d');
                 const tallasTexto = (item.sizes || '').trim();
@@ -3158,7 +3219,6 @@
                     return lineas;
                 };
 
-                // ===== CALCULAR FILAS DE COLORES =====
                 const gapColores = 18;
                 let radioBase = 30;
                 let radioSeleccionado = 40;
@@ -3170,7 +3230,6 @@
                 let porFila = totalItems > 0 ? Math.max(1, Math.min(cabenPorFila, totalItems)) : 0;
                 let filasColores = hayColores ? Math.ceil(totalItems / porFila) : 0;
 
-                // Si hay muchas filas, reducir círculos
                 if (filasColores > 2) {
                     const factor = filasColores > 4 ? 0.65 : 0.8;
                     radioBase = Math.round(radioBase * factor);
@@ -3182,31 +3241,19 @@
                     filasColores = Math.ceil(totalItems / porFila);
                 }
 
-                // ===== CONSTANTES DE LAYOUT =====
-                // IMPORTANTE: PRECIO_ALTO es la distancia desde la línea divisoria hasta la BASE del precio.
-                // El texto tiene ~80px de alto con font 80px, así que necesita al menos 100px de margen superior.
-                const PRECIO_MARGEN_SUPERIOR = 50; // espacio entre la línea divisoria y el TOPE del texto del precio
-                const PRECIO_ALTO_TEXTO = 80;      // alto del texto del precio con font 80px
-                const PRECIO_ESPACIO_INFERIOR = 40; // espacio entre el precio y las tallas
+                const PRECIO_MARGEN_SUPERIOR = 50;
+                const PRECIO_ALTO_TEXTO = 80;
+                const PRECIO_ESPACIO_INFERIOR = 40;
                 const ALTO_PIE = 40;
                 const BOTTOM_PADDING = 25;
 
-                // La base (baseline) del texto del precio estará en:
-                // scaledImgHeight + PRECIO_MARGEN_SUPERIOR + PRECIO_ALTO_TEXTO
                 const precioBaselineY = scaledImgHeight + PRECIO_MARGEN_SUPERIOR + PRECIO_ALTO_TEXTO;
-
-                // El siguiente elemento (tallas) empieza debajo del precio:
                 let yTallasStart = precioBaselineY + PRECIO_ESPACIO_INFERIOR;
 
-                // ===== ESPACIO DISPONIBLE PARA TALLAS =====
-                // El bloque de colores (si lo hay) se ancla desde abajo, encima del pie.
                 const alturaColores = filasColores * (radioMax * 2 + gapColores);
                 const yColoresStart = scaledImgHeight + marcoHeight - BOTTOM_PADDING - ALTO_PIE - alturaColores - 10;
-
-                // Espacio vertical disponible para tallas
                 const espacioTallas = yColoresStart - yTallasStart;
 
-                // ===== AJUSTAR TAMAÑO DE FUENTE DE TALLAS =====
                 let fontSizeTallas = 36;
                 let lineHeightTallas = 45;
                 let lineasTallas = tallasTexto ? probarLineas(fontSizeTallas) : [];
@@ -3231,18 +3278,15 @@
                     }
                 }
 
-                // ===== CREAR CANVAS =====
                 const canvas = document.createElement('canvas');
                 canvas.width = targetWidth;
                 canvas.height = scaledImgHeight + marcoHeight;
                 const ctx = canvas.getContext('2d');
 
-                // Fondo blanco
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, targetWidth, scaledImgHeight);
 
-                // Marca de agua central
                 if (watermarkEnabled && logoCargado) {
                     const wmAncho = targetWidth * 0.55;
                     const wmAlto = (logo.height / logo.width) * wmAncho;
@@ -3257,7 +3301,6 @@
 
                 const safeMargin = 30;
 
-                // Logos en las esquinas
                 if (logoCargado) {
                     const logoWidth = 120;
                     const logoHeight = (logoOriginal.height / logoOriginal.width) * logoWidth;
@@ -3273,7 +3316,6 @@
                     );
                 }
 
-                // Texto "SOLO POR ENCARGO"
                 const textoEncargo = 'SOLO POR ENCARGO';
                 ctx.font = 'bold 30px Arial';
 
@@ -3292,13 +3334,11 @@
                 ctx.fillStyle = 'white';
                 ctx.fillText(textoEncargo, safeMargin + 10, posYInferior + 31);
 
-                // ===== FRANJA DEL MARCO =====
                 ctx.fillStyle = '#2c3e50';
                 ctx.fillRect(0, scaledImgHeight, canvas.width, 4);
                 ctx.fillStyle = cardBgColor;
                 ctx.fillRect(0, scaledImgHeight + 4, canvas.width, marcoHeight - 4);
 
-                // ===== PRECIO (posición fija y garantizada dentro del marco) =====
                 const precioFinal = item.priceFinal !== null ? item.priceFinal : calcularPrecioFinal(item.priceApp);
                 const precioTexto = 'L. ' + precioFinal;
 
@@ -3306,12 +3346,8 @@
                 ctx.fillStyle = priceColor;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'alphabetic';
-                // El baseline está en scaledImgHeight + 50 + 80 = scaledImgHeight + 130
-                // El TOPE del texto (aprox) está en scaledImgHeight + 130 - 80 = scaledImgHeight + 50
-                // Así que siempre está 50px debajo de la línea divisoria.
                 ctx.fillText(precioTexto, targetWidth / 2, precioBaselineY);
 
-                // ===== TALLAS =====
                 if (lineasTallas.length > 0) {
                     ctx.font = `bold ${fontSizeTallas}px Arial`;
                     ctx.fillStyle = sizesColor;
@@ -3321,16 +3357,13 @@
                     let yTallasActual = yTallasStart;
                     lineasTallas.forEach((linea) => {
                         yTallasActual += lineHeightTallas;
-                        // Verificar que no nos salgamos del marco
                         if (yTallasActual < yColoresStart) {
                             ctx.fillText(linea, targetWidth / 2, yTallasActual);
                         }
                     });
                 }
 
-                // ===== COLORES (anclados desde abajo) =====
                 if (hayColores) {
-                    // Detectar color seleccionado
                     const seleccionadoNorm = normalizarId(item.colorSeleccionado);
                     let idxSeleccionado = -1;
 
@@ -3367,7 +3400,6 @@
                             const esElSeleccionado = (idxSeleccionado !== -1 && idx === idxSeleccionado);
                             const radio = esElSeleccionado ? radioSeleccionado : radioBase;
 
-                            // Sombra
                             ctx.save();
                             ctx.shadowColor = 'rgba(0, 0, 0, 0.18)';
                             ctx.shadowBlur = esElSeleccionado ? 12 : 6;
@@ -3379,7 +3411,6 @@
                             ctx.fill();
                             ctx.restore();
 
-                            // Imagen del color
                             ctx.save();
                             ctx.beginPath();
                             ctx.arc(xCentro, yCentro, radio, 0, Math.PI * 2);
@@ -3442,7 +3473,6 @@
                     }
                 }
 
-                // ===== PIE FINAL (siempre al fondo del marco) =====
                 ctx.font = 'italic 22px Arial';
                 ctx.fillStyle = '#666666';
                 ctx.textAlign = 'center';
